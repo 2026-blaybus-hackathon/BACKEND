@@ -1,0 +1,1 @@
+rootProject.name = "2026-blaybus-hackerton-backend"
