@@ -1,0 +1,143 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blaybus-app
+  namespace: blaybus
+  labels:
+    app: blaybus-app
+spec:
+  replicas: 2 # 레플리카 수 설정
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1 # 최대 1개 추가 생성 허용
+      maxUnavailable: 0 # 다운타임 없이 업데이트
+  selector:
+    matchLabels:
+      app: blaybus-app # 레플리카 셀렉터 설정. blaybus-app 레이블을 가진 파드 선택
+  template:
+    metadata:
+      labels:
+        app: blaybus-app # 파드 템플릿 레이블 설정을 통해 레플리카 셀렉터와 일치시킴
+    spec:
+      containers:
+        - name: blaybus-app
+          image: chaechae121/blaybus:latest
+          imagePullPolicy: Always # 항상 최신 이미지를 가져오도록 설정
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: blaybus-secrets
+                  key: SPRING_DATASOURCE_URL
+            - name: SPRING_DATASOURCE_USERNAME
+              value: BLAYBUS
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: blaybus-secrets
+                  key: SPRING_DATASOURCE_PASSWORD
+            - name: DB_DRIVER_CLASS_NAME
+              valueFrom:
+                  secretKeyRef:
+                    name: blaybus-secrets
+                    key: DB_DRIVER_CLASS_NAME
+            - name: SPRING_DATA_REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: blaybus-secrets
+                  key: SPRING_DATA_REDIS_PASSWORD
+            - name: SPRING_DATA_REDIS_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: blaybus-secrets
+                  key: SPRING_DATA_REDIS_DATABASE
+            - name: SPRING_DATA_REDIS_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: blaybus-secrets
+                  key: SPRING_DATA_REDIS_PORT
+            - name: SPRING_DATA_REDIS_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: blaybus-secrets
+                  key: SPRING_DATA_REDIS_HOST
+            - name: JWT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: blaybus-secrets
+                  key: JWT_SECRET_KEY
+            - name: JWT_ACCESS_TOKEN_EXPIRATION_TIME
+              valueFrom:
+                secretKeyRef:
+                  name: blaybus-secrets
+                  key: JWT_ACCESS_TOKEN_EXPIRATION_TIME
+            - name: JWT_REFRESH_TOKEN_EXPIRATION_TIME
+              valueFrom:
+                secretKeyRef:
+                  name: blaybus-secrets
+                  key: JWT_REFRESH_TOKEN_EXPIRATION_TIME
+            - name: JWT_EMAIL_VERIFICATION_TOKEN_EXPIRATION_TIME
+              valueFrom:
+                secretKeyRef:
+                  name: blaybus-secrets
+                  key: JWT_EMAIL_VERIFICATION_TOKEN_EXPIRATION_TIME
+            - name: JWT_OAUTH2_ACCESS_TOKEN_EXPIRATION_TIME
+              valueFrom:
+                secretKeyRef:
+                  name: blaybus-secrets
+                  key: JWT_OAUTH2_ACCESS_TOKEN_EXPIRATION_TIME
+            - name: MAIL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: blaybus-secrets
+                  key: MAIL_USERNAME
+            - name: MAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: blaybus-secrets
+                  key: MAIL_PASSWORD
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: blaybus-secrets
+                  key: GOOGLE_CLIENT_ID
+            - name: GOOGLE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: blaybus-secrets
+                  key: GOOGLE_CLIENT_SECRET
+            - name: GOOGLE_REDIRECT_URI
+              valueFrom:
+                secretKeyRef:
+                  name: blaybus-secrets
+                  key: GOOGLE_REDIRECT_URI
+            - name: GOOGLE_TOKEN_URI
+              valueFrom:
+                secretKeyRef:
+                  name: blaybus-secrets
+                  key: GOOGLE_TOKEN_URI
+            - name: APP_PHASE
+              value: stable
+          resources:
+            requests:
+              memory: "512Mi" # 요청 메모리
+              cpu: "500m" # 요청 CPU
+            limits:
+              memory: "1Gi" # 최대 메모리
+              cpu: "1" # 최대 CPU
+          livenessProbe: # 컨테이너 상태 확인을 위한 프로브 설정
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 130 # 초기 지연 시간
+            timeoutSeconds: 10
+            failureThreshold: 10 # 실패 임계값
+          readinessProbe: # 컨테이너 준비 상태 확인을 위한 프로브 설정
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 60
+            timeoutSeconds: 5

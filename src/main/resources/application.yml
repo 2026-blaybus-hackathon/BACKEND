@@ -1,0 +1,54 @@
+server:
+  port: 8080
+
+spring:
+  jackson:
+    time-zone: Asia/Seoul
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      database: ${REDIS_DATABASE}
+      password: ${REDIS_PASSWORD}
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: ${DB_DRIVER_CLASS_NAME}
+    hikari:
+      maximum-pool-size: 4
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    auth: true
+    starttls: true
+    debug: true
+    connectiontimeout: 5000
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+        dialect: org.hibernate.dialect.OracleDialect
+        hibernate.default_batch_fetch_size: 100
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace
+    org.springframework.web.reactive.function.client.ExchangeFunctions: TRACE
+oauth2:
+  google:
+    client-id: ${GOOGLE_CLIENT_ID}
+    client-secret: ${GOOGLE_CLIENT_SECRET}
+    redirect-uri: ${GOOGLE_REDIRECT_URI}
+    token-uri: ${GOOGLE_TOKEN_URI}
+jwt:
+  secret-key: ${JWT_SECRET_KEY}
+  access-token-expiration-time: ${JWT_ACCESS_TOKEN_EXPIRATION_TIME}
+  refresh-token-expiration-time: ${JWT_REFRESH_TOKEN_EXPIRATION_TIME}
+  email-verification-token-expiration-time: ${JWT_EMAIL_VERIFICATION_TOKEN_EXPIRATION_TIME}
+  oauth2-access-token-expiration-time: ${JWT_OAUTH2_ACCESS_TOKEN_EXPIRATION_TIME}

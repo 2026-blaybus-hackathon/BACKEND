@@ -37,3 +37,11 @@ out/
 
 ### Kotlin ###
 .kotlin
+### .env files ###
+**/.env
+
+application-stable.yml
+
+### kubernetes config files ###
+**/ingress.yaml
+**/secret.yaml

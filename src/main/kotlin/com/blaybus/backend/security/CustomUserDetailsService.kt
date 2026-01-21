@@ -1,0 +1,38 @@
+package com.blaybus.backend.security
+
+import com.blaybus.backend.entity.Provider
+import com.blaybus.backend.exception.CustomException
+import com.blaybus.backend.exception.ErrorCode
+import com.blaybus.backend.repository.UserRepository
+import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.security.core.userdetails.User
+import org.springframework.security.core.userdetails.UserDetails
+import org.springframework.security.core.userdetails.UserDetailsService
+import org.springframework.stereotype.Service
+
+@Service
+class CustomUserDetailsService(
+    private val userRepository: UserRepository,
+) : UserDetailsService {
+    override fun loadUserByUsername(email: String): UserDetails {
+        val user =
+            userRepository.findByEmailAndProvider(email, Provider.LOCAL)
+                ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
+
+        return CustomUserDto(
+            email = user.email,
+            password = user.password!!,
+            authorities = listOf(SimpleGrantedAuthority(user.role.name)),
+            nickname = user.nickname,
+            userId = user.id,
+        )
+    }
+}
+
+class CustomUserDto(
+    email: String,
+    password: String,
+    authorities: Collection<SimpleGrantedAuthority>,
+    val nickname: String,
+    val userId: Long,
+) : User(email, password, authorities)
