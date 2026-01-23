@@ -51,7 +51,7 @@ class SecurityConfig(
                         "/health",
                         "/ready",
                     ).permitAll()
-                it.requestMatchers("/api/v1/users/**").hasAnyAuthority(Role.USER.name, Role.ADMIN.name)
+                it.requestMatchers("/api/v1/user/**").hasAnyAuthority(Role.USER.name, Role.ADMIN.name)
                 it.requestMatchers("/api/v1/admin/**").hasAuthority(Role.ADMIN.name)
             }.addFilterBefore(
                 jwtFilter,

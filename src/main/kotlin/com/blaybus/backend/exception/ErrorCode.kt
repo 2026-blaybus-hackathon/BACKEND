@@ -20,8 +20,8 @@ enum class ErrorCode(
     // Auth API error 11000대
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, -11000, "유효하지 않은 토큰입니다."),
     EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, -11001, "토큰이 만료되었습니다."),
-    REGISTERED_ALREADY(HttpStatus.CONFLICT, -11002, "이미 해당 방식으로 가입된 이메일입니다."),
-    REGISTERED_ANOTHER_SOCIAL(HttpStatus.CONFLICT, -11003, "이미 다른 방식으로 가입된 이메일입니다."),
+    REGISTERED_ALREADY(HttpStatus.CONFLICT, -11002, "이미 가입된 이메일입니다."),
+    REQUIRED_NAME(HttpStatus.BAD_REQUEST, -110003, "이름은 필수 입력값입니다."),
     CONFLICT_NICKNAME(HttpStatus.CONFLICT, -11004, "이미 존재하는 닉네임입니다."),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, -11005, "사용자를 찾을 수 없습니다."),
     UNAUTHENTICATED_ACCESS(HttpStatus.UNAUTHORIZED, -11006, "인증되지 않은 접근입니다."),
@@ -41,8 +41,6 @@ enum class ErrorCode(
     REQUIRED_SOCIAL_SIGNUP_TOKEN(HttpStatus.BAD_REQUEST, -11020, "소셜 회원가입 토큰은 필수 입력값입니다."),
     REQUIRED_NICKNAME(HttpStatus.BAD_REQUEST, -11021, "닉네임은 필수 입력값입니다."),
     INVALID_EMAIL_FORMAT(HttpStatus.BAD_REQUEST, -11022, "유효하지 않은 이메일 형식입니다."),
-    REQUIRED_EMAIL(HttpStatus.BAD_REQUEST, -11023, "이메일은 필수 입력값입니다."),
-    REQUIRED_NAME(HttpStatus.BAD_REQUEST, -11024, "이름은 필수 입력값입니다."),
 
     // Email-verification API error 12000대
     EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, -12000, "이메일 전송에 실패했습니다."),

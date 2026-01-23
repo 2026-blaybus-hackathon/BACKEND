@@ -57,9 +57,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    // Source: https://mvnrepository.com/artifact/org.redisson/redisson-spring-boot-starter
     implementation("org.redisson:redisson-spring-boot-starter:4.1.0")
     implementation("org.springframework.boot:spring-boot-starter-mail")
+    implementation("org.elasticsearch.client:elasticsearch-rest-client:8.15.0")
 
     // thyemleaf
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")

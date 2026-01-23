@@ -6,6 +6,7 @@ CREATE TABLE users
     name          VARCHAR2(100)                                  NOT NULL,
     nickname      VARCHAR2(100)                                  NOT NULL,
     provider      VARCHAR2(20)                                   NOT NULL,
+    provider_id   VARCHAR2(100),
     role          VARCHAR2(20)                                   NOT NULL,
     contact_email VARCHAR2(100)                                  NOT NULL,
     CONSTRAINT pk_users PRIMARY KEY (id)
@@ -13,3 +14,11 @@ CREATE TABLE users
 
 ALTER TABLE users
     ADD CONSTRAINT uc_users_email UNIQUE (email);
+
+CREATE INDEX idx_users_email ON users (email);
+
+CREATE INDEX idx_users_email_provider ON users (email, provider);
+
+CREATE INDEX idx_users_nickname ON users (nickname);
+
+CREATE INDEX idx_users_provider_providerId ON users (provider, provider_id);

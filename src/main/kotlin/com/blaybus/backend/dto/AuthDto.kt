@@ -5,6 +5,7 @@ import com.blaybus.backend.constants.NICKNAME_REGEX
 import com.blaybus.backend.constants.PASSWORD_MESSAGE
 import com.blaybus.backend.constants.PASSWORD_REGEX
 import com.blaybus.backend.entity.Provider
+import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
@@ -55,9 +56,9 @@ data class GoogleLoginRequest(
     @field:Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "리다이렉트 후 전달되는 OAuth 인증 코드입니다")
     @field:NotBlank(message = "소셜 인증 코드는 필수 입력값입니다")
     var code: String,
-    @field:Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "소셜 플랫폼 타입")
-    @field:NotBlank(message = "소셜 플랫폼 타입은 필수 입력값입니다")
-    private var provider: Provider,
+    @field:Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "소셜 플랫폼 타입", example = "GOOGLE")
+    @field:NotNull(message = "소셜 플랫폼 타입은 필수 입력값입니다")
+    var provider: Provider,
 )
 
 data class NicknameDuplicateCheckRequest(
@@ -93,15 +94,33 @@ data class EmailVerifyRequest(
 
 data class TokenResponse(
     val accessToken: String,
-    val refreshToken: String,
-    val nickname: String,
+    val refreshToken: String?,
+    val nickname: String?,
 )
 
 data class LoginResponse(
     val accessToken: String,
-    val nickname: String,
+    val nickname: String?,
 )
 
 data class EmailVerifyResponse(
     val emailVerifyToken: String,
+)
+
+data class GoogleUserInfo(
+    val sub: String,
+    val email: String,
+    val givenName: String? = null,
+    val familyName: String? = null,
+    val picture: String? = null,
+)
+
+data class GoogleTokenResponse(
+    @JsonProperty("id_token")
+    val idToken: String,
+)
+
+data class NicknameDuplicateCheckResponse(
+    @field:Schema(description = "닉네임 사용 가능 여부(true: 중복 아님, false: 중복됨)")
+    val available: Boolean,
 )

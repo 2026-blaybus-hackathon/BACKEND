@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface RedisRefreshTokenRepository : CrudRepository<RefreshToken, Int> {
-    fun findByUserId(userId: Int): RefreshToken?
+    fun findByUserId(userId: Long): RefreshToken?
 }

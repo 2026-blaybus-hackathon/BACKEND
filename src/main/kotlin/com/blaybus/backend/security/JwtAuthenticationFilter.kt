@@ -38,7 +38,7 @@ class JwtAuthenticationFilter(
             if (blackListAccessTokenRepository.existsByToken(token)) {
                 throw CustomException(ErrorCode.INVALID_TOKEN, "해당 토큰은 블랙리스트에 있습니다.")
             }
-            val userId = jwtTokenProvider.getClaim(token, "userId", Int::class.java)
+            val userId = jwtTokenProvider.getClaim(token, "userId", Long::class.java)
             val authentication =
                 UsernamePasswordAuthenticationToken(
                     userId,

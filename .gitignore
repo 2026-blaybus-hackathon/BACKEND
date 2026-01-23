@@ -43,5 +43,4 @@ out/
 application-stable.yml
 
 ### kubernetes config files ###
-**/ingress.yaml
 **/secret.yaml

@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: blaybus-ingress
+  namespace: blaybus
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod # 인증서 발급을 위한 ClusterIssuer 설정
+    kubernetes.io/tls-acme: 'true'
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true" # SSL 리다이렉트 강제 설정
+    nginx.ingress.kubernetes.io/ssl-redirect: 'true'
+spec:
+  ingressClassName: public
+  rules:
+    - host: "blaybus.jayden-bin.cc"
+      http:
+        paths:
+          - path: "/"
+            pathType: Prefix
+            backend:
+              service:
+                name: blaybus-app-service
+                port:
+                  number: 80
+  tls:
+    - hosts: # TLS 설정을 위한 호스트 목록 -> 이를 통해 HTTPS를 사용
+        - blaybus.jayden-bin.cc # 호스트 이름
+      secretName: blaybus-tls-secret # TLS 비밀 이름

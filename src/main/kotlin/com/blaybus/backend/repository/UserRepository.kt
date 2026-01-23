@@ -7,8 +7,6 @@ import com.blaybus.backend.exception.ErrorCode
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
-fun UserRepository.getByEmail(email: String): User = findByEmail(email) ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
-
 fun UserRepository.getByUserId(userId: Long): User = findById(userId).orElseThrow { CustomException(ErrorCode.USER_NOT_FOUND) }
 
 @Repository
@@ -20,5 +18,12 @@ interface UserRepository : JpaRepository<User, Long> {
         provider: Provider,
     ): User?
 
+    fun findByProviderAndProviderId(
+        provider: Provider,
+        providerId: String,
+    ): User?
+
     fun existsByEmail(email: String): Boolean
+
+    fun existsByNickname(nickname: String): Boolean
 }

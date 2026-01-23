@@ -2,6 +2,8 @@ package com.blaybus.backend.security
 
 import com.blaybus.backend.config.JwtProperties
 import com.blaybus.backend.dto.TokenResponse
+import com.blaybus.backend.entity.Provider
+import com.blaybus.backend.entity.Role
 import com.blaybus.backend.entity.auth.RefreshToken
 import com.blaybus.backend.exception.CustomException
 import com.blaybus.backend.exception.ErrorCode
@@ -95,7 +97,7 @@ class JwtTokenProvider(
     }
 
     fun getTokenResponse(
-        userId: Int,
+        userId: Long,
         authorities: Collection<GrantedAuthority>,
         nickname: String,
     ): TokenResponse {
@@ -117,6 +119,27 @@ class JwtTokenProvider(
         refreshTokenRepository.save(RefreshToken(userId, refreshToken, refreshTokenExpirationTime))
         return TokenResponse(accessToken, refreshToken, nickname)
     }
+
+    fun generateOAuth2Token(
+        oAuth2IdToken: String,
+        provider: Provider,
+    ): String =
+        createToken(
+            "oAuth2IdToken" to oAuth2IdToken,
+            "provider" to provider,
+            expirationMinutes = oauth2AccessTokenExpirationTime,
+        )
+
+    fun getTokenExpirationTime(token: String): Date =
+        Jwts
+            .parser()
+            .verifyWith(key)
+            .build()
+            .parseSignedClaims(token)
+            .getPayload()
+            .expiration
+
+    fun getAuthorities(role: Role): MutableList<GrantedAuthority> = mutableListOf(SimpleGrantedAuthority(role.name))
 
     fun generateEmailVerificationToken(email: String): String =
         createToken(

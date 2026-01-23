@@ -7,10 +7,19 @@ import jakarta.persistence.Enumerated
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import jakarta.persistence.Index
 import jakarta.persistence.Table
 
 @Entity
-@Table(name = "users")
+@Table(
+    name = "users",
+    indexes = [
+        Index(name = "idx_users_email", columnList = "email"),
+        Index(name = "idx_users_email_provider", columnList = "email, provider"),
+        Index(name = "idx_users_nickname", columnList = "nickname"),
+        Index(name = "idx_users_provider_providerId", columnList = "provider, providerId"),
+    ],
+)
 class User(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,11 +35,13 @@ class User(
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, updatable = false, length = 20)
     val provider: Provider = Provider.LOCAL,
+    @Column(nullable = true, length = 100)
+    var providerId: String? = null,
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     var role: Role = Role.USER,
     @Column(length = 100, nullable = false)
-    private var contactEmail: String,
+    var contactEmail: String,
 )
 
 enum class Provider {

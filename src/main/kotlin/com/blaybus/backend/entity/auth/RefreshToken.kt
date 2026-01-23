@@ -10,12 +10,12 @@ class RefreshToken(
     @Id
     var id: Int? = null,
     @field:Indexed
-    private var userId: Int,
-    private var token: String,
+    private var userId: Long,
+    var token: String,
     @field:TimeToLive
     private var expirationTime: Long,
 ) {
-    constructor(userId: Int, token: String, expirationTime: Long) : this(
+    constructor(userId: Long, token: String, expirationTime: Long) : this(
         id = null,
         userId = userId,
         token = token,
