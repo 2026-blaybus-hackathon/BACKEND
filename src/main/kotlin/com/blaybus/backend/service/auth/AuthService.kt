@@ -167,13 +167,12 @@ class AuthService(
                     .use { it.readText() }
             return objectMapper.readValue(content, GoogleUserInfo::class.java)
         } catch (e: Exception) {
-            logger.error("Failed to retrieve Google user info: {}", e.message)
-            throw CustomException(ErrorCode.INVALID_SOCIAL_SIGNUP_TOKEN)
+            throw CustomException(ErrorCode.INVALID_SOCIAL_SIGNUP_TOKEN, e.message)
         }
     }
 
     fun logout(accessToken: String) {
-        val userId: Long = jwtTokenProvider.getClaim(accessToken, "userId", Long::class.java)
+        val userId = jwtTokenProvider.getClaim(accessToken, "userId", Long::class.java)
         val existingRefreshToken = refreshTokenRepository.findByUserId(userId)
         if (existingRefreshToken != null) {
             refreshTokenRepository.delete(existingRefreshToken) // 리프레시 토큰 삭제

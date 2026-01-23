@@ -47,8 +47,7 @@ class EmailService(
             // TODO: 비동기 처리 고려
             logger.info("이메일 전송 완료: {}, 인증코드: {}", email, code)
         } catch (e: Exception) {
-            logger.error("이메일 전송 실패: {}", e.message)
-            throw CustomException(ErrorCode.EMAIL_SEND_FAILED)
+            throw CustomException(ErrorCode.EMAIL_SEND_FAILED, e.message)
         }
     }
 

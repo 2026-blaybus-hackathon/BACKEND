@@ -61,22 +61,43 @@ class JwtTokenProvider(
         type: Class<T>,
     ): T {
         try {
-            val content =
+            val payload =
                 Jwts
                     .parser()
                     .verifyWith(key)
                     .build()
                     .parseSignedClaims(token)
                     .payload
-                    .get(claimName, type)
-            if (content == null) {
-                throw Exception()
+
+            val raw = payload[claimName] ?: throw Exception("해당 클레임이 존재하지 않습니다: $claimName")
+
+            if (type == Long::class.java) {
+                return when (raw) {
+                    is Number -> raw.toLong() as T
+                    else -> throw Exception("unsupported claim type for Long conversion: ${raw::class}")
+                }
             }
-            return content
+
+            if (type == Int::class.java) {
+                return when (raw) {
+                    is Number -> raw.toInt() as T
+                    else -> throw Exception("unsupported claim type for Int conversion: ${raw::class}")
+                }
+            }
+
+            if (type == String::class.java) {
+                return raw.toString() as T
+            }
+
+            if (type.isAssignableFrom(raw::class.java)) {
+                return raw as T
+            }
+
+            throw Exception("unsupported claim type: requested=$type, actual=${raw::class}")
         } catch (e: ExpiredJwtException) {
             handleExpiredJwtException(e)
         } catch (e: Exception) {
-            throw CustomException(ErrorCode.INVALID_TOKEN)
+            throw CustomException(ErrorCode.INVALID_TOKEN, e.message)
         }
     }
 
@@ -92,7 +113,7 @@ class JwtTokenProvider(
         } catch (e: ExpiredJwtException) {
             handleExpiredJwtException(e)
         } catch (e: Exception) {
-            throw CustomException(ErrorCode.INVALID_TOKEN)
+            throw CustomException(ErrorCode.INVALID_TOKEN, e.message)
         }
     }
 
