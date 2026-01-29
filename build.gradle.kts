@@ -4,7 +4,7 @@ plugins {
     id("org.springframework.boot") version "4.0.1"
     id("io.spring.dependency-management") version "1.1.7"
     kotlin("plugin.jpa") version "2.2.21"
-    id("org.jlleitschuh.gradle.ktlint") version "11.6.0"
+    id("org.jlleitschuh.gradle.ktlint") version "14.0.1"
     id("com.google.cloud.tools.jib") version "3.4.0"
 }
 jib {
@@ -60,6 +60,10 @@ dependencies {
     implementation("org.redisson:redisson-spring-boot-starter:4.1.0")
     implementation("org.springframework.boot:spring-boot-starter-mail")
     implementation("org.elasticsearch.client:elasticsearch-rest-client:8.15.0")
+
+    // AWS S3
+    implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:4.0.0-RC1") // 3.3버전에 이슈가 있어서 올리면 안됨
+    implementation("commons-io:commons-io:2.19.0")
 
     // thyemleaf
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
