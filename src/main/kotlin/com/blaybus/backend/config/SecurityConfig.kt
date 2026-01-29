@@ -50,6 +50,7 @@ class SecurityConfig(
                         "/swagger-ui.html",
                         "/health",
                         "/ready",
+                        "/api/v1/test/**",
                     ).permitAll()
                 it.requestMatchers("/api/v1/user/**").hasAnyAuthority(Role.USER.name, Role.ADMIN.name)
                 it.requestMatchers("/api/v1/admin/**").hasAuthority(Role.ADMIN.name)

@@ -10,6 +10,17 @@ spring:
       port: ${REDIS_PORT}
       database: ${REDIS_DATABASE}
       password: ${REDIS_PASSWORD}
+  cloud:
+    aws:
+      s3:
+        cdn-url: ${S3_CDN_URL}
+        bucket: ${S3_BUCKET_NAME}
+      endpoint: ${S3_ENDPOINT}
+      region:
+        static: auto
+      credentials:
+        access-key: ${AWS_ACCESS_KEY}
+        secret-key: ${AWS_SECRET_KEY}
   datasource:
     url: ${DB_URL}
     username: ${DB_USERNAME}
