@@ -9,7 +9,7 @@ import org.springframework.web.multipart.MultipartFile
 class TestService(
     private val objectStorageRepository: ObjectStorageRepository,
 ) {
-    @Transactional(readOnly = true)
+    @Transactional
     fun uploadImage(profileImage: MultipartFile): String {
         val profileImageUrl = objectStorageRepository.upload(ObjectStorageRepository.TEST_IMAGE_PATH, profileImage)
 

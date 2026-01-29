@@ -1,6 +1,6 @@
 package com.blaybus.backend.service.user
 
-import com.blaybus.backend.entity.User
+import com.blaybus.backend.dto.UserDto.SimpleUserDto
 import com.blaybus.backend.repository.UserRepository
 import com.blaybus.backend.repository.getByUserId
 import org.springframework.stereotype.Service
@@ -10,10 +10,17 @@ import org.springframework.transaction.annotation.Transactional
 class UserService(
     private val userRepository: UserRepository,
 ) {
-    public fun findAllUser(): MutableList<User> = userRepository.findAll()
+    fun findAllUser(): List<SimpleUserDto> =
+        userRepository.findAll().map {
+            SimpleUserDto(
+                id = it.id,
+                nickname = it.nickname,
+                email = it.email,
+            )
+        }
 
     @Transactional
-    public fun deleteUser(userId: Long) {
+    fun deleteUser(userId: Long) {
         val user = userRepository.getByUserId(userId)
         userRepository.delete(user)
     }

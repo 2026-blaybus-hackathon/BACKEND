@@ -1,6 +1,6 @@
 package com.blaybus.backend.controller
 
-import com.blaybus.backend.entity.User
+import com.blaybus.backend.dto.UserDto
 import com.blaybus.backend.service.TestService
 import com.blaybus.backend.service.user.UserService
 import org.springframework.http.MediaType
@@ -20,10 +20,7 @@ class TestController(
     private val testService: TestService,
 ) {
     @GetMapping("/user/list")
-    fun getUserList(): MutableList<User> {
-        userService.findAllUser()
-        return userService.findAllUser()
-    }
+    fun getUserList(): List<UserDto.SimpleUserDto> = userService.findAllUser()
 
     @DeleteMapping("/user/{userId}")
     fun deleteUser(

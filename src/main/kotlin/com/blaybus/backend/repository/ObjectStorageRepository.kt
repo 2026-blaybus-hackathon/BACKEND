@@ -7,7 +7,6 @@ import org.springframework.stereotype.Repository
 import org.springframework.web.multipart.MultipartFile
 import java.io.InputStream
 import java.util.Locale
-import java.util.UUID
 
 @Repository
 class ObjectStorageRepository(
@@ -19,18 +18,20 @@ class ObjectStorageRepository(
         key: String,
         stream: InputStream,
     ): String {
-        val result = s3Template.upload(objectStorageProperties.bucket, path + key, stream)
-        return requireNotNull(result.filename) { "업로드 결과에 파일명이 없습니다." }
+        val objectKey = path + key
+        s3Template.upload(objectStorageProperties.bucket, objectKey, stream)
+        return objectKey
     }
 
     fun upload(
         path: String,
         file: MultipartFile,
     ): String {
-        requireNotNull(file.originalFilename) { "파일의 원본 파일명이 필요합니다." }
+        val originalFilename =
+            requireNotNull(file.originalFilename) { "파일의 원본 파일명이 필요합니다." }
         val extension =
             FilenameUtils
-                .getExtension(file.originalFilename)
+                .getExtension(originalFilename)
                 .lowercase(Locale.getDefault())
         return upload(path, generateFileName(extension), file.inputStream)
     }
