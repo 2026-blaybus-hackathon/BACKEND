@@ -121,6 +121,31 @@ spec:
                   key: GOOGLE_TOKEN_URI
             - name: APP_PHASE
               value: stable
+            - name: S3_BUCKET_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: blaybus-secrets
+                  key: S3_BUCKET_NAME
+            - name: S3_CDN_URL
+              valueFrom:
+                secretKeyRef:
+                  name: blaybus-secrets
+                  key: S3_CDN_URL
+            - name: S3_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: blaybus-secrets
+                  key: S3_ENDPOINT
+            - name: AWS_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: blaybus-secrets
+                  key: AWS_ACCESS_KEY
+            - name: AWS_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: blaybus-secrets
+                  key: AWS_SECRET_KEY
           resources:
             requests:
               memory: "512Mi" # 요청 메모리
