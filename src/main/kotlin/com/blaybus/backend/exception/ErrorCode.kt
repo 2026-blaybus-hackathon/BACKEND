@@ -48,4 +48,8 @@ enum class ErrorCode(
 
     // redis lock error 13000대
     REDISSON_LOCK_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, -13000, "Redis Lock 획득에 실패했습니다. 잠시 후 다시 시도해주세요."),
+
+    // Daily Planner API error 14000대
+    STUDY_TIME_MINIMUM_ERROR(HttpStatus.BAD_REQUEST, -14000, "공부 시간은 최소 0분 이상이어야 합니다."),
+    STUDY_TIME_MAXIMUM_ERROR(HttpStatus.BAD_REQUEST, -14001, "공부 시간은 최대 1440분 이하여야 합니다."),
 }
