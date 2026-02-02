@@ -52,8 +52,8 @@ class SecurityConfig(
                         "/ready",
                         "/api/v1/test/**",
                     ).permitAll()
-                it.requestMatchers("/api/v1/user/**").hasAnyAuthority(Role.USER.name, Role.ADMIN.name)
-                it.requestMatchers("/api/v1/admin/**").hasAuthority(Role.ADMIN.name)
+                it.requestMatchers("/api/v1/mentee/check").hasAnyAuthority(Role.MENTEE.name)
+                it.requestMatchers("/api/v1/mentor/**").hasAuthority(Role.MENTOR.name)
             }.addFilterBefore(
                 jwtFilter,
                 UsernamePasswordAuthenticationFilter::class.java,
@@ -72,7 +72,7 @@ class SecurityConfig(
         configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
         configuration.allowedHeaders = ALLOWED_HEADERS
         configuration.allowCredentials = true
-        configuration.setMaxAge(3600L)
+        configuration.maxAge = 3600L
         val source = UrlBasedCorsConfigurationSource()
         source.registerCorsConfiguration("/**", configuration)
         return source
