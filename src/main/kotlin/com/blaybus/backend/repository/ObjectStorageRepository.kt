@@ -34,7 +34,7 @@ class ObjectStorageRepository(
             FilenameUtils
                 .getExtension(originalFilename)
                 .lowercase(Locale.getDefault())
-        return upload(path, generateFileName(), file.inputStream)
+        return upload(path, generateFileName(extension), file.inputStream)
     }
 
     fun getDownloadUrl(key: String): String = "${objectStorageProperties.cdnUrl}/$key"
@@ -47,6 +47,6 @@ class ObjectStorageRepository(
         const val TEST_IMAGE_PATH = "test/image/"
         const val PROFILE_IMAGE_PATH = "user/profile/"
 
-        fun generateFileName(): String = UUID.randomUUID().toString() // 중복나지 않도록 UUID 사용
+        fun generateFileName(extension: String): String = "${UUID.randomUUID()}.$extension" // 중복나지 않도록 UUID 사용
     }
 }
