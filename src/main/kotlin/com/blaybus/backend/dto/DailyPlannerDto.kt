@@ -38,7 +38,7 @@ data class TaskUpdateRequest(
 
 data class GetDailyPlannerResponse(
     @Schema(description = "일일 플래너 ID")
-    val id: Long,
+    val id: Long?,
     @Schema(description = "해당 플래너 날짜")
     val date: LocalDate,
     @Schema(description = "플래너에 대한 코멘트")
