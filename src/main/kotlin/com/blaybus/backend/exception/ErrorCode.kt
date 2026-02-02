@@ -50,5 +50,5 @@ enum class ErrorCode(
     REDISSON_LOCK_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, -13000, "Redis Lock 획득에 실패했습니다. 잠시 후 다시 시도해주세요."),
 
     // feedback API error 14000대
-    NO_AUTHORIZATION_FOR_CREATE_FEEDBACK(HttpStatus.UNAUTHORIZED, -14000, "해당 할 일에 피드백 요약본을 작성할 수 없습니다."),
+    FORBIDDEN_FOR_CREATE_FEEDBACK(HttpStatus.FORBIDDEN, -14000, "해당 할 일에 피드백 요약본을 작성할 수 없습니다."),
 }
