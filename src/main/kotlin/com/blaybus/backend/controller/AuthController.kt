@@ -1,22 +1,12 @@
 package com.blaybus.backend.controller
 
-import com.blaybus.backend.annotation.ApiErrorCodes
 import com.blaybus.backend.config.JwtProperties
 import com.blaybus.backend.dto.EmailLoginRequest
-import com.blaybus.backend.dto.EmailSendRequest
-import com.blaybus.backend.dto.EmailSignupRequest
-import com.blaybus.backend.dto.EmailVerifyRequest
-import com.blaybus.backend.dto.EmailVerifyResponse
-import com.blaybus.backend.dto.GoogleLoginRequest
-import com.blaybus.backend.dto.GoogleSignUpRequest
 import com.blaybus.backend.dto.LoginResponse
-import com.blaybus.backend.dto.NicknameDuplicateCheckRequest
-import com.blaybus.backend.dto.NicknameDuplicateCheckResponse
 import com.blaybus.backend.dto.TokenResponse
 import com.blaybus.backend.exception.CustomException
 import com.blaybus.backend.exception.ErrorCode
 import com.blaybus.backend.service.auth.AuthService
-import com.blaybus.backend.service.auth.EmailService
 import jakarta.validation.Valid
 import mu.KotlinLogging
 import org.springframework.http.HttpCookie
@@ -31,16 +21,16 @@ import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
-@RestController
 @RequestMapping("/api/v1/auth")
+@RestController
 class AuthController(
     private val authService: AuthService,
-    private val emailService: EmailService,
     private val jwtProperties: JwtProperties,
 ) {
     private val logger = KotlinLogging.logger {}
+    // TODO: 이메일 로그인 제외하고 나머지 정리
 
-    @ApiErrorCodes(
+    /*@ApiErrorCodes(
         ErrorCode.REGISTERED_ALREADY,
         ErrorCode.INVALID_NICKNAME_FORMAT,
         ErrorCode.INVALID_PASSWORD_FORMAT,
@@ -67,7 +57,7 @@ class AuthController(
             .status(HttpStatus.CREATED)
             .header(HttpHeaders.SET_COOKIE, getRefreshTokenCookie(tokenResponse.refreshToken!!).toString())
             .body(LoginResponse(tokenResponse.accessToken, tokenResponse.nickname))
-    }
+    }*/
 
     @PostMapping("/login/email")
     fun loginWithEmail(
@@ -80,7 +70,7 @@ class AuthController(
             .body(LoginResponse(tokenResponse.accessToken, tokenResponse.nickname))
     }
 
-    @PostMapping("/login/google")
+    /*@PostMapping("/login/google")
     fun loginWithGoogle(
         @RequestBody @Valid request: GoogleLoginRequest,
     ): ResponseEntity<LoginResponse> {
@@ -94,7 +84,7 @@ class AuthController(
             .status(HttpStatus.OK)
             .header(HttpHeaders.SET_COOKIE, getRefreshTokenCookie(tokenResponse.refreshToken).toString())
             .body<LoginResponse>(LoginResponse(tokenResponse.accessToken, tokenResponse.nickname))
-    }
+    }*/
 
     @PostMapping("/refresh")
     fun refreshToken(
@@ -107,7 +97,7 @@ class AuthController(
             .body(LoginResponse(tokenResponse.accessToken, tokenResponse.nickname))
     }
 
-    @PostMapping("/validate/nickname")
+    /*@PostMapping("/validate/nickname")
     fun nicknameDuplicateCheck(
         @RequestBody request: @Valid NicknameDuplicateCheckRequest,
     ): ResponseEntity<NicknameDuplicateCheckResponse> =
@@ -119,7 +109,7 @@ class AuthController(
                         request.nickname,
                     ),
                 ),
-            )
+            )*/
 
     @PostMapping("/logout")
     fun logout(
@@ -137,7 +127,7 @@ class AuthController(
             .build()
     }
 
-    @PostMapping("email/send")
+    /*@PostMapping("email/send")
     fun sendEmail(
         @RequestBody emailRequest: EmailSendRequest,
     ): ResponseEntity<Unit> {
@@ -154,7 +144,7 @@ class AuthController(
                 emailVerifyRequest.email,
                 emailVerifyRequest.code,
             ),
-        )
+        )*/
 
     private fun getRefreshTokenCookie(refreshToken: String): HttpCookie =
         ResponseCookie

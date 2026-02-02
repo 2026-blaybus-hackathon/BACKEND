@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 
-@RestController
 @RequestMapping("/api/v1/test")
+@RestController
 class TestController(
     private val userService: UserService,
     private val testService: TestService,
