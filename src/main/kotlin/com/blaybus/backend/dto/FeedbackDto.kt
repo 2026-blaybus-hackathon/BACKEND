@@ -8,7 +8,7 @@ class FeedbackDto {
     data class CreateFeedbackDetailRequest(
         @field:Schema(requiredMode = Schema.RequiredMode.REQUIRED)
         @field:NotBlank(message = "피드백 작성은 필수 입력값입니다")
-        val summary: String,
+        val content: String,
     )
 
     data class CreateFeedbackSummaryRequest(

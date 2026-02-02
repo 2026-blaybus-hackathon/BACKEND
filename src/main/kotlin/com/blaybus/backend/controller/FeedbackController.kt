@@ -28,7 +28,7 @@ class FeedbackController {
 
     // TODO: 회의 후 피드백 요약 작성, 상세 작성 두 개의 API를 하나로 만들지 결정
     @ApiErrorCodes(
-        ErrorCode.FORBIDDEN_FOR_CREATE_FEEDBACK,
+        ErrorCode.FORBIDDEN_FOR_CREATE_FEEDBACK_DETAIL,
     )
     @Operation(summary = "피드백 상세 작성", description = "멘토는 멘티의 할 일에 피드백 상세 내용을 작성합니다.")
     @ApiResponse(responseCode = "201", description = "피드백 상세 생성 성공")
@@ -56,7 +56,7 @@ class FeedbackController {
     }
 
     @ApiErrorCodes(
-        ErrorCode.FORBIDDEN_FOR_CREATE_FEEDBACK,
+        ErrorCode.FORBIDDEN_FOR_CREATE_FEEDBACK_SUMMARY,
     )
     @Operation(summary = "피드백 요약본 작성", description = "멘토는 멘티의 할 일에 피드백 요약본을 작성합니다.")
     @ApiResponse(responseCode = "201", description = "피드백 요약 생성 성공")
