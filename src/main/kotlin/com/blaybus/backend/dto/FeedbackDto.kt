@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 
 class FeedbackDto {
-    data class CreateFeedbackRequest(
+    data class CreateFeedbackDetailRequest(
         @field:Schema(requiredMode = Schema.RequiredMode.REQUIRED)
         @field:NotBlank(message = "피드백 작성은 필수 입력값입니다")
         val summary: String,
@@ -17,7 +17,7 @@ class FeedbackDto {
     )
 
     // Response DTOs
-    data class CreateFeedbackResponse(
+    data class CreateFeedbackDetailResponse(
         @Schema(
             type = "number",
             description = "피드백 ID",

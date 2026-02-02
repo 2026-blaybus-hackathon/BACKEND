@@ -28,9 +28,9 @@ class FeedbackController {
     @ApiResponse(responseCode = "201", description = "피드백 요약 생성 성공")
     @PostMapping("/tasks/{taskId}/feedback")
     fun provideFeedback(
-        @Valid @RequestBody request: FeedbackDto.CreateFeedbackSummaryRequest,
+        @Valid @RequestBody request: FeedbackDto.CreateFeedbackDetailRequest,
         @PathVariable taskId: Long
-    ): ResponseEntity<FeedbackDto.CreateFeedbackResponse> {
+    ): ResponseEntity<FeedbackDto.CreateFeedbackDetailResponse> {
 
         // 피드백을 작성할 수 있는 task인지 검증
 
@@ -38,7 +38,7 @@ class FeedbackController {
         return ResponseEntity
             .status(HttpStatus.CREATED)
             .body(
-                FeedbackDto.CreateFeedbackResponse(1L)
+                FeedbackDto.CreateFeedbackDetailResponse(1L)
             )
     }
 
@@ -49,7 +49,7 @@ class FeedbackController {
     @ApiResponse(responseCode = "201", description = "피드백 요약 생성 성공")
     @PostMapping("/tasks/{taskId}/feedback")
     fun provideFeedbackSummary(
-        @Valid @RequestBody request: FeedbackDto.CreateFeedbackRequest,
+        @Valid @RequestBody request: FeedbackDto.CreateFeedbackSummaryRequest,
         @PathVariable taskId: Long
     ): ResponseEntity<FeedbackDto.CreateFeedbackSummaryResponse> {
 
