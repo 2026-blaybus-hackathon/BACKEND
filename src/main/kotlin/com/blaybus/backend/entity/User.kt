@@ -14,10 +14,7 @@ import jakarta.persistence.Table
 @Table(
     name = "users",
     indexes = [
-        Index(name = "idx_users_email", columnList = "email"),
-        Index(name = "idx_users_email_provider", columnList = "email, provider"),
         Index(name = "idx_users_nickname", columnList = "nickname"),
-        Index(name = "idx_users_provider_providerId", columnList = "provider, providerId"),
     ],
 )
 class User(
@@ -26,30 +23,21 @@ class User(
     val id: Long = 0L,
     @Column(unique = true, length = 100, nullable = false, updatable = false)
     val email: String,
-    @Column(nullable = true, length = 255)
-    var password: String? = null,
+    @Column(nullable = false, length = 255)
+    var password: String,
     @Column(nullable = false, length = 100)
     var name: String,
     @Column(nullable = false, length = 100, updatable = false)
     val nickname: String,
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, updatable = false, length = 20)
-    val provider: Provider = Provider.LOCAL,
-    @Column(nullable = true, length = 100)
-    var providerId: String? = null,
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    var role: Role = Role.USER,
-    @Column(length = 100, nullable = false)
-    var contactEmail: String,
+    var role: Role,
+    @Column(length = 100)
+    var profileName: String? = null,
+    var originFileName: String? = null,
 )
 
-enum class Provider {
-    LOCAL,
-    GOOGLE,
-}
-
 enum class Role {
-    USER,
-    ADMIN,
+    MENTOR,
+    MENTEE,
 }
