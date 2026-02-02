@@ -9,4 +9,13 @@ class FeedbackDto {
         @field:NotBlank(message = "피드백 요약 작성은 필수 입력값입니다")
         val summary: String,
     )
+
+    // Response DTOs
+    data class CreateFeedbackSummaryResponse(
+        @Schema(
+            type = "number",
+            description = "피드백 ID",
+            example = "1")
+        val id: Long,
+    )
 }

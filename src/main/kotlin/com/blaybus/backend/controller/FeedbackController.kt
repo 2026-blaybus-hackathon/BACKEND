@@ -11,9 +11,11 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
-@RestController("/api/v1/tasks/{taskId}/feedback")
+@RestController
+@RequestMapping("/api/v1/tasks/{taskId}/feedback")
 class FeedbackController {
     @ApiErrorCodes(
         ErrorCode.FORBIDDEN_FOR_CREATE_FEEDBACK,
@@ -24,13 +26,15 @@ class FeedbackController {
     fun provideFeedbackSummary(
         @Valid @RequestBody request: FeedbackDto.CreateFeedbackSummaryRequest,
         @PathVariable taskId: Long
-    ): ResponseEntity<Void> {
+    ): ResponseEntity<FeedbackDto.CreateFeedbackSummaryResponse> {
 
         // 피드백을 작성할 수 있는 task인지 검증
 
-
+        // 임시로 1L 응답
         return ResponseEntity
             .status(HttpStatus.CREATED)
-            .build()
+            .body(
+                FeedbackDto.CreateFeedbackSummaryResponse(1L)
+            )
     }
 }
