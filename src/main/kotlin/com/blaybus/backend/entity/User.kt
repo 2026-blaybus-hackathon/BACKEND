@@ -35,7 +35,7 @@ class User(
     @Column(length = 100)
     var profileName: String? = null,
     var originFileName: String? = null,
-)
+) : BaseModifiableEntity()
 
 enum class Role {
     MENTOR,
