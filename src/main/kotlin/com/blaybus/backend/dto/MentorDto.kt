@@ -2,6 +2,13 @@ package com.blaybus.backend.dto
 
 import io.swagger.v3.oas.annotations.media.Schema
 
+data class MenteeListResponse(
+    @Schema(description = "멘토 ID")
+    val mentorId: Long,
+    @Schema(description = "멘티 목록")
+    val mentees: List<MenteeSummary>,
+)
+
 data class MenteeSummary(
     @Schema(description = "멘티 ID")
     val menteeId: Long,
@@ -13,15 +20,10 @@ data class MenteeSummary(
     val profileUrl: String?,
 )
 
-data class MenteeListResponse(
-    @Schema(description = "멘토 ID")
-    val mentorId: Long,
-    @Schema(description = "멘티 목록")
-    val mentees: List<MenteeSummary>,
-)
-
 data class MenteeTaskFeedbackResponse(
+    @Schema(description = "멘티 ID")
     val menteeId: Long,
+    @Schema(description = "과제 및 피드백 목록")
     val tasks: PagedResponse<TaskDetail>,
 )
 
@@ -32,7 +34,7 @@ data class TaskDetail(
     val title: String,
     @Schema(description = "과제 이미지 리스트")
     val images: List<TaskImageResponse>,
-    val feedbacks: FeedbackDetail,
+    val feedback: FeedbackDetail,
 )
 
 data class TaskImageResponse(

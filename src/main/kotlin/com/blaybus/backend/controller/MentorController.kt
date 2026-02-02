@@ -30,7 +30,7 @@ class MentorController {
     @GetMapping("/mentee/{menteeId}/task-feedback")
     fun getMenteeTaskFeedback(
         @AuthenticationPrincipal userId: Long,
-        @PathVariable menteeId: String,
+        @PathVariable menteeId: Long,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int,
     ): ResponseEntity<MenteeTaskFeedbackResponse> = ResponseEntity.ok().build()

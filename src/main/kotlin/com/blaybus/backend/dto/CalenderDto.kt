@@ -1,10 +1,9 @@
 package com.blaybus.backend.dto
 
-import com.blaybus.backend.controller.Period
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 
-data class CalenderPeriodResponse(
+data class CalendarPeriodResponse(
     @Schema(description = "사용자 ID")
     val userId: Long,
     @Schema(description = "캘린더 기간", allowableValues = ["WEEK", "MONTH"])
@@ -16,19 +15,24 @@ data class CalenderPeriodResponse(
     @Schema(description = "종료 날짜")
     val end: LocalDate,
     @Schema(description = "날짜별 할 일 목록")
-    val dates: List<CalenderDateResponse>,
+    val dates: List<CalendarDateResponse>,
 )
 
-data class CalenderDateResponse(
+data class CalendarDateResponse(
     @Schema(description = "날짜")
     val date: LocalDate,
     @Schema(description = "해당 날짜의 할 일 목록")
-    val tasks: List<CalenderTaskResponse>,
+    val tasks: List<CalendarTaskResponse>,
 )
 
-data class CalenderTaskResponse(
+data class CalendarTaskResponse(
     @Schema(description = "할 일 ID")
     val taskId: Long,
     @Schema(description = "할 일 내용")
     val content: String,
 )
+
+enum class Period {
+    WEEK,
+    MONTH,
+}

@@ -1,6 +1,6 @@
 package com.blaybus.backend.controller
 
-import com.blaybus.backend.dto.CalenderPeriodResponse
+import com.blaybus.backend.dto.CalendarPeriodResponse
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.http.ResponseEntity
@@ -11,15 +11,15 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
 
-@RequestMapping("/api/v1/calender")
 @RestController
-class CalenderController {
+@RequestMapping("/api/v1/calendar")
+class CalendarController {
     @Operation(
         summary = "주/월간 캘린더 조회",
         description = "사용자의 주/월간 캘린더를 조회합니다.",
     )
     @GetMapping
-    fun getCalender(
+    fun getCalendar(
         @AuthenticationPrincipal userId: Long,
         @RequestParam
         @Schema(description = "조회할 플래너의 날짜", required = true, example = "2026-02-02")
@@ -27,10 +27,5 @@ class CalenderController {
         @RequestParam
         @Schema(description = "조회할 기간", required = true, allowableValues = ["WEEK", "MONTH"])
         period: Period,
-    ): ResponseEntity<CalenderPeriodResponse> = ResponseEntity.ok().build()
-}
-
-enum class Period {
-    WEEK,
-    MONTH,
+    ): ResponseEntity<CalendarPeriodResponse> = ResponseEntity.ok().build()
 }

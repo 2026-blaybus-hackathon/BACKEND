@@ -52,4 +52,7 @@ enum class ErrorCode(
     // Daily Planner API error 14000대
     STUDY_TIME_MINIMUM_ERROR(HttpStatus.BAD_REQUEST, -14000, "공부 시간은 최소 0분 이상이어야 합니다."),
     STUDY_TIME_MAXIMUM_ERROR(HttpStatus.BAD_REQUEST, -14001, "공부 시간은 최대 1440분 이하여야 합니다."),
+    REQUIRED_DATE(HttpStatus.BAD_REQUEST, -14002, "날짜는 비어 있을 수 없습니다."),
+    REQUIRED_CONTENT(HttpStatus.BAD_REQUEST, -14003, "내용은 비어 있을 수 없습니다."),
+    REQUIRED_SUBJECT(HttpStatus.BAD_REQUEST, -14004, "과목은 비어 있을 수 없습니다."),
 }
