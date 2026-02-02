@@ -2,7 +2,6 @@ package com.blaybus.backend.security
 
 import com.blaybus.backend.config.JwtProperties
 import com.blaybus.backend.dto.TokenResponse
-import com.blaybus.backend.entity.Provider
 import com.blaybus.backend.entity.Role
 import com.blaybus.backend.entity.auth.RefreshToken
 import com.blaybus.backend.exception.CustomException
@@ -26,8 +25,6 @@ class JwtTokenProvider(
     private val key: SecretKey = Keys.hmacShaKeyFor(jwtProperties.secretKey.toByteArray())
     private val refreshTokenExpirationTime = jwtProperties.refreshTokenExpirationTime
     private val accessTokenExpirationTime = jwtProperties.accessTokenExpirationTime
-    val emailVerificationTokenExpirationTime = jwtProperties.emailVerificationTokenExpirationTime
-    val oauth2AccessTokenExpirationTime = jwtProperties.oauth2AccessTokenExpirationTime
 
     fun createToken(
         vararg claims: Pair<String, Any>,
@@ -117,17 +114,22 @@ class JwtTokenProvider(
         }
     }
 
+    fun generateAccessToken(
+        userId: Long,
+        authorities: Collection<GrantedAuthority>,
+    ): String =
+        createToken(
+            "userId" to userId,
+            "authorities" to authorities.map { it.authority },
+            expirationMinutes = accessTokenExpirationTime,
+        )
+
     fun getTokenResponse(
         userId: Long,
         authorities: Collection<GrantedAuthority>,
         nickname: String,
     ): TokenResponse {
-        val accessToken =
-            createToken(
-                "userId" to userId,
-                "authorities" to authorities.map { it.authority },
-                expirationMinutes = accessTokenExpirationTime,
-            )
+        val accessToken = generateAccessToken(userId, authorities)
         val refreshToken =
             createToken(
                 "userId" to userId,
@@ -141,16 +143,6 @@ class JwtTokenProvider(
         return TokenResponse(accessToken, refreshToken, nickname)
     }
 
-    fun generateOAuth2Token(
-        oAuth2IdToken: String,
-        provider: Provider,
-    ): String =
-        createToken(
-            "oAuth2IdToken" to oAuth2IdToken,
-            "provider" to provider,
-            expirationMinutes = oauth2AccessTokenExpirationTime,
-        )
-
     fun getTokenExpirationTime(token: String): Date =
         Jwts
             .parser()
@@ -162,26 +154,14 @@ class JwtTokenProvider(
 
     fun getAuthorities(role: Role): MutableList<GrantedAuthority> = mutableListOf(SimpleGrantedAuthority(role.name))
 
-    fun generateEmailVerificationToken(email: String): String =
-        createToken(
-            "email" to email,
-            "tokenType" to TokenType.EMAIL_VERIFICATION,
-            expirationMinutes = emailVerificationTokenExpirationTime,
-        )
-
     private fun handleExpiredJwtException(e: ExpiredJwtException): Nothing {
         val tokenType: TokenType =
             try {
                 TokenType.valueOf(e.claims.get("tokenType", String::class.java))
-            } catch (ex: Exception) {
+            } catch (_: Exception) {
                 TokenType.UNKNOWN
             }
-
-        when (tokenType) {
-            TokenType.EMAIL_VERIFICATION -> throw CustomException(ErrorCode.EXPIRED_EMAIL_VERIFICATION_TOKEN)
-            TokenType.SOCIAL_SIGNUP -> throw CustomException(ErrorCode.EXPIRED_SOCIAL_SIGNUP_TOKEN)
-            else -> throw CustomException(ErrorCode.EXPIRED_TOKEN)
-        }
+        throw CustomException(ErrorCode.EXPIRED_TOKEN)
     }
 
     enum class TokenType {

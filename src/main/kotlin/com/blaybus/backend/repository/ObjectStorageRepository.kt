@@ -45,7 +45,8 @@ class ObjectStorageRepository(
 
     companion object {
         const val TEST_IMAGE_PATH = "test/image/"
+        const val PROFILE_IMAGE_PATH = "user/profile/"
 
-        fun generateFileName(extension: String): String = "${UUID.randomUUID()}.$extension" // 중복나지 않도록 UUID 사용
+        fun generateFileName(extension: String): String = UUID.randomUUID().toString() // 중복나지 않도록 UUID 사용
     }
 }
