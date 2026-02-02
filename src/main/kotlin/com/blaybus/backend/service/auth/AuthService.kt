@@ -48,26 +48,21 @@ class AuthService(
             throw CustomException(ErrorCode.CONFLICT_NICKNAME)
         }
         val user =
-            if (profile != null) {
-                val profileName = objectStorageRepository.upload(ObjectStorageRepository.PROFILE_IMAGE_PATH, profile)
-                User(
-                    email = request.email,
-                    password = passwordEncoder.encode(request.password)!!,
-                    name = request.name,
-                    nickname = request.nickname,
-                    role = request.role,
-                    originFileName = profile.originalFilename,
-                    profileName = profileName,
-                )
-            } else {
-                User(
-                    email = request.email,
-                    password = passwordEncoder.encode(request.password)!!,
-                    name = request.name,
-                    nickname = request.nickname,
-                    role = request.role,
-                )
-            }
+            User(
+                email = request.email,
+                password = passwordEncoder.encode(request.password)!!,
+                name = request.name,
+                nickname = request.nickname,
+                role = request.role,
+                originFileName = profile?.originalFilename,
+                profileName =
+                    profile?.let {
+                        objectStorageRepository.upload(
+                            ObjectStorageRepository.PROFILE_IMAGE_PATH,
+                            it,
+                        )
+                    },
+                    )
         userRepository.save(user)
     }
 
