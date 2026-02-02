@@ -204,4 +204,103 @@ class FeedbackController {
             .status(HttpStatus.OK)
             .body(summaries)
     }
+
+    @Operation(
+        summary = "멘티별 피드백 요약 조회",
+        description = "멘토는 특정 멘티에게 제공한 피드백 요약본을 조회합니다."
+    )
+    @ApiResponse(responseCode = "200", description = "멘티 피드백 요약 조회 성공")
+    @GetMapping("/mentees/{menteeId}/feedback/summary")
+    fun getMenteeFeedbackSummary(
+        @AuthenticationPrincipal userId: Long,
+        @Parameter(
+            name = "menteeId",
+            description = "피드백을 조회할 멘티 ID",
+            required = true,
+            example = "1"
+        )
+        @PathVariable menteeId: Long,
+        @Parameter(
+            name = "type",
+            description = "피드백 필터 조건",
+            required = true,
+            schema = Schema(implementation = FeedbackFilterCondition::class),
+            example = "KOREAN"
+        )
+        @RequestParam type: FeedbackFilterCondition
+    ): ResponseEntity<List<FeedbackDto.FeedbackSummaryResponse>> {
+
+        // TODO: 멘토가 해당 멘티의 피드백을 조회할 권한이 있는지 검증
+        // TODO: menteeId로 필터링된 피드백 조회 로직 구현
+
+        // dummy data 응답 (menteeId별로 다른 데이터를 반환)
+        val summaries = when (type) {
+            FeedbackFilterCondition.KOREAN -> listOf(
+                FeedbackDto.FeedbackSummaryResponse(
+                    id = 1L,
+                    subject = FeedbackFilterCondition.KOREAN.displayName,
+                    summary = "멘티 ${menteeId}번 - 독해 문제에서 주제 파악 능력이 많이 향상되었습니다.",
+                    createdAt = LocalDateTime.of(2026, 2, 1, 14, 30)
+                ),
+                FeedbackDto.FeedbackSummaryResponse(
+                    id = 2L,
+                    subject = FeedbackFilterCondition.KOREAN.displayName,
+                    summary = "멘티 ${menteeId}번 - 문법 문제에서 띄어쓰기와 맞춤법 부분을 조금 더 연습하면 좋을 것 같습니다.",
+                    createdAt = LocalDateTime.of(2026, 2, 2, 15, 20)
+                )
+            )
+            FeedbackFilterCondition.ENGLISH -> listOf(
+                FeedbackDto.FeedbackSummaryResponse(
+                    id = 3L,
+                    subject = FeedbackFilterCondition.ENGLISH.displayName,
+                    summary = "멘티 ${menteeId}번 - 영어 단어 암기를 꾸준히 해서 어휘력이 향상되었습니다.",
+                    createdAt = LocalDateTime.of(2026, 2, 1, 16, 10)
+                ),
+                FeedbackDto.FeedbackSummaryResponse(
+                    id = 4L,
+                    subject = FeedbackFilterCondition.ENGLISH.displayName,
+                    summary = "멘티 ${menteeId}번 - 문법 파트에서 시제 부분을 좀 더 집중적으로 공부하면 좋겠습니다.",
+                    createdAt = LocalDateTime.of(2026, 2, 2, 16, 45)
+                )
+            )
+            FeedbackFilterCondition.MATH -> listOf(
+                FeedbackDto.FeedbackSummaryResponse(
+                    id = 5L,
+                    subject = FeedbackFilterCondition.MATH.displayName,
+                    summary = "멘티 ${menteeId}번 - 이차함수 문제 풀이가 많이 개선되었습니다.",
+                    createdAt = LocalDateTime.of(2026, 2, 1, 17, 30)
+                ),
+                FeedbackDto.FeedbackSummaryResponse(
+                    id = 6L,
+                    subject = FeedbackFilterCondition.MATH.displayName,
+                    summary = "멘티 ${menteeId}번 - 기하 파트에서 도형의 성질을 활용하는 연습을 더 하면 좋을 것 같습니다.",
+                    createdAt = LocalDateTime.of(2026, 2, 2, 18, 0)
+                )
+            )
+            FeedbackFilterCondition.YESTERDAY -> listOf(
+                FeedbackDto.FeedbackSummaryResponse(
+                    id = 2L,
+                    subject = FeedbackFilterCondition.KOREAN.displayName,
+                    summary = "멘티 ${menteeId}번 - 어제 문법 문제에서 띄어쓰기와 맞춤법이 좋았습니다.",
+                    createdAt = LocalDateTime.of(2026, 2, 2, 15, 20)
+                ),
+                FeedbackDto.FeedbackSummaryResponse(
+                    id = 4L,
+                    subject = FeedbackFilterCondition.ENGLISH.displayName,
+                    summary = "멘티 ${menteeId}번 - 어제 영어 시제 부분을 열심히 공부했습니다.",
+                    createdAt = LocalDateTime.of(2026, 2, 2, 16, 45)
+                ),
+                FeedbackDto.FeedbackSummaryResponse(
+                    id = 6L,
+                    subject = FeedbackFilterCondition.MATH.displayName,
+                    summary = "멘티 ${menteeId}번 - 어제 기하 파트 복습이 필요합니다.",
+                    createdAt = LocalDateTime.of(2026, 2, 2, 18, 0)
+                )
+            )
+        }
+
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(summaries)
+    }
 }
