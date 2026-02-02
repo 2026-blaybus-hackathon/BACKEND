@@ -55,4 +55,8 @@ enum class ErrorCode(
     REQUIRED_DATE(HttpStatus.BAD_REQUEST, -14002, "날짜는 비어 있을 수 없습니다."),
     REQUIRED_CONTENT(HttpStatus.BAD_REQUEST, -14003, "내용은 비어 있을 수 없습니다."),
     REQUIRED_SUBJECT(HttpStatus.BAD_REQUEST, -14004, "과목은 비어 있을 수 없습니다."),
+
+    // feedback API error 15000대
+    FORBIDDEN_FOR_CREATE_FEEDBACK_DETAIL(HttpStatus.FORBIDDEN, -15000, "해당 할 일에 피드백을 작성할 수 없습니다."),
+    FORBIDDEN_FOR_CREATE_FEEDBACK_SUMMARY(HttpStatus.FORBIDDEN, -15001, "해당 할 일에 피드백 요약본을 작성할 수 없습니다."),
 }
