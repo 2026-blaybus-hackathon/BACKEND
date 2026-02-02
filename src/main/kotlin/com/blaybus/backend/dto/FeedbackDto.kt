@@ -32,4 +32,18 @@ class FeedbackDto {
             example = "1")
         val id: Long,
     )
+
+    data class GetFeedbackDetailResponse(
+        @Schema(
+            type = "number",
+            description = "피드백 ID",
+            example = "1")
+        val id: Long,
+
+        @Schema(
+            type = "string",
+            description = "피드백 상세 내용",
+            example = "1")
+        val content: String,
+    )
 }
