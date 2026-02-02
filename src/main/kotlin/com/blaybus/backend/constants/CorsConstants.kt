@@ -1,7 +1,5 @@
 package com.blaybus.backend.constants
 
-import mu.KotlinLogging
-
 val ALLOWED_ORIGINS: List<String> =
     listOf(
         "http://localhost:8080",
