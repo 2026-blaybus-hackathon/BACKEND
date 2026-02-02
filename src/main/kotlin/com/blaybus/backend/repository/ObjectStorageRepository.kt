@@ -34,7 +34,7 @@ class ObjectStorageRepository(
             FilenameUtils
                 .getExtension(originalFilename)
                 .lowercase(Locale.getDefault())
-        return upload(path, generateFileName(extension), file.inputStream)
+        return upload(path, generateFileName(), file.inputStream)
     }
 
     fun getDownloadUrl(key: String): String = "${objectStorageProperties.cdnUrl}/$key"
