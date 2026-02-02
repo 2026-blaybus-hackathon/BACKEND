@@ -46,12 +46,12 @@ class Task(
     @Column(nullable = true, length = 1023)
     var comment: String? = null,
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     var writer: User,
 
     @Column(nullable = true)
-    var studyTime: LocalDateTime? = null,
+    var studyDurationInMinutes: Long? = null,
 
     @Column(nullable = false)
     var isCompleted: Boolean = false,
