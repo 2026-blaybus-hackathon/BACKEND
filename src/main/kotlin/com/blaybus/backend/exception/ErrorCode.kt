@@ -59,4 +59,7 @@ enum class ErrorCode(
     // feedback API error 15000대
     FORBIDDEN_FOR_CREATE_FEEDBACK_DETAIL(HttpStatus.FORBIDDEN, -15000, "해당 할 일에 피드백을 작성할 수 없습니다."),
     FORBIDDEN_FOR_CREATE_FEEDBACK_SUMMARY(HttpStatus.FORBIDDEN, -15001, "해당 할 일에 피드백 요약본을 작성할 수 없습니다."),
+
+    // Authorization error 16000대
+    NOT_MY_MENTEE(HttpStatus.FORBIDDEN, -16000, "해당 멘티를 담당하고 있지 않습니다."),
 }
