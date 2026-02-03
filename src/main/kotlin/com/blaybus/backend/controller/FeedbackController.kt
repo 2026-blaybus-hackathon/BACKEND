@@ -117,16 +117,11 @@ class FeedbackController(
             example = "1"
         )
         @PathVariable dailyPlannerId: Long
-    ): ResponseEntity<FeedbackDto.GetTotalFeedbackResponse> {
-
-        val response = feedbackService.findTotalFeedbackOfDailyPlanner(userId, dailyPlannerId)
-
-        return ResponseEntity
-            .status(HttpStatus.OK)
-            .body(
-                response
-            )
-    }
+    ): ResponseEntity<FeedbackDto.GetTotalFeedbackResponse> = ResponseEntity
+        .status(HttpStatus.OK)
+        .body(
+            feedbackService.findTotalFeedbackOfDailyPlanner(userId, dailyPlannerId)
+        )
 
     /**
      * TODO: 멘토의 피드백 요약 목록 조회 / 멘티의 과목별 피드백 요약 목록 조회 API는 기획 및 디자인이 완성되면 구현 예ㅣ

@@ -88,8 +88,7 @@ class FeedbackService(
             menteeId,
             start,
             end
-        )
-            .map(Feedback::toGetFeedbackOfTaskResponse)
+        ).map(Feedback::toGetFeedbackOfTaskResponse)
     }
 
     @Transactional(readOnly = true)
