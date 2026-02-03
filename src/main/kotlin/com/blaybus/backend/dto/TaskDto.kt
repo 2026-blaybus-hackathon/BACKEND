@@ -46,3 +46,8 @@ data class FileUploadResponse(
     @field:Schema(description = "원본 파일명")
     val originalFilename: String
 )
+
+data class CommentOnTaskRequest(
+    @field:Schema(description = "멘토에게 남길 코멘트 또는 질문")
+    val comment: String,
+)

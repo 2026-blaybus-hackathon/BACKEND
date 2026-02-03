@@ -53,7 +53,9 @@ class Task(
     @OneToMany(mappedBy = "task", fetch = FetchType.LAZY)
     val assignments: MutableList<Assignment> = mutableListOf(),
 ) : BaseModifiableEntity() {
-
+    fun updateComment(comment: String) {
+        this.comment = comment
+    }
 }
 
 enum class Subject(
