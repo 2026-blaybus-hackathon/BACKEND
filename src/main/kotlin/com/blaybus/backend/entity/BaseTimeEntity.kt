@@ -17,7 +17,6 @@ abstract class BaseTimeEntity {
         protected set
 }
 
-@MappedSuperclass
 abstract class BaseModifiableEntity : BaseTimeEntity() {
     @LastModifiedDate
     @Column(name = "updated_datetime", nullable = false)

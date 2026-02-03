@@ -14,14 +14,6 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/mentor")
 @RestController
 class MentorController {
-    @Operation(
-        summary = "멘티 목록 조회",
-        description = "멘토가 자신의 멘티 목록을 조회합니다.",
-    )
-    @GetMapping("/mentee/list")
-    fun getMenteeList(
-        @AuthenticationPrincipal userId: Long,
-    ): ResponseEntity<MenteeListResponse> = ResponseEntity.ok().build()
 
     @Operation(
         summary = "멘티 과제, 피드백 조회",
