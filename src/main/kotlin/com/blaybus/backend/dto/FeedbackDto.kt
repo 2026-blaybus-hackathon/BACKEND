@@ -64,21 +64,40 @@ class FeedbackDto {
         @Schema(
             type = "number",
             description = "피드백 ID",
-            example = "1")
+            example = "1"
+        )
         val id: Long,
     )
 
-    data class GetFeedbackDetailResponse(
+    data class GetFeedbackOfTaskResponse(
         @Schema(
-            type = "number",
-            description = "피드백 ID",
-            example = "1")
-        val id: Long,
+            type = "string",
+            description = "피드백 요약 중 keep 내용",
+            example = "단계별로 꼼꼼히 풀이하는 습관"
+        )
+        val keepContent: String,
+
+        @Schema(
+            type = "string",
+            description = "피드백 요약 중 problem 내용",
+            example = "독해 지문에서 개념 간 차이점 파악 미흡"
+        )
+        val problemContent: String,
+
+        @Schema(
+            type = "string",
+            description = "피드백 요약 중 try 내용",
+            example = "지문을 읽을 때 비교/대조 구조 찾기\n" +
+                    "주요 개념을 표로 정리하는 연습"
+        )
+        val tryContent: String,
 
         @Schema(
             type = "string",
             description = "피드백 상세 내용",
-            example = "1")
+            example = "지상권과 지역권 두 권리는 모두 타인의 토지를 이용하는 권리라는 상위 범주에 속하지만, 그 목적, 대상, 배타적 이용 여부, 소유권 이전 시의 효력 등에서 명확한 차이점을 보입니다.\n" +
+                    "따라서 단순히 각 개념을 개별적으로 이해하는 것을 넘어 지상권과 지역권의 공통점과 차이점을 명확히 구분하여 정리하는 것이 핵심입니다."
+        )
         val content: String,
     )
 
@@ -86,24 +105,28 @@ class FeedbackDto {
         @Schema(
             type = "number",
             description = "피드백 ID",
-            example = "1")
+            example = "1"
+        )
         val id: Long,
 
         @Schema(
             type = "string",
             description = "과목명",
-            example = "국어")
+            example = "국어"
+        )
         val subject: String,
 
         @Schema(
             type = "string",
             description = "피드백 요약 내용",
-            example = "독해력이 많이 향상되었습니다.")
+            example = "독해력이 많이 향상되었습니다."
+        )
         val summary: String,
 
         @Schema(
             description = "피드백 작성 시간",
-            example = "2026-02-01T14:30:00")
+            example = "2026-02-01T14:30:00"
+        )
         val createdAt: LocalDateTime,
     )
 }

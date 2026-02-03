@@ -86,10 +86,10 @@ class FeedbackController(
             .build()
     }
 
-    @Operation(summary = "피드백 상세 조회", description = "멘티는 멘토의 피드백 상세 내용을 조회합니다.")
+    @Operation(summary = "할 일의 피드백 요약, 상세 조회", description = "멘티는 멘토의 피드백 요약, 상세 내용을 조회합니다.")
     @ApiResponse(responseCode = "200", description = "피드백 상세 조회 성공")
-    @GetMapping("/feedback/{feedbackId}/detail")
-    fun getFeedbackDetail(
+    @GetMapping("/tasks/{taskId}/feedback")
+    fun getFeedbackOfTask(
         @AuthenticationPrincipal userId: Long,
         @Parameter(
             name = "feedbackId",
@@ -97,8 +97,8 @@ class FeedbackController(
             required = true,
             example = "1"
         )
-        @PathVariable feedbackId: Long
-    ): ResponseEntity<FeedbackDto.GetFeedbackDetailResponse> {
+        @PathVariable taskId: Long
+    ): ResponseEntity<FeedbackDto.GetFeedbackOfTaskResponse> {
 
         // TODO: 조회 권한 검증
 
@@ -106,8 +106,10 @@ class FeedbackController(
         return ResponseEntity
             .status(HttpStatus.OK)
             .body(
-                FeedbackDto.GetFeedbackDetailResponse(
-                    1L,
+                FeedbackDto.GetFeedbackOfTaskResponse(
+                    "keep",
+                    "problem",
+                    "try",
                     "오늘 중요한 실수들과 아이디어를 얻은 것 같아서 기분이 좋네요! " +
                             "틀린건 기분이 나쁠 부분이 아니라, “아 내가 이런 공통된 부분을 틀리니 " +
                             "이것만 잡으면 저걸 다 맞겠구나~”라는 생각으로 내일도 공부 화이팅입니다!"
