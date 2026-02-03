@@ -21,6 +21,7 @@ import jakarta.persistence.Table
     name = "users",
     indexes = [
         Index(name = "idx_users_nickname", columnList = "nickname"),
+        Index(name = "idx_users_mentor_id", columnList = "mentor_id"),
     ],
 )
 class User(
@@ -44,10 +45,9 @@ class User(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mentor_id", nullable = true)
     var mentor: User? = null,
-
     @OneToMany(mappedBy = "mentor", fetch = FetchType.LAZY)
     val mentees: MutableList<User> = mutableListOf(),
-) : BaseModifiableEntity(){
+) : BaseModifiableEntity() {
     fun validateMentee(user: User) {
         if (!mentees.any { it.id == user.id }) {
             throw CustomException(ErrorCode.NOT_MY_MENTEE)
