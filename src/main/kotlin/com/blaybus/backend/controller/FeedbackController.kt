@@ -132,9 +132,33 @@ class FeedbackController(
             )
     }
 
+    /**
+     * TODO: 멘토의 피드백 요약 목록 조회 / 멘티의 과목별 피드백 요약 목록 조회 API는 기획 및 디자인이 완성되면 구현 예정
+     */
+
+    @Operation(
+        summary = "멘티별 피드백 요약 목록 조회",
+        description = "멘토가 멘티별로 피드백 요약 목록을 조회합니다."
+    )
+    @ApiResponse(responseCode = "200", description = "멘티별 피드백 요약 목록 조회 성공")
+    @GetMapping("/feedbacks/{userId}")
+    fun getFeedbackSummariesOfMentees(
+        @AuthenticationPrincipal userId: Long,
+        @Parameter(
+            name = "menteeId",
+            description = "피드백 필터 조건",
+            required = true,
+            schema = Schema(implementation = FeedbackFilterCondition::class),
+            example = "KOREAN"
+        )
+        @PathVariable("userId") menteeId: Long
+    ) {
+
+    }
+
     @Operation(
         summary = "피드백 요약 조회",
-        description = "멘티는 피드백 요약본을 조회합니다."
+        description = "멘티가 피드백 요약본을 조회합니다."
     )
     @ApiResponse(responseCode = "200", description = "피드백 요약 조회 성공")
     @GetMapping("/feedback/summary")
