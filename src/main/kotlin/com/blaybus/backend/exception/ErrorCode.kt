@@ -55,8 +55,21 @@ enum class ErrorCode(
     REQUIRED_DATE(HttpStatus.BAD_REQUEST, -14002, "날짜는 비어 있을 수 없습니다."),
     REQUIRED_CONTENT(HttpStatus.BAD_REQUEST, -14003, "내용은 비어 있을 수 없습니다."),
     REQUIRED_SUBJECT(HttpStatus.BAD_REQUEST, -14004, "과목은 비어 있을 수 없습니다."),
+    DAILY_PLANNER_NOT_FOUND(HttpStatus.NOT_FOUND, -14005, "플래너를 찾을 수 없습니다."),
 
-    // feedback API error 15000대
-    FORBIDDEN_FOR_CREATE_FEEDBACK_DETAIL(HttpStatus.FORBIDDEN, -15000, "해당 할 일에 피드백을 작성할 수 없습니다."),
-    FORBIDDEN_FOR_CREATE_FEEDBACK_SUMMARY(HttpStatus.FORBIDDEN, -15001, "해당 할 일에 피드백 요약본을 작성할 수 없습니다."),
+    // Feedback API error 15000대
+    FORBIDDEN_FOR_CREATE_FEEDBACK(HttpStatus.FORBIDDEN, -15000, "해당 할 일에 피드백을 작성할 수 없습니다."),
+    FEEDBACK_NOT_FOUND(HttpStatus.FORBIDDEN, -15001, "피드백을 찾을 수 없습니다."),
+
+    // Authorization error 16000대
+    NOT_MY_MENTEE(HttpStatus.FORBIDDEN, -16000, "해당 멘티를 담당하고 있지 않습니다."),
+
+    // Task API error 17000대
+    TASK_NOT_FOUND(HttpStatus.NOT_FOUND, -17000, "할 일을 찾을 수 없습니다."),
+
+    // Assignment API error 18000대
+    ASSIGNMENT_NOT_FOUND(HttpStatus.NOT_FOUND, -18000, "과제를 찾을 수 없습니다."),
+
+    // StudyImage API error 19000대
+    STUDY_IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, -19000, "학습 이미지를 찾을 수 없습니다."),
 }

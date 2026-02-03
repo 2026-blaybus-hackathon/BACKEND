@@ -1,13 +1,19 @@
 package com.blaybus.backend.entity
 
+import com.blaybus.backend.exception.CustomException
+import com.blaybus.backend.exception.ErrorCode
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
+import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Index
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.ManyToOne
+import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 
 @Entity
@@ -42,7 +48,20 @@ class User(
     var role: Role = Role.USER,
     @Column(length = 100, nullable = false)
     var contactEmail: String,
-)
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "mentor_id", nullable = true)
+    var mentor: User? = null,
+
+    @OneToMany(mappedBy = "mentor", fetch = FetchType.LAZY)
+    val mentees: MutableList<User> = mutableListOf(),
+) {
+    fun validateMentee(user: User) {
+        if (!mentees.any { it.id == user.id }) {
+            throw CustomException(ErrorCode.NOT_MY_MENTEE)
+        }
+    }
+}
 
 enum class Provider {
     LOCAL,
