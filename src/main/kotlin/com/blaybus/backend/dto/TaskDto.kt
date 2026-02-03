@@ -15,7 +15,7 @@ data class MenteeTaskCreateRequest(
     val content: String? = null,
 
     @field:Schema(description = "과목", allowableValues = ["KOREAN", "MATH", "ENGLISH", "OTHERS"])
-    val subject: Subject,
+    val subject: com.blaybus.backend.entity.Subject,
 
     @field:Schema(description = "플래너 날짜 (어느 날짜에 등록할지)", example = "2026-02-05")
     val date: LocalDate
@@ -23,7 +23,7 @@ data class MenteeTaskCreateRequest(
 
 data class MenteeTaskUpdateRequest(
     @field:Schema(description = "수정할 제목")
-    val title: String?,
+    val title: String,
 
     @field:Schema(description = "수정할 상세 내용")
     val content: String?,
