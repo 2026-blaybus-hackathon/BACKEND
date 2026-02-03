@@ -9,10 +9,10 @@ data class MenteeListResponse(
     @Schema(description = "멘토 ID")
     val mentorId: Long,
     @Schema(description = "멘티 목록")
-    val mentees: List<MenteeResponse>,
+    val mentees: List<UserInfoResponse>,
 )
 
-data class MenteeResponse(
+data class UserInfoResponse(
     @Schema(description = "멘티 ID")
     val menteeId: Long,
     @Schema(description = "멘티 닉네임")

@@ -1,9 +1,9 @@
 package com.blaybus.backend.dto.mapper
 
-import com.blaybus.backend.dto.MenteeResponse
+import com.blaybus.backend.dto.UserInfoResponse
 import com.blaybus.backend.entity.User
 
-fun User.toMenteesResponse() = MenteeResponse(
+fun User.toMenteesResponse() = UserInfoResponse(
     menteeId = id,
     nickname = nickname,
     name = name,
