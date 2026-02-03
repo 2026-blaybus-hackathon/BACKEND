@@ -20,8 +20,8 @@ interface TaskRepository : JpaRepository<Task, Long> {
     join fetch f.task t
     join fetch t.dailyPlanner dp
     where dp.user.id = :userId
-      and t.createdDatetime >= :start
-      and t.createdDatetime < :end
+      and t.createdDateTime >= :start
+      and t.createdDateTime < :end
     """)
     fun findByUserIdAndTaskCreatedBetween(
         userId: Long,
