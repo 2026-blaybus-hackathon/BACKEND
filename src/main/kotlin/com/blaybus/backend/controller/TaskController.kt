@@ -61,7 +61,7 @@ class TaskController {
 
 
     // ================== 멘토 기능 (과제 할당 및 조회) ==================
-    
+
     @Operation(
         summary = "멘티에게 과제 할당 (PDF 포함)",
         description = "멘토가 특정 멘티의 플래너에 과제(Task)를 생성합니다. (경로 구분: /assignment)"

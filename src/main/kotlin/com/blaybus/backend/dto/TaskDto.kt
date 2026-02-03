@@ -28,6 +28,9 @@ data class MenteeTaskUpdateRequest(
     @field:Schema(description = "수정할 상세 내용")
     val content: String?,
 
+    @field:Schema(description = "수정할 과목", allowableValues = ["KOREAN", "MATH", "ENGLISH", "OTHERS"])
+    val subject: Subject,
+
     @field:Schema(description = "공부 시간 (분 단위)", example = "60")
     val studyTime: Int?,
 
