@@ -71,7 +71,7 @@ class FeedbackController(
         @AuthenticationPrincipal userId: Long,
         @Valid @RequestBody request: FeedbackDto.CreateTotalFeedbackRequest,
         @Parameter(
-            name = "taskId",
+            name = "dailyPlannerId",
             description = "피드백을 작성할 플래너 ID",
             required = true,
             example = "1"
@@ -92,8 +92,8 @@ class FeedbackController(
     fun getFeedbackOfTask(
         @AuthenticationPrincipal userId: Long,
         @Parameter(
-            name = "feedbackId",
-            description = "조회할 피드백 ID",
+            name = "taskId",
+            description = "피드백을 조회할 할 일 ID",
             required = true,
             example = "1"
         )
@@ -109,6 +109,28 @@ class FeedbackController(
             )
     }
 
+    @Operation(summary = "특정 날짜 플래너의 종합 피드백 조회", description = "멘티는 멘토의 특정 날짜에 대한 종합 피드백을 조회합니다.")
+    @ApiResponse(responseCode = "200", description = "종합 피드백 조회 성공")
+    @GetMapping("/daily-planner/{dailyPlannerId}/total-feedback")
+    fun getTotalFeedbackOfDailyPlanner(
+        @AuthenticationPrincipal userId: Long,
+        @Parameter(
+            name = "dailyPlannerId",
+            description = "종합 피드백을 조회할 플래너 ID",
+            required = true,
+            example = "1"
+        )
+        @PathVariable dailyPlannerId: Long
+    ): ResponseEntity<FeedbackDto.GetTotalFeedbackResponse> {
+
+        val response = feedbackService.findTotalFeedbackOfDailyPlanner(userId, dailyPlannerId)
+
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(
+                response
+            )
+    }
 
     @Operation(
         summary = "피드백 요약 조회",

@@ -76,4 +76,20 @@ class FeedbackService(
             detail = feedback?.detail
         )
     }
+
+    @Transactional(readOnly = true)
+    fun findTotalFeedbackOfDailyPlanner(
+        menteeId: Long,
+        dailyPlannerId: Long
+    ): FeedbackDto.GetTotalFeedbackResponse {
+
+        val dailyPlanner = dailyPlannerRepository.getByDailyPlannerId(dailyPlannerId)
+        val mentee = userRepository.getByUserId(menteeId)
+        // API를 요청한 사람과 dailyPlanner의 주인이 동일한지 검증
+        dailyPlanner.user.validateSameUser(mentee)
+
+        return FeedbackDto.GetTotalFeedbackResponse(
+            dailyPlanner.totalFeedback
+        )
+    }
 }

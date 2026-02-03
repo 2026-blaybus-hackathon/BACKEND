@@ -101,6 +101,15 @@ class FeedbackDto {
         val detail: String?,
     )
 
+    data class GetTotalFeedbackResponse(
+        @Schema(
+            type = "string",
+            description = "종합 피드백 내용",
+            example = ""
+        )
+        val totalFeedback: String?,
+    )
+
     data class FeedbackSummaryResponse(
         @Schema(
             type = "number",
