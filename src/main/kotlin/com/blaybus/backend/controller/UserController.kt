@@ -1,6 +1,7 @@
 package com.blaybus.backend.controller
 
-import com.blaybus.backend.dto.UserInfoResponse
+import com.blaybus.backend.dto.MenteeProfileResponse
+import com.blaybus.backend.dto.UserProfileResponse
 import com.blaybus.backend.service.user.UserService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -24,7 +25,7 @@ class UserController(
     @GetMapping("/mentees") // URL: /api/v1/users/mentees
     fun getMyMentees(
         @AuthenticationPrincipal userId: Long,
-    ): ResponseEntity<List<UserInfoResponse>> = ResponseEntity
+    ): ResponseEntity<List<MenteeProfileResponse>> = ResponseEntity
         .status(HttpStatus.OK)
         .body(
             userService.findAllMentees(userId)
@@ -37,7 +38,7 @@ class UserController(
     @GetMapping("/profile")
     fun getMyProfile(
         @AuthenticationPrincipal userId: Long,
-    ): ResponseEntity<UserInfoResponse> = ResponseEntity
+    ): ResponseEntity<UserProfileResponse> = ResponseEntity
         .status(HttpStatus.OK)
         .body(
             userService.findMyProfile(userId)

@@ -5,14 +5,7 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import java.time.LocalDate
 
-data class MenteeListResponse(
-    @Schema(description = "멘토 ID")
-    val mentorId: Long,
-    @Schema(description = "멘티 목록")
-    val mentees: List<UserInfoResponse>,
-)
-
-data class UserInfoResponse(
+data class MenteeProfileResponse(
     @Schema(description = "멘티 ID")
     val menteeId: Long,
     @Schema(description = "멘티 닉네임")
@@ -20,6 +13,17 @@ data class UserInfoResponse(
     @Schema(description = "멘티 이름")
     val name: String,
     @Schema(description = "멘티 프로필 URL")
+    val profileUrl: String?,
+)
+
+data class UserProfileResponse(
+    @Schema(description = "사용자 ID")
+    val userId: Long,
+    @Schema(description = "사용자 닉네임")
+    val nickname: String,
+    @Schema(description = "사용자 이름")
+    val name: String,
+    @Schema(description = "사용자 프로필 URL")
     val profileUrl: String?,
 )
 
