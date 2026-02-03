@@ -1,17 +1,23 @@
 package com.blaybus.backend.controller
 
+import com.blaybus.backend.annotation.SwaggerBody
 import com.blaybus.backend.config.JwtProperties
 import com.blaybus.backend.dto.EmailLoginRequest
+import com.blaybus.backend.dto.EmailSignupRequest
 import com.blaybus.backend.dto.LoginResponse
 import com.blaybus.backend.dto.TokenResponse
 import com.blaybus.backend.exception.CustomException
 import com.blaybus.backend.exception.ErrorCode
 import com.blaybus.backend.service.auth.AuthService
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Encoding
 import jakarta.validation.Valid
 import mu.KotlinLogging
 import org.springframework.http.HttpCookie
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
+import org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE
 import org.springframework.http.ResponseCookie
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.CookieValue
@@ -19,7 +25,9 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.multipart.MultipartFile
 
 @RequestMapping("/api/v1/auth")
 @RestController
@@ -28,36 +36,28 @@ class AuthController(
     private val jwtProperties: JwtProperties,
 ) {
     private val logger = KotlinLogging.logger {}
-    // TODO: 이메일 로그인 제외하고 나머지 정리
 
-    /*@ApiErrorCodes(
-        ErrorCode.REGISTERED_ALREADY,
-        ErrorCode.INVALID_NICKNAME_FORMAT,
-        ErrorCode.INVALID_PASSWORD_FORMAT,
-        ErrorCode.REQUIRED_PASSWORD,
-        ErrorCode.REQUIRED_EMAIL_VERIFICATION_TOKEN,
-        ErrorCode.REQUIRED_NICKNAME,
-        ErrorCode.REQUIRED_NAME,
-        ErrorCode.INVALID_EMAIL_FORMAT,
+    @SwaggerBody(
+        content = [
+            Content(
+                encoding = [
+                    Encoding(
+                        name = "request",
+                        contentType = MediaType.APPLICATION_JSON_VALUE,
+                    ),
+                ],
+            ),
+        ],
     )
-    @PostMapping("/signup/email")
+    @PostMapping("/signup/email", consumes = [MULTIPART_FORM_DATA_VALUE])
     fun signupWithEmail(
-        @Valid @RequestBody request: EmailSignupRequest,
+        @Valid @RequestPart request: EmailSignupRequest,
+        @RequestPart(required = false)
+        profile: MultipartFile?,
     ): ResponseEntity<Unit> {
-        authService.signupWithEmail(request)
+        authService.signupWithEmail(request, profile)
         return ResponseEntity.status(HttpStatus.CREATED).build()
     }
-
-    @PostMapping("/signup/google")
-    fun signUpWithGoogle(
-        @RequestBody @Valid request: GoogleSignUpRequest,
-    ): ResponseEntity<LoginResponse> {
-        val tokenResponse: TokenResponse = authService.signUpOAuth(request)
-        return ResponseEntity
-            .status(HttpStatus.CREATED)
-            .header(HttpHeaders.SET_COOKIE, getRefreshTokenCookie(tokenResponse.refreshToken!!).toString())
-            .body(LoginResponse(tokenResponse.accessToken, tokenResponse.nickname))
-    }*/
 
     @PostMapping("/login/email")
     fun loginWithEmail(
@@ -70,22 +70,6 @@ class AuthController(
             .body(LoginResponse(tokenResponse.accessToken, tokenResponse.nickname))
     }
 
-    /*@PostMapping("/login/google")
-    fun loginWithGoogle(
-        @RequestBody @Valid request: GoogleLoginRequest,
-    ): ResponseEntity<LoginResponse> {
-        val tokenResponse: TokenResponse = authService.loginWithOauth2(request)
-        if (tokenResponse.refreshToken == null) {
-            return ResponseEntity
-                .status(HttpStatus.SEE_OTHER)
-                .body(LoginResponse(tokenResponse.accessToken, null))
-        }
-        return ResponseEntity
-            .status(HttpStatus.OK)
-            .header(HttpHeaders.SET_COOKIE, getRefreshTokenCookie(tokenResponse.refreshToken).toString())
-            .body<LoginResponse>(LoginResponse(tokenResponse.accessToken, tokenResponse.nickname))
-    }*/
-
     @PostMapping("/refresh")
     fun refreshToken(
         @CookieValue("refreshToken") refreshToken: String,
@@ -96,20 +80,6 @@ class AuthController(
             .header(HttpHeaders.SET_COOKIE, getRefreshTokenCookie(tokenResponse.refreshToken!!).toString())
             .body(LoginResponse(tokenResponse.accessToken, tokenResponse.nickname))
     }
-
-    /*@PostMapping("/validate/nickname")
-    fun nicknameDuplicateCheck(
-        @RequestBody request: @Valid NicknameDuplicateCheckRequest,
-    ): ResponseEntity<NicknameDuplicateCheckResponse> =
-        ResponseEntity
-            .status(HttpStatus.OK)
-            .body(
-                NicknameDuplicateCheckResponse(
-                    authService.nicknameDuplicateCheck(
-                        request.nickname,
-                    ),
-                ),
-            )*/
 
     @PostMapping("/logout")
     fun logout(
@@ -126,25 +96,6 @@ class AuthController(
             .header(HttpHeaders.SET_COOKIE, getExpiredCookie().toString())
             .build()
     }
-
-    /*@PostMapping("email/send")
-    fun sendEmail(
-        @RequestBody emailRequest: EmailSendRequest,
-    ): ResponseEntity<Unit> {
-        emailService.sendVerificationEmail(emailRequest.email)
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
-    }
-
-    @PostMapping("email/verify")
-    fun verifyEmail(
-        @RequestBody emailVerifyRequest: EmailVerifyRequest,
-    ): ResponseEntity<EmailVerifyResponse> =
-        ResponseEntity.ok(
-            emailService.verifyEmailCode(
-                emailVerifyRequest.email,
-                emailVerifyRequest.code,
-            ),
-        )*/
 
     private fun getRefreshTokenCookie(refreshToken: String): HttpCookie =
         ResponseCookie

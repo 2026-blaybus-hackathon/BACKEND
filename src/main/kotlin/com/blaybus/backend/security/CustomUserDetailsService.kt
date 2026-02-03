@@ -1,6 +1,5 @@
 package com.blaybus.backend.security
 
-import com.blaybus.backend.entity.Provider
 import com.blaybus.backend.exception.CustomException
 import com.blaybus.backend.exception.ErrorCode
 import com.blaybus.backend.repository.UserRepository
@@ -16,12 +15,12 @@ class CustomUserDetailsService(
 ) : UserDetailsService {
     override fun loadUserByUsername(email: String): UserDetails {
         val user =
-            userRepository.findByEmailAndProvider(email, Provider.LOCAL)
+            userRepository.findByEmail(email)
                 ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
         return CustomUserDto(
             email = user.email,
-            password = user.password!!,
+            password = user.password,
             authorities = listOf(SimpleGrantedAuthority(user.role.name)),
             nickname = user.nickname,
             userId = user.id,

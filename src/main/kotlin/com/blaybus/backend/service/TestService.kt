@@ -15,4 +15,6 @@ class TestService(
 
         return objectStorageRepository.getDownloadUrl(profileImageUrl)
     }
+
+    fun downloadImage(fileName: String): String = objectStorageRepository.getDownloadUrl(fileName)
 }
