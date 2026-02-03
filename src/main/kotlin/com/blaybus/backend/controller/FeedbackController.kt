@@ -53,7 +53,6 @@ class FeedbackController(
         val createdFeedbackId =
             feedbackService.provideFeedbackForMenteesTask(userId, taskId, request)
 
-        // 임시로 1L 응답
         return ResponseEntity
             .status(HttpStatus.CREATED)
             .body(
@@ -123,16 +122,13 @@ class FeedbackController(
             feedbackService.findTotalFeedbackOfDailyPlanner(userId, dailyPlannerId)
         )
 
-    /**
-     * TODO: 멘토의 피드백 요약 목록 조회 / 멘티의 과목별 피드백 요약 목록 조회 API는 기획 및 디자인이 완성되면 구현 예ㅣ
-     */
     @Operation(
         summary = "멘티별 피드백 목록 조회",
         description = "멘토가 멘티별로 피드백 목록을 조회합니다."
     )
     @ApiResponse(responseCode = "200", description = "멘티별 피드백 목록 조회 성공")
     @GetMapping("/mentees/{menteeId}/feedbacks")
-    fun getFeedbacks(
+    fun getFeedbacksAboutMentees(
         @AuthenticationPrincipal userId: Long,
         @Parameter(
             name = "menteeId",
@@ -150,5 +146,11 @@ class FeedbackController(
         @RequestParam date: LocalDate
     ): ResponseEntity<List<FeedbackDto.GetFeedbackOfTaskResponse>> = ResponseEntity
         .status(HttpStatus.OK)
-        .body(feedbackService.findFeedbacksByMenteeId(menteeId, userId, date))
+        .body(
+            feedbackService.findFeedbacksByMenteeId(menteeId, userId, date)
+        )
+
+    /**
+     * TODO: 특정 날짜에 대한 피드백 목록 조회
+     */
 }
