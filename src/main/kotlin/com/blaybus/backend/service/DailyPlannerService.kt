@@ -7,5 +7,4 @@ import org.springframework.stereotype.Service
 class DailyPlannerService(
     private val dailyPlannerRepository: DailyPlannerRepository,
 ) {
-
 }

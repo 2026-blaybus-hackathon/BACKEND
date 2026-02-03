@@ -2,7 +2,6 @@ package com.blaybus.backend.exception
 
 import com.blaybus.backend.constants.NICKNAME_MESSAGE
 import com.blaybus.backend.constants.PASSWORD_MESSAGE
-import com.sun.net.httpserver.HttpsServer
 import org.springframework.http.HttpStatus
 
 enum class ErrorCode(
@@ -60,7 +59,7 @@ enum class ErrorCode(
 
     // Feedback API error 15000대
     FORBIDDEN_FOR_CREATE_FEEDBACK(HttpStatus.FORBIDDEN, -15000, "해당 할 일에 피드백을 작성할 수 없습니다."),
-    FEEDBACK_NOT_FOUND(HttpStatus.FORBIDDEN, -15000, "피드백을 찾을 수 없습니다."),
+    FEEDBACK_NOT_FOUND(HttpStatus.FORBIDDEN, -15001, "피드백을 찾을 수 없습니다."),
 
     // Authorization error 16000대
     NOT_MY_MENTEE(HttpStatus.FORBIDDEN, -16000, "해당 멘티를 담당하고 있지 않습니다."),
