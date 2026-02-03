@@ -133,7 +133,7 @@ class FeedbackController(
     }
 
     /**
-     * TODO: 멘토의 피드백 요약 목록 조회 / 멘티의 과목별 피드백 요약 목록 조회 API는 기획 및 디자인이 완성되면 구현 예정
+     * TODO: 멘토의 피드백 요약 목록 조회 / 멘티의 과목별 피드백 요약 목록 조회 API는 기획 및 디자인이 완성되면 구현 예ㅣ
      */
 
     @Operation(
@@ -148,8 +148,7 @@ class FeedbackController(
             name = "menteeId",
             description = "피드백 필터 조건",
             required = true,
-            schema = Schema(implementation = FeedbackFilterCondition::class),
-            example = "KOREAN"
+            example = "1"
         )
         @PathVariable("userId") menteeId: Long
     ) {
