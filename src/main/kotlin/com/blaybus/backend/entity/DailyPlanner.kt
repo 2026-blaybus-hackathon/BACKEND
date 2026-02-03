@@ -29,10 +29,10 @@ class DailyPlanner(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     val user: User,
-    @Column(nullable = false)
+    @Column(nullable = false, name = "\"DATE\"")
     val date: LocalDate,
     @Column(nullable = true)
-    val totalFeedback: String,  // 종합 피드백 (멘토가 멘티에게 작성)
+    val totalFeedback: String, // 종합 피드백 (멘토가 멘티에게 작성)
     @OneToMany(mappedBy = "dailyPlanner", fetch = FetchType.LAZY)
     val tasks: MutableList<Task> = mutableListOf(),
 ) : BaseModifiableEntity()
