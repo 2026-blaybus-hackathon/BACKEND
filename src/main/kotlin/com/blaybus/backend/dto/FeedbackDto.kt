@@ -71,6 +71,13 @@ class FeedbackDto {
 
     data class GetFeedbackOfTaskResponse(
         @Schema(
+            type = "number",
+            description = "해당 피드백이 있는 할 일 ID",
+            example = "1"
+        )
+        val taskId: Long,
+
+        @Schema(
             type = "string",
             description = "피드백 요약 중 keep 내용",
             example = "단계별로 꼼꼼히 풀이하는 습관"
@@ -108,34 +115,5 @@ class FeedbackDto {
             example = ""
         )
         val totalFeedback: String?,
-    )
-
-    data class FeedbackSummaryResponse(
-        @Schema(
-            type = "number",
-            description = "피드백 ID",
-            example = "1"
-        )
-        val id: Long,
-
-        @Schema(
-            type = "string",
-            description = "과목명",
-            example = "국어"
-        )
-        val subject: String,
-
-        @Schema(
-            type = "string",
-            description = "피드백 요약 내용",
-            example = "독해력이 많이 향상되었습니다."
-        )
-        val summary: String,
-
-        @Schema(
-            description = "피드백 작성 시간",
-            example = "2026-02-01T14:30:00"
-        )
-        val createdAt: LocalDateTime,
     )
 }

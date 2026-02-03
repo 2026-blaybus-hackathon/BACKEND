@@ -21,6 +21,7 @@ import jakarta.persistence.Table
     indexes = [
         Index(name = "idx_tasks_daily_planner_id", columnList = "daily_planner_id"),
         Index(name = "idx_tasks_subject", columnList = "subject"),
+        Index(name = "idx_tasks_created_datetime", columnList = "created_datetime"),
     ],
 )
 class Task(

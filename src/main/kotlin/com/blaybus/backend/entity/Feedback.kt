@@ -19,6 +19,7 @@ import jakarta.persistence.Table
         Index(name = "idx_feedbacks_task_id", columnList = "task_id"),
         Index(name = "idx_feedbacks_mentor_id", columnList = "mentor_id"),
         Index(name = "idx_feedbacks_created_datetime", columnList = "created_datetime"),
+        Index(name = "idx_feedbacks_task_id_created_datetime", columnList = "task_id, created_datetime"),
     ],
 )
 class Feedback(
