@@ -126,3 +126,12 @@ ALTER TABLE study_images
     ADD CONSTRAINT FK_STUDY_IMAGES_ON_TASK FOREIGN KEY (task_id) REFERENCES tasks (id);
 
 CREATE INDEX idx_study_images_task_id ON study_images (task_id);
+
+ALTER TABLE feedbacks
+    MODIFY (
+    keep_content NULL,
+    problem_content NULL,
+    try_content NULL
+    );
+
+CREATE INDEX idx_tasks_created_datetime ON tasks (created_datetime);
