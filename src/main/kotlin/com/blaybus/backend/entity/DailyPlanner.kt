@@ -12,7 +12,6 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 @Entity
 @Table(
@@ -27,17 +26,11 @@ class DailyPlanner(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0L,
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     val user: User,
-
     @Column(nullable = false)
     val date: LocalDate,
-
-    @Column(nullable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now(),
-
     @OneToMany(mappedBy = "dailyPlanner", fetch = FetchType.LAZY)
     val tasks: MutableList<Task> = mutableListOf(),
-)
+) : BaseModifiableEntity()
