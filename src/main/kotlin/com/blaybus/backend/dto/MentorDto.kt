@@ -1,6 +1,9 @@
 package com.blaybus.backend.dto
 
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotNull
+import java.time.LocalDate
 
 data class MenteeListResponse(
     @Schema(description = "멘토 ID")
@@ -53,4 +56,23 @@ data class FeedbackDetail(
     val summary: String,
     @Schema(description = "피드백 코멘트")
     val comment: String,
+)
+
+data class MentorTaskAssignRequest(
+    @field:Schema(description = "대상 멘티 ID", example = "101")
+    @field:NotNull(message = "멘티 ID는 필수입니다")
+    val menteeId: Long,
+
+    @field:Schema(description = "과제 제목", example = "수학 기출문제 풀이")
+    @field:NotBlank(message = "제목은 필수입니다")
+    val title: String,
+
+    @field:Schema(description = "과제 상세 설명", example = "첨부된 PDF 3페이지부터 10페이지까지 풀기")
+    val content: String? = null,
+
+    @field:Schema(description = "과목", allowableValues = ["KOREAN", "MATH", "ENGLISH", "OTHERS"])
+    val subject: Subject,
+
+    @field:Schema(description = "할당할 날짜", example = "2026-02-06")
+    val date: LocalDate
 )
