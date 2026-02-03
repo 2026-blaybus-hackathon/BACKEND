@@ -2,6 +2,7 @@ package com.blaybus.backend.exception
 
 import com.blaybus.backend.constants.NICKNAME_MESSAGE
 import com.blaybus.backend.constants.PASSWORD_MESSAGE
+import com.sun.net.httpserver.HttpsServer
 import org.springframework.http.HttpStatus
 
 enum class ErrorCode(
@@ -55,9 +56,11 @@ enum class ErrorCode(
     REQUIRED_DATE(HttpStatus.BAD_REQUEST, -14002, "날짜는 비어 있을 수 없습니다."),
     REQUIRED_CONTENT(HttpStatus.BAD_REQUEST, -14003, "내용은 비어 있을 수 없습니다."),
     REQUIRED_SUBJECT(HttpStatus.BAD_REQUEST, -14004, "과목은 비어 있을 수 없습니다."),
+    DAILY_PLANNER_NOT_FOUND(HttpStatus.NOT_FOUND, -14005, "플래너를 찾을 수 없습니다."),
 
     // Feedback API error 15000대
     FORBIDDEN_FOR_CREATE_FEEDBACK(HttpStatus.FORBIDDEN, -15000, "해당 할 일에 피드백을 작성할 수 없습니다."),
+    FEEDBACK_NOT_FOUND(HttpStatus.FORBIDDEN, -15000, "피드백을 찾을 수 없습니다."),
 
     // Authorization error 16000대
     NOT_MY_MENTEE(HttpStatus.FORBIDDEN, -16000, "해당 멘티를 담당하고 있지 않습니다."),

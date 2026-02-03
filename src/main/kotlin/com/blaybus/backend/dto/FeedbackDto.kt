@@ -31,6 +31,7 @@ class FeedbackDto {
         @field:NotBlank(message = "시도해보길 권하는 내용 작성은 필수 입력값입니다")
         val tryContent: String,
     )
+
     data class CreateFeedbackRequest(
         @field:Schema(
             description = "KPT 형식의 피드백 요약",
@@ -45,6 +46,16 @@ class FeedbackDto {
             requiredMode = Schema.RequiredMode.REQUIRED,
         )
         @field:NotBlank(message = "피드백 상세 내용 작성은 필수 입력값입니다")
+        val content: String,
+    )
+
+    data class CreateTotalFeedbackRequest(
+        @field:Schema(
+            description = "종합 피드백 내용",
+            example = "오늘 학습 내용에 대한 전반적인 피드백입니다...",
+            requiredMode = Schema.RequiredMode.REQUIRED,
+        )
+        @field:NotBlank(message = "종합 피드백 내용 작성은 필수 입력값입니다")
         val content: String,
     )
 
