@@ -92,6 +92,22 @@ class FeedbackService(
     }
 
     @Transactional(readOnly = true)
+    fun findMyFeedbacks(
+        userId: Long,
+        date: LocalDate
+    ): List<FeedbackDto.GetFeedbackOfTaskResponse> {
+        userRepository.getByUserId(userId)
+        val start = date.atStartOfDay()
+        val end = date.plusDays(1).atStartOfDay()
+
+        return taskRepository.findByUserIdAndTaskCreatedBetween(
+            userId,
+            start,
+            end
+        ).map(Feedback::toGetFeedbackOfTaskResponse)
+    }
+
+    @Transactional(readOnly = true)
     fun findTotalFeedbackOfDailyPlanner(
         menteeId: Long,
         dailyPlannerId: Long
