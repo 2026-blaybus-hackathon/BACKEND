@@ -52,7 +52,7 @@ class SecurityConfig(
                         "/ready",
                         "/api/v1/test/**",
                     ).permitAll()
-                it.requestMatchers("/api/v1/mentee/check").hasAnyAuthority(Role.MENTEE.name)
+                it.requestMatchers("/api/v1/tasks").hasAnyAuthority(Role.MENTEE.name)
                 it.requestMatchers("/api/v1/mentor/**").hasAuthority(Role.MENTOR.name)
 
                 // 2. 멘토(MENTOR) 전용 기능
@@ -67,7 +67,6 @@ class SecurityConfig(
                 // - 위의 멘토 전용 URL을 제외한 나머지 tasks 관련 기능은 멘티가 사용
                 // - (주의: 이 줄이 멘토 설정보다 아래에 있어야 함!)
                 it.requestMatchers("/api/v1/tasks/**").hasAuthority(Role.MENTEE.name)
-
             }.addFilterBefore(
                 jwtFilter,
                 UsernamePasswordAuthenticationFilter::class.java,
