@@ -46,7 +46,6 @@ class Task(
     var writer: User,
     @Column(nullable = true)
     var studyDurationInMinutes: Int? = null,
-    @Column(nullable = false, columnDefinition = "NUMBER(1)")
     @Column(name = "is_completed", nullable = false, columnDefinition = "NUMBER(1)")
     var isCompleted: Boolean = false,
     @OneToOne(mappedBy = "task", fetch = FetchType.LAZY)
