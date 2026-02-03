@@ -1,0 +1,23 @@
+name: Discord PR Notification
+
+on:
+  pull_request:
+    types: [opened, closed]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Discord Webhook
+        uses: sarisia/actions-status-discord@v1
+        if: always()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          status: ${{ job.status }}
+          content: "새로운 Pull Request가 도착!"
+          title: "PR 제목: ${{ github.event.pull_request.title }}"
+          description: |
+            작성자: ${{ github.actor }}
+            상태: ${{ github.event.action }}
+            링크: ${{ github.event.pull_request.html_url }}
+          color: 0x00ff00
