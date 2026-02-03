@@ -100,20 +100,12 @@ class FeedbackController(
         @PathVariable taskId: Long
     ): ResponseEntity<FeedbackDto.GetFeedbackOfTaskResponse> {
 
-        // TODO: 조회 권한 검증
+        val response = feedbackService.findFeedbackOfTask(userId, taskId)
 
-        // dummy data 응답
         return ResponseEntity
             .status(HttpStatus.OK)
             .body(
-                FeedbackDto.GetFeedbackOfTaskResponse(
-                    "keep",
-                    "problem",
-                    "try",
-                    "오늘 중요한 실수들과 아이디어를 얻은 것 같아서 기분이 좋네요! " +
-                            "틀린건 기분이 나쁠 부분이 아니라, “아 내가 이런 공통된 부분을 틀리니 " +
-                            "이것만 잡으면 저걸 다 맞겠구나~”라는 생각으로 내일도 공부 화이팅입니다!"
-                )
+                response
             )
     }
 
@@ -155,6 +147,7 @@ class FeedbackController(
                     createdAt = LocalDateTime.of(2026, 2, 2, 15, 20)
                 )
             )
+
             FeedbackFilterCondition.ENGLISH -> listOf(
                 FeedbackDto.FeedbackSummaryResponse(
                     id = 3L,
@@ -169,6 +162,7 @@ class FeedbackController(
                     createdAt = LocalDateTime.of(2026, 2, 2, 16, 45)
                 )
             )
+
             FeedbackFilterCondition.MATH -> listOf(
                 FeedbackDto.FeedbackSummaryResponse(
                     id = 5L,
@@ -183,6 +177,7 @@ class FeedbackController(
                     createdAt = LocalDateTime.of(2026, 2, 2, 18, 0)
                 )
             )
+
             FeedbackFilterCondition.YESTERDAY -> listOf(
                 FeedbackDto.FeedbackSummaryResponse(
                     id = 2L,
@@ -254,6 +249,7 @@ class FeedbackController(
                     createdAt = LocalDateTime.of(2026, 2, 2, 15, 20)
                 )
             )
+
             FeedbackFilterCondition.ENGLISH -> listOf(
                 FeedbackDto.FeedbackSummaryResponse(
                     id = 3L,
@@ -268,6 +264,7 @@ class FeedbackController(
                     createdAt = LocalDateTime.of(2026, 2, 2, 16, 45)
                 )
             )
+
             FeedbackFilterCondition.MATH -> listOf(
                 FeedbackDto.FeedbackSummaryResponse(
                     id = 5L,
@@ -282,6 +279,7 @@ class FeedbackController(
                     createdAt = LocalDateTime.of(2026, 2, 2, 18, 0)
                 )
             )
+
             FeedbackFilterCondition.YESTERDAY -> listOf(
                 FeedbackDto.FeedbackSummaryResponse(
                     id = 2L,

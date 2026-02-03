@@ -20,7 +20,6 @@ class FeedbackService(
     private val feedbackRepository: FeedbackRepository,
     private val taskRepository: TaskRepository,
     private val dailyPlannerRepository: DailyPlannerRepository,
-    private val taskService: TaskService,
 ) {
     fun provideFeedbackForMenteesTask(
         mentorId: Long,
