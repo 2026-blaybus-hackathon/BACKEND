@@ -22,5 +22,5 @@ fun isAllowedOrigin(origin: String?): Boolean {
             if (origin == allowedOrigin) return true
         }
     }
-    throw IllegalArgumentException("CORS 정책에 위배되는 Origin 입니다.")
+    return false
 }

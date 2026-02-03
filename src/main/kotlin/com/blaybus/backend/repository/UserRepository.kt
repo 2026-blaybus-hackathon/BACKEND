@@ -1,6 +1,5 @@
 package com.blaybus.backend.repository
 
-import com.blaybus.backend.entity.Provider
 import com.blaybus.backend.entity.User
 import com.blaybus.backend.exception.CustomException
 import com.blaybus.backend.exception.ErrorCode
@@ -12,18 +11,6 @@ fun UserRepository.getByUserId(userId: Long): User = findById(userId).orElseThro
 @Repository
 interface UserRepository : JpaRepository<User, Long> {
     fun findByEmail(email: String): User?
-
-    fun findByEmailAndProvider(
-        email: String,
-        provider: Provider,
-    ): User?
-
-    fun findByProviderAndProviderId(
-        provider: Provider,
-        providerId: String,
-    ): User?
-
-    fun existsByEmail(email: String): Boolean
 
     fun existsByNickname(nickname: String): Boolean
 }

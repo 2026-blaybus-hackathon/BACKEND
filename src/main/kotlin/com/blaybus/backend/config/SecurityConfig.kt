@@ -52,8 +52,22 @@ class SecurityConfig(
                         "/ready",
                         "/api/v1/test/**",
                     ).permitAll()
-                it.requestMatchers("/api/v1/user/**").hasAnyAuthority(Role.USER.name, Role.ADMIN.name)
-                it.requestMatchers("/api/v1/admin/**").hasAuthority(Role.ADMIN.name)
+                it.requestMatchers("/api/v1/mentee/check").hasAnyAuthority(Role.MENTEE.name)
+                it.requestMatchers("/api/v1/mentor/**").hasAuthority(Role.MENTOR.name)
+
+                // 2. 멘토(MENTOR) 전용 기능
+                // - 과제 할당 (tasks/assignment)
+                // - 멘티 과제 조회 (tasks/mentee/**)
+                // - 내 멘티 목록 조회 (users/**)
+                it.requestMatchers("/api/v1/tasks/assignment").hasAuthority(Role.MENTOR.name)
+                it.requestMatchers("/api/v1/tasks/mentee/**").hasAuthority(Role.MENTOR.name)
+                it.requestMatchers("/api/v1/users/**").hasAuthority(Role.MENTOR.name) // 멘티 목록 조회 등
+
+                // 3. 멘티(MENTEE) 전용 기능
+                // - 위의 멘토 전용 URL을 제외한 나머지 tasks 관련 기능은 멘티가 사용
+                // - (주의: 이 줄이 멘토 설정보다 아래에 있어야 함!)
+                it.requestMatchers("/api/v1/tasks/**").hasAuthority(Role.MENTEE.name)
+
             }.addFilterBefore(
                 jwtFilter,
                 UsernamePasswordAuthenticationFilter::class.java,
@@ -72,7 +86,7 @@ class SecurityConfig(
         configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
         configuration.allowedHeaders = ALLOWED_HEADERS
         configuration.allowCredentials = true
-        configuration.setMaxAge(3600L)
+        configuration.maxAge = 3600L
         val source = UrlBasedCorsConfigurationSource()
         source.registerCorsConfiguration("/**", configuration)
         return source

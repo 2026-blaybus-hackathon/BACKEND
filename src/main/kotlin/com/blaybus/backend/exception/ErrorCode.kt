@@ -1,7 +1,5 @@
 package com.blaybus.backend.exception
 
-import com.blaybus.backend.constants.NICKNAME_MESSAGE
-import com.blaybus.backend.constants.PASSWORD_MESSAGE
 import org.springframework.http.HttpStatus
 
 enum class ErrorCode(
@@ -25,22 +23,9 @@ enum class ErrorCode(
     CONFLICT_NICKNAME(HttpStatus.CONFLICT, -11004, "이미 존재하는 닉네임입니다."),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, -11005, "사용자를 찾을 수 없습니다."),
     UNAUTHENTICATED_ACCESS(HttpStatus.UNAUTHORIZED, -11006, "인증되지 않은 접근입니다."),
-    EXPIRED_SOCIAL_SIGNUP_TOKEN(HttpStatus.UNAUTHORIZED, -11007, "소셜 회원가입 토큰이 만료되었습니다. 다시 소셜 회원가입을 요청해주세요."),
-    EXPIRED_EMAIL_VERIFICATION_TOKEN(HttpStatus.BAD_REQUEST, -11008, "이메일 인증 토큰이 만료되었습니다. 다시 이메일 인증을 요청해주세요."),
-    UNSUPPORTED_SOCIAL_TYPE(HttpStatus.BAD_REQUEST, -11009, "지원하지 않는 소셜 타입입니다."),
-    INVALID_PASSWORD_FORMAT(HttpStatus.BAD_REQUEST, -11010, PASSWORD_MESSAGE),
-    INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, -11011, "유효하지 않은 리프레시 토큰입니다."),
-    INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, -11012, "잘못된 이메일 또는 비밀번호입니다."),
-    INVALID_SOCIAL_SIGNUP_TOKEN(HttpStatus.UNAUTHORIZED, -11013, "유효하지 않은 소셜 회원가입 토큰입니다."),
-    INVALID_SOCIAL_CODE(HttpStatus.BAD_REQUEST, -11014, "유효하지 않은 소셜 코드입니다."),
-    INVALID_NICKNAME_FORMAT(HttpStatus.BAD_REQUEST, -11015, NICKNAME_MESSAGE),
-    FORBIDDEN_ACCESS(HttpStatus.FORBIDDEN, -11016, "접근이 금지된 사용자입니다."),
-    FAILED_DELETE_USER(HttpStatus.INTERNAL_SERVER_ERROR, -11017, "사용자 탈퇴에 실패했습니다."),
-    REQUIRED_PASSWORD(HttpStatus.BAD_REQUEST, -11018, "비밀번호는 필수 입력값입니다."),
-    REQUIRED_EMAIL_VERIFICATION_TOKEN(HttpStatus.BAD_REQUEST, -11019, "이메일 인증 토큰은 필수 입력값입니다."),
-    REQUIRED_SOCIAL_SIGNUP_TOKEN(HttpStatus.BAD_REQUEST, -11020, "소셜 회원가입 토큰은 필수 입력값입니다."),
-    REQUIRED_NICKNAME(HttpStatus.BAD_REQUEST, -11021, "닉네임은 필수 입력값입니다."),
-    INVALID_EMAIL_FORMAT(HttpStatus.BAD_REQUEST, -11022, "유효하지 않은 이메일 형식입니다."),
+    INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, -11007, "유효하지 않은 리프레시 토큰입니다."),
+    INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, -11008, "잘못된 이메일 또는 비밀번호입니다."),
+    FORBIDDEN_ACCESS(HttpStatus.FORBIDDEN, -11009, "접근이 금지된 사용자입니다."),
 
     // Email-verification API error 12000대
     EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, -12000, "이메일 전송에 실패했습니다."),
@@ -67,6 +52,7 @@ enum class ErrorCode(
 
     // Task API error 17000대
     TASK_NOT_FOUND(HttpStatus.NOT_FOUND, -17000, "할 일을 찾을 수 없습니다."),
+    NOT_YOUR_TASK(HttpStatus.FORBIDDEN, -17001, "해당 할 일에 대한 권한이 없습니다."),
 
     // Assignment API error 18000대
     ASSIGNMENT_NOT_FOUND(HttpStatus.NOT_FOUND, -18000, "과제를 찾을 수 없습니다."),
