@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Index
 import jakarta.persistence.JoinColumn
+import jakarta.persistence.Lob
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
@@ -35,7 +36,8 @@ class Task(
     val subject: Subject,
     @Column(nullable = false, length = 255)
     var title: String,
-    @Column(nullable = true, columnDefinition = "CLOB")
+    @Lob
+    @Column(nullable = true)
     var content: String? = null,
     @Column(nullable = true, length = 1023)
     var comment: String? = null,
@@ -44,6 +46,7 @@ class Task(
     var writer: User,
     @Column(nullable = true)
     var studyDurationInMinutes: Int? = null,
+    @Column(nullable = false, columnDefinition = "NUMBER(1)")
     @Column(name = "is_completed", nullable = false, columnDefinition = "NUMBER(1)")
     var isCompleted: Boolean = false,
     @OneToOne(mappedBy = "task", fetch = FetchType.LAZY)

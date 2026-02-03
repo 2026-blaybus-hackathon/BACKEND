@@ -1,10 +1,191 @@
 package com.blaybus.backend.service
 
-import com.blaybus.backend.repository.TaskRepository
+import com.blaybus.backend.dto.*
+import com.blaybus.backend.entity.*
+import com.blaybus.backend.exception.CustomException
+import com.blaybus.backend.exception.ErrorCode
+import com.blaybus.backend.repository.*
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.multipart.MultipartFile
+import java.time.LocalDate
 
 @Service
+@Transactional(readOnly = true)
 class TaskService(
     private val taskRepository: TaskRepository,
+    private val userRepository: UserRepository,
+    private val dailyPlannerRepository: DailyPlannerRepository,
+    private val assignmentRepository: AssignmentRepository,
+    private val studyImageRepository: StudyImageRepository,
+    private val objectStorageRepository: ObjectStorageRepository
 ) {
+
+    // ================== 멘티 기능 (Task CRUD) ==================
+
+    @Transactional
+    fun createTask(userId: Long, request: MenteeTaskCreateRequest): TaskResponse {
+        val user = userRepository.getByUserId(userId)
+
+        // 에러 해결: DailyPlanner 생성 시 totalFeedback(null 가능) 명시
+        val planner = dailyPlannerRepository.findByUserAndDate(user, request.date)
+            ?: dailyPlannerRepository.save(
+                DailyPlanner(
+                    user = user,
+                    date = request.date,
+                    totalFeedback = ""
+                )
+            )
+
+        val task = taskRepository.save(
+            Task(
+                dailyPlanner = planner,
+                subject = request.subject,
+                title = request.title,
+                content = request.content,
+                writer = user,
+                isCompleted = false
+            )
+        )
+
+        return TaskResponse(
+            id = task.id,
+            content = task.title,
+            subject = com.blaybus.backend.dto.Subject.valueOf(task.subject.name),
+            priority = null,
+            studyTime = task.studyDurationInMinutes ?: 0
+        )
+    }
+
+    @Transactional
+    fun updateTask(userId: Long, taskId: Long, request: MenteeTaskUpdateRequest): TaskResponse {
+        val task = taskRepository.getByTaskId(taskId)
+
+        if (task.writer.id != userId) throw CustomException(ErrorCode.NOT_YOUR_TASK)
+
+        task.title = request.title
+        task.content = request.content
+        task.studyDurationInMinutes = request.studyTime // studyTime으로 매핑
+        task.isCompleted = request.isCompleted ?: false
+
+        return TaskResponse(
+            id = task.id,
+            content = task.title,
+            subject = com.blaybus.backend.dto.Subject.valueOf(task.subject.name),
+            priority = null,
+            studyTime = task.studyDurationInMinutes ?: 0
+        )
+    }
+
+    @Transactional
+    fun deleteTask(userId: Long, taskId: Long) {
+        val task = taskRepository.getByTaskId(taskId)
+        if (task.writer.id != userId) throw CustomException(ErrorCode.NOT_YOUR_TASK)
+        taskRepository.delete(task)
+    }
+
+    @Transactional
+    fun uploadVerificationImage(userId: Long, taskId: Long, image: MultipartFile): FileUploadResponse {
+        val task = taskRepository.getByTaskId(taskId)
+        if (task.writer.id != userId) throw CustomException(ErrorCode.NOT_YOUR_TASK)
+
+        val imagePath = "tasks/$taskId/verification/"
+        val uploadedKey = objectStorageRepository.upload(imagePath, image)
+        val downloadUrl = objectStorageRepository.getDownloadUrl(uploadedKey)
+
+        val studyImage = studyImageRepository.save(
+            StudyImage(
+                task = task,
+                sequence = task.studyImages.size + 1,
+                imageFileName = uploadedKey,
+                originalFileName = image.originalFilename ?: "unknown"
+            )
+        )
+
+        return FileUploadResponse(
+            fileId = studyImage.id,
+            url = downloadUrl,
+            originalFilename = studyImage.originalFileName
+        )
+    }
+
+
+    // ================== 멘토 기능 (과제 할당 및 조회) ==================
+
+    @Transactional
+    fun assignTask(mentorId: Long, request: MentorTaskAssignRequest, file: MultipartFile?): TaskResponse {
+        val mentor = userRepository.getByUserId(mentorId)
+        val mentee = userRepository.getByUserId(request.menteeId)
+
+        mentor.validateMentee(mentee)
+
+        val planner = dailyPlannerRepository.findByUserAndDate(mentee, request.date)
+            ?: dailyPlannerRepository.save(DailyPlanner(user = mentee, date = request.date, totalFeedback = ""))
+
+        val task = taskRepository.save(
+            Task(
+                dailyPlanner = planner,
+                subject = com.blaybus.backend.entity.Subject.valueOf(request.subject.name),
+                title = request.title,
+                content = request.content,
+                writer = mentor,
+                isCompleted = false
+            )
+        )
+
+        file?.let {
+            val filePath = "tasks/${task.id}/assignments/"
+            val uploadedKey = objectStorageRepository.upload(filePath, it)
+            assignmentRepository.save(Assignment(task = task, pdfFileName = uploadedKey))
+        }
+
+        return TaskResponse(
+            id = task.id,
+            content = task.title,
+            subject = com.blaybus.backend.dto.Subject.valueOf(task.subject.name),
+            priority = null,
+            studyTime = task.studyDurationInMinutes ?: 0
+        )
+    }
+
+    fun getMenteeTasksWithFeedback(mentorId: Long, menteeId: Long, pageable: Pageable): MenteeTaskFeedbackResponse {
+        val mentor = userRepository.getByUserId(mentorId)
+        val mentee = userRepository.getByUserId(menteeId)
+        mentor.validateMentee(mentee)
+
+        val tasksPage = taskRepository.findByDailyPlannerUser(mentee, pageable)
+
+        val taskDetails = tasksPage.content.map { task ->
+            TaskDetail(
+                taskId = task.id,
+                title = task.title,
+                images = task.studyImages.map { img ->
+                    TaskImageResponse(
+                        url = objectStorageRepository.getDownloadUrl(img.imageFileName),
+                        name = img.originalFileName,
+                        sequence = img.sequence
+                    )
+                },
+                feedback = task.feedback?.let { fb ->
+                    FeedbackDetail(
+                        feedbackId = fb.id,
+                        summary = "${fb.keepContent} / ${fb.problemContent}",
+                        comment = fb.detail ?: ""
+                    )
+                } ?: FeedbackDetail(0L, "No Feedback", "")
+            )
+        }
+
+        return MenteeTaskFeedbackResponse(
+            menteeId = mentee.id,
+            tasks = PagedResponse(
+                content = taskDetails,
+                page = tasksPage.number,
+                size = tasksPage.size,
+                totalPages = tasksPage.totalPages,
+                totalElements = tasksPage.totalElements
+            )
+        )
+    }
 }
