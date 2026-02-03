@@ -26,7 +26,7 @@ class TestController(
     @GetMapping("/user/list")
     fun getUserList(): List<UserDto.SimpleUserDto> = userService.findAllUser()
 
-    @Operation(summary = "유저 액세스 토큰 조회")
+    @Operation(summary = "유저 액세스 토큰 발급")
     @GetMapping("/user/{userId}")
     fun getUserAccessToken(
         @PathVariable userId: Long,
