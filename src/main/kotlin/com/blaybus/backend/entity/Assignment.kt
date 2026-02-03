@@ -10,7 +10,6 @@ import jakarta.persistence.Index
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
-import java.time.LocalDateTime
 
 @Entity
 @Table(
@@ -23,14 +22,9 @@ class Assignment(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0L,
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id", nullable = false)
     val task: Task,
-
     @Column(name = "pdf_file_name", nullable = false, length = 500)
     val pdfFileName: String,
-
-    @Column(nullable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now(),
-)
+) : BaseTimeEntity()

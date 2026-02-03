@@ -14,7 +14,6 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
-import java.time.LocalDateTime
 
 @Entity
 @Table(
@@ -28,48 +27,36 @@ class Task(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0L,
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "daily_planner_id", nullable = false)
     val dailyPlanner: DailyPlanner,
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     val subject: Subject,
-
     @Column(nullable = false, length = 255)
     var title: String,
-
     @Column(nullable = true, columnDefinition = "TEXT")
     var content: String? = null,
-
     @Column(nullable = true, length = 1023)
     var comment: String? = null,
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     var writer: User,
-
     @Column(nullable = true)
     var studyDurationInMinutes: Int? = null,
-
     @Column(nullable = false)
     var isCompleted: Boolean = false,
-
-    @Column(nullable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now(),
-
     @OneToOne(mappedBy = "task", fetch = FetchType.LAZY)
     var feedback: Feedback? = null,
-
     @OneToMany(mappedBy = "task", fetch = FetchType.LAZY)
     val studyImages: MutableList<StudyImage> = mutableListOf(),
-
     @OneToMany(mappedBy = "task", fetch = FetchType.LAZY)
     val assignments: MutableList<Assignment> = mutableListOf(),
-)
+) : BaseModifiableEntity()
 
-enum class Subject(val displayName: String) {
+enum class Subject(
+    val displayName: String,
+) {
     KOREAN("국어"),
     ENGLISH("영어"),
     MATH("수학"),
