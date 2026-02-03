@@ -35,7 +35,7 @@ class Task(
     val subject: Subject,
     @Column(nullable = false, length = 255)
     var title: String,
-    @Column(nullable = true, columnDefinition = "TEXT")
+    @Column(nullable = true, columnDefinition = "CLOB")
     var content: String? = null,
     @Column(nullable = true, length = 1023)
     var comment: String? = null,
@@ -44,7 +44,7 @@ class Task(
     var writer: User,
     @Column(nullable = true)
     var studyDurationInMinutes: Int? = null,
-    @Column(nullable = false)
+    @Column(name = "is_completed", nullable = false, columnDefinition = "NUMBER(1)")
     var isCompleted: Boolean = false,
     @OneToOne(mappedBy = "task", fetch = FetchType.LAZY)
     var feedback: Feedback? = null,
@@ -52,9 +52,7 @@ class Task(
     val studyImages: MutableList<StudyImage> = mutableListOf(),
     @OneToMany(mappedBy = "task", fetch = FetchType.LAZY)
     val assignments: MutableList<Assignment> = mutableListOf(),
-) : BaseModifiableEntity() {
-
-}
+) : BaseModifiableEntity()
 
 enum class Subject(
     val displayName: String,
