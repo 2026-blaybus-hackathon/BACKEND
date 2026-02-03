@@ -1,6 +1,7 @@
 package com.blaybus.backend.controller
 
-import com.blaybus.backend.dto.MenteeListResponse
+import com.blaybus.backend.dto.MenteeResponse
+import com.blaybus.backend.service.user.UserService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
@@ -12,7 +13,9 @@ import org.springframework.web.bind.annotation.RestController
 @Tag(name = "User API", description = "사용자 정보 및 멘티/멘토 관계 조회")
 @RequestMapping("/api/v1/users") // URL 변경: users 자원 사용
 @RestController
-class UserController {
+class UserController(
+    private val userService: UserService
+) {
 
     @Operation(
         summary = "나의 멘티 목록 조회",
@@ -21,5 +24,9 @@ class UserController {
     @GetMapping("/mentees") // URL: /api/v1/users/mentees
     fun getMyMentees(
         @AuthenticationPrincipal userId: Long,
-    ): ResponseEntity<MenteeListResponse> = ResponseEntity.ok().build()
+    ): ResponseEntity<List<MenteeResponse>> = ResponseEntity
+        .ok()
+        .body(
+            userService.findAllMentees(userId)
+        )
 }

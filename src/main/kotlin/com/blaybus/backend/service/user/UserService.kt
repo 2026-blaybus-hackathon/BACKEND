@@ -1,6 +1,9 @@
 package com.blaybus.backend.service.user
 
+import com.blaybus.backend.dto.MenteeResponse
 import com.blaybus.backend.dto.UserDto.SimpleUserDto
+import com.blaybus.backend.dto.mapper.toMenteesResponse
+import com.blaybus.backend.entity.User
 import com.blaybus.backend.repository.UserRepository
 import com.blaybus.backend.repository.getByUserId
 import org.springframework.stereotype.Service
@@ -23,5 +26,15 @@ class UserService(
     fun deleteUser(userId: Long) {
         val user = userRepository.getByUserId(userId)
         userRepository.delete(user)
+    }
+
+    // TODO: 임시로 기본 정보만 응답 - 디자인 확정 후 수정
+    @Transactional(readOnly = true)
+    fun findAllMentees(mentorId: Long): List<MenteeResponse> {
+
+        val mentor = userRepository.getByUserId(mentorId)
+
+        return mentor.mentees
+            .map(User::toMenteesResponse)
     }
 }
