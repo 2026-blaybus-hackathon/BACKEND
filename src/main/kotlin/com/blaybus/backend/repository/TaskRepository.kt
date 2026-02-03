@@ -14,8 +14,5 @@ fun TaskRepository.getByTaskId(taskId: Long): Task = findById(taskId).orElseThro
 @Repository
 interface TaskRepository : JpaRepository<Task, Long> {
     // 특정 작성자(멘티)가 쓴 Task 목록 페이징 조회
-    fun findByWriter(
-        writer: User,
-        pageable: Pageable)
-    : Page<Task>
+    fun findByDailyPlannerUser(user: User, pageable: Pageable): Page<Task>
 }

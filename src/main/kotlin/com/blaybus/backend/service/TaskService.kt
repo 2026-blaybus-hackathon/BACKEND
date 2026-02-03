@@ -154,7 +154,7 @@ class TaskService(
         val mentee = userRepository.getByUserId(menteeId)
         mentor.validateMentee(mentee)
 
-        val tasksPage = taskRepository.findByWriter(mentee, pageable)
+        val tasksPage = taskRepository.findByDailyPlannerUser(mentee, pageable)
 
         val taskDetails = tasksPage.content.map { task ->
             TaskDetail(
