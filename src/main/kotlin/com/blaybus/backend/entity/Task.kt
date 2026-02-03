@@ -52,7 +52,9 @@ class Task(
     val studyImages: MutableList<StudyImage> = mutableListOf(),
     @OneToMany(mappedBy = "task", fetch = FetchType.LAZY)
     val assignments: MutableList<Assignment> = mutableListOf(),
-) : BaseModifiableEntity()
+) : BaseModifiableEntity() {
+
+}
 
 enum class Subject(
     val displayName: String,

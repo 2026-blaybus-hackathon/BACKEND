@@ -5,28 +5,19 @@ import jakarta.validation.constraints.NotBlank
 import java.time.LocalDateTime
 
 class FeedbackDto {
-    data class CreateFeedbackDetailRequest(
-        @field:Schema(requiredMode = Schema.RequiredMode.REQUIRED)
-        @field:NotBlank(message = "피드백 작성은 필수 입력값입니다")
-        val content: String,
-    )
-
-    data class CreateFeedbackSummaryRequest(
+    data class CreateFeedbackRequest(
+        // TODO: 요약 템플릿에 따라 타입 변경 가능
         @field:Schema(requiredMode = Schema.RequiredMode.REQUIRED)
         @field:NotBlank(message = "피드백 요약 작성은 필수 입력값입니다")
         val summary: String,
+
+        @field:Schema(requiredMode = Schema.RequiredMode.REQUIRED)
+        @field:NotBlank(message = "피드백 상세 내용 작성은 필수 입력값입니다")
+        val content: String,
     )
 
     // Response DTOs
-    data class CreateFeedbackDetailResponse(
-        @Schema(
-            type = "number",
-            description = "피드백 ID",
-            example = "1")
-        val id: Long,
-    )
-
-    data class CreateFeedbackSummaryResponse(
+    data class CreateFeedbackResponse(
         @Schema(
             type = "number",
             description = "피드백 ID",
