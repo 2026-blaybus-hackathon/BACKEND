@@ -43,7 +43,7 @@ class Task(
     @JoinColumn(name = "user_id", nullable = false)
     var writer: User,
     @Column(nullable = true)
-    var studyDurationInMinutes: Long? = null,
+    var studyDurationInMinutes: Int? = null,
     @Column(nullable = false)
     var isCompleted: Boolean = false,
     @OneToOne(mappedBy = "task", fetch = FetchType.LAZY)

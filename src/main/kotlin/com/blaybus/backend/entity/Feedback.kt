@@ -32,8 +32,11 @@ class Feedback(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mentor_id", nullable = false)
     val mentor: User,
-    @Column(nullable = false, columnDefinition = "TEXT")
+
+    @Column(nullable = false)
     var summary: String,
-    @Column(nullable = true, columnDefinition = "TEXT")
+
+    @Column(nullable = true, columnDefinition = "CLOB")
+
     var detail: String? = null,
 ) : BaseModifiableEntity()

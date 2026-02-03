@@ -28,7 +28,7 @@ class StudyImage(
     @Column(nullable = false)
     val sequence: Int,
     @Column(nullable = false, length = 1023)
-    val imageUrl: String,
+    val imageFileName: String,
     @Column(nullable = false)
     val originalFileName: String,
 ) : BaseTimeEntity()
