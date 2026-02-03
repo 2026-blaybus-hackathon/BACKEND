@@ -33,20 +33,28 @@ class Feedback(
     @JoinColumn(name = "mentor_id", nullable = false)
     val mentor: User,
     @Column(nullable = false)
-    var summary: String,
+    var keepContent: String,
+    @Column(nullable = false)
+    var problemContent: String,
+    @Column(nullable = false)
+    var tryContent: String,
     @Column(nullable = true, columnDefinition = "CLOB")
     var detail: String? = null,
 ) : BaseModifiableEntity() {
     constructor(
         task: Task,
         mentor: User,
-        summary: String,
+        keepContent: String,
+        problemContent: String,
+        tryContent: String,
         detail: String? = null,
     ) : this(
         id = 0L,
         task = task,
         mentor = mentor,
-        summary = summary,
+        keepContent = keepContent,
+        problemContent = problemContent,
+        tryContent = tryContent,
         detail = detail,
     )
 }

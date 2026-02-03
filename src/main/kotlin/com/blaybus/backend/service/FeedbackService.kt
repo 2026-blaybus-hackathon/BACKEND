@@ -25,7 +25,9 @@ class FeedbackService(
         val mentor = userRepository.getByUserId(mentorId)
         val task = taskRepository.getByTaskId(taskId)
         mentor.validateMentee(task.dailyPlanner.user)
-        val createdFeedback = feedbackRepository.save(Feedback(task, mentor, request.summary, request.content))
+        val createdFeedback = feedbackRepository.save(
+            Feedback(task, mentor, request.summary.keepContent, request.summary.problemContent, request.summary.tryContent, request.content)
+        )
 
         return createdFeedback.id
     }
