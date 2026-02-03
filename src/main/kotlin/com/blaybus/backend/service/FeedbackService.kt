@@ -2,6 +2,8 @@ package com.blaybus.backend.service
 
 import com.blaybus.backend.dto.FeedbackDto
 import com.blaybus.backend.entity.Feedback
+import com.blaybus.backend.exception.CustomException
+import com.blaybus.backend.exception.ErrorCode
 import com.blaybus.backend.repository.DailyPlannerRepository
 import com.blaybus.backend.repository.FeedbackRepository
 import com.blaybus.backend.repository.TaskRepository
@@ -18,6 +20,7 @@ class FeedbackService(
     private val feedbackRepository: FeedbackRepository,
     private val taskRepository: TaskRepository,
     private val dailyPlannerRepository: DailyPlannerRepository,
+    private val taskService: TaskService,
 ) {
     fun provideFeedbackForMenteesTask(
         mentorId: Long,
@@ -53,5 +56,25 @@ class FeedbackService(
         val dailyPlanner = dailyPlannerRepository.getByDailyPlannerId(dailyPlannerId)
         mentor.validateMentee(dailyPlanner.user)
         dailyPlanner.updateTotalFeedback(request.content)
+    }
+
+    @Transactional(readOnly = true)
+    fun findFeedbackOfTask(
+        menteeId: Long,
+        taskId: Long
+    ): FeedbackDto.GetFeedbackOfTaskResponse {
+
+        val mentee = userRepository.getByUserId(menteeId)
+        val task = taskRepository.getByTaskId(taskId)
+        // API를 요청한 사람과 task의 주인이 동일한지 검증
+        task.dailyPlanner.user.validateSameUser(mentee)
+        val feedback = task.feedback
+
+        return FeedbackDto.GetFeedbackOfTaskResponse(
+            keepContent = feedback?.keepContent,
+            problemContent = feedback?.problemContent,
+            tryContent = feedback?.tryContent,
+            detail = feedback?.detail
+        )
     }
 }
