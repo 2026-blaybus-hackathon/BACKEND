@@ -10,6 +10,7 @@ import com.blaybus.backend.dto.TaskResponse
 import com.blaybus.backend.service.TaskService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.data.domain.PageRequest
@@ -106,7 +107,11 @@ class TaskController(
     @PostMapping(value = ["/assignment"], consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun assignTask(
         @AuthenticationPrincipal userId: Long,
-        @Parameter(description = "과제 정보 (JSON)") @Valid @RequestPart("request") request: MentorTaskAssignRequest,
+        @Parameter(
+            description = "과제 정보 (JSON)",
+            content = [Content(mediaType = MediaType.APPLICATION_JSON_VALUE)]
+        )
+        @Valid @RequestPart("request") request: MentorTaskAssignRequest,
         @Parameter(description = "학습 자료 PDF (선택 사항)") @RequestPart(
             "file",
             required = false,
