@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/users") // URL 변경: users 자원 사용
 @RestController
 class UserController {
-
     @Operation(
         summary = "나의 멘티 목록 조회",
         description = "멘토가 자신에게 배정된 멘티 목록을 조회합니다.",

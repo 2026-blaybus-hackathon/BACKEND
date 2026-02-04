@@ -3,7 +3,6 @@ package com.blaybus.backend.dto
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
-import java.time.LocalDateTime
 
 class FeedbackDto {
     data class Summary(
@@ -14,7 +13,6 @@ class FeedbackDto {
         )
         @field:NotBlank(message = "계속 유지하면 좋을 내용 작성은 필수 입력값입니다")
         val keepContent: String,
-
         @field:Schema(
             description = "개선이 필요한 내용",
             example = "문제 풀이 시간을 조금 더 단축해보세요",
@@ -22,7 +20,6 @@ class FeedbackDto {
         )
         @field:NotBlank(message = "개선이 필요한 내용 작성은 필수 입력값입니다")
         val problemContent: String,
-
         @field:Schema(
             description = "시도해보길 권하는 내용",
             example = "타이머를 활용한 시간 제한 풀이를 시도해보세요",
@@ -39,7 +36,6 @@ class FeedbackDto {
         )
         @field:Valid
         val summary: Summary,
-
         @field:Schema(
             description = "피드백 상세 내용",
             example = "이번 주 학습 내용에 대한 전반적인 피드백입니다...",
@@ -64,7 +60,7 @@ class FeedbackDto {
         @Schema(
             type = "number",
             description = "피드백 ID",
-            example = "1"
+            example = "1",
         )
         val id: Long,
     )
@@ -73,37 +69,35 @@ class FeedbackDto {
         @Schema(
             type = "number",
             description = "해당 피드백이 있는 할 일 ID",
-            example = "1"
+            example = "1",
         )
         val taskId: Long,
-
         @Schema(
             type = "string",
             description = "피드백 요약 중 keep 내용",
-            example = "단계별로 꼼꼼히 풀이하는 습관"
+            example = "단계별로 꼼꼼히 풀이하는 습관",
         )
         val keepContent: String?,
-
         @Schema(
             type = "string",
             description = "피드백 요약 중 problem 내용",
-            example = "독해 지문에서 개념 간 차이점 파악 미흡"
+            example = "독해 지문에서 개념 간 차이점 파악 미흡",
         )
         val problemContent: String?,
-
         @Schema(
             type = "string",
             description = "피드백 요약 중 try 내용",
-            example = "지문을 읽을 때 비교/대조 구조 찾기\n" +
-                    "주요 개념을 표로 정리하는 연습"
+            example =
+                "지문을 읽을 때 비교/대조 구조 찾기\n" +
+                    "주요 개념을 표로 정리하는 연습",
         )
         val tryContent: String?,
-
         @Schema(
             type = "string",
             description = "피드백 상세 내용",
-            example = "지상권과 지역권 두 권리는 모두 타인의 토지를 이용하는 권리라는 상위 범주에 속하지만, 그 목적, 대상, 배타적 이용 여부, 소유권 이전 시의 효력 등에서 명확한 차이점을 보입니다.\n" +
-                    "따라서 단순히 각 개념을 개별적으로 이해하는 것을 넘어 지상권과 지역권의 공통점과 차이점을 명확히 구분하여 정리하는 것이 핵심입니다."
+            example =
+                "지상권과 지역권 두 권리는 모두 타인의 토지를 이용하는 권리라는 상위 범주에 속하지만, 그 목적, 대상, 배타적 이용 여부, 소유권 이전 시의 효력 등에서 명확한 차이점을 보입니다.\n" +
+                    "따라서 단순히 각 개념을 개별적으로 이해하는 것을 넘어 지상권과 지역권의 공통점과 차이점을 명확히 구분하여 정리하는 것이 핵심입니다.",
         )
         val detail: String?,
     )
@@ -112,7 +106,7 @@ class FeedbackDto {
         @Schema(
             type = "string",
             description = "종합 피드백 내용",
-            example = ""
+            example = "",
         )
         val totalFeedback: String?,
     )
