@@ -53,6 +53,9 @@ class SecurityConfig(
                         "/api/v1/test/**",
                     ).permitAll()
                 it.requestMatchers("/api/v1/mentor/**").hasAuthority(Role.MENTOR.name)
+                it.requestMatchers("/api/v1/daily-planner/{dailyPlannerId}/feedback").hasAuthority(Role.MENTOR.name)
+                it.requestMatchers("/api/v1/mentees/**").hasAuthority(Role.MENTOR.name)
+
                 // 2. 멘토(MENTOR) 전용 기능
                 // - 과제 할당 (tasks/assignment)
                 // - 멘티 과제 조회 (tasks/mentee/**)

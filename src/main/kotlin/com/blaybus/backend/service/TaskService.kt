@@ -1,13 +1,18 @@
 package com.blaybus.backend.service
 
+import com.blaybus.backend.dto.CommentOnTaskRequest
+import com.blaybus.backend.repository.TaskRepository
+import com.blaybus.backend.repository.UserRepository
+import com.blaybus.backend.repository.getByTaskId
+import com.blaybus.backend.repository.getByUserId
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import com.blaybus.backend.dto.*
 import com.blaybus.backend.entity.*
 import com.blaybus.backend.exception.CustomException
 import com.blaybus.backend.exception.ErrorCode
 import com.blaybus.backend.repository.*
 import org.springframework.data.domain.Pageable
-import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 import java.time.LocalDate
 
@@ -21,6 +26,13 @@ class TaskService(
     private val studyImageRepository: StudyImageRepository,
     private val objectStorageRepository: ObjectStorageRepository
 ) {
+    @Transactional
+    fun updateComment(menteeId: Long, taskId: Long, request: CommentOnTaskRequest) {
+        val mentee = userRepository.getByUserId(menteeId)
+        val task = taskRepository.getByTaskId(taskId)
+        task.dailyPlanner.user.validateSameUser(mentee)
+        task.updateComment(request.comment)
+    }
 
     // ================== 멘티 기능 (Task CRUD) ==================
 
@@ -86,7 +98,11 @@ class TaskService(
     }
 
     @Transactional
-    fun uploadVerificationImage(userId: Long, taskId: Long, image: MultipartFile): FileUploadResponse {
+    fun uploadVerificationImage(
+        userId: Long,
+        taskId: Long,
+        image: MultipartFile
+    ): FileUploadResponse {
         val task = taskRepository.getByTaskId(taskId)
         if (task.writer.id != userId) throw CustomException(ErrorCode.NOT_YOUR_TASK)
 
@@ -110,18 +126,27 @@ class TaskService(
         )
     }
 
-
     // ================== 멘토 기능 (과제 할당 및 조회) ==================
 
     @Transactional
-    fun assignTask(mentorId: Long, request: MentorTaskAssignRequest, file: MultipartFile?): TaskResponse {
+    fun assignTask(
+        mentorId: Long,
+        request: MentorTaskAssignRequest,
+        file: MultipartFile?
+    ): TaskResponse {
         val mentor = userRepository.getByUserId(mentorId)
         val mentee = userRepository.getByUserId(request.menteeId)
 
         mentor.validateMentee(mentee)
 
         val planner = dailyPlannerRepository.findByUserAndDate(mentee, request.date)
-            ?: dailyPlannerRepository.save(DailyPlanner(user = mentee, date = request.date, totalFeedback = ""))
+            ?: dailyPlannerRepository.save(
+                DailyPlanner(
+                    user = mentee,
+                    date = request.date,
+                    totalFeedback = ""
+                )
+            )
 
         val task = taskRepository.save(
             Task(
@@ -149,7 +174,11 @@ class TaskService(
         )
     }
 
-    fun getMenteeTasksWithFeedback(mentorId: Long, menteeId: Long, pageable: Pageable): MenteeTaskFeedbackResponse {
+    fun getMenteeTasksWithFeedback(
+        mentorId: Long,
+        menteeId: Long,
+        pageable: Pageable
+    ): MenteeTaskFeedbackResponse {
         val mentor = userRepository.getByUserId(mentorId)
         val mentee = userRepository.getByUserId(menteeId)
         mentor.validateMentee(mentee)
