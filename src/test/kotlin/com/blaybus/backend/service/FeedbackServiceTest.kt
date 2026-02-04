@@ -41,7 +41,7 @@ class FeedbackServiceTest {
     lateinit var taskRepository: TaskRepository
 
     @Mock
-    lateinit var deilyPlannerService: DailyPlannerService
+    lateinit var dailyPlannerService: DailyPlannerService
 
     @Mock
     lateinit var dailyPlannerRepository: DailyPlannerRepository
@@ -255,7 +255,7 @@ class FeedbackServiceTest {
 
             whenever(userRepository.findById(mentor.id)).thenReturn(Optional.of(mentor))
             whenever(userRepository.findById(mentee.id)).thenReturn(Optional.of(mentee))
-            whenever(deilyPlannerService.getOrCreateDailyPlannerByDate(mentee, dailyPlanner.date)).thenReturn(
+            whenever(dailyPlannerService.getOrCreateDailyPlannerByDate(mentee, dailyPlanner.date)).thenReturn(
                 dailyPlanner,
             )
 
@@ -285,7 +285,7 @@ class FeedbackServiceTest {
 
             whenever(userRepository.findById(mentor.id)).thenReturn(Optional.of(mentor))
             whenever(userRepository.findById(otherUser.id)).thenReturn(Optional.of(otherUser))
-            whenever(deilyPlannerService.getOrCreateDailyPlannerByDate(otherUser, otherUserPlanner.date)).thenReturn(
+            whenever(dailyPlannerService.getOrCreateDailyPlannerByDate(otherUser, otherUserPlanner.date)).thenReturn(
                 otherUserPlanner,
             )
 
@@ -372,7 +372,7 @@ class FeedbackServiceTest {
             // given
             dailyPlanner.updateTotalFeedback("오늘 하루 잘했습니다")
 
-            whenever(deilyPlannerService.getDailyPlannerByDate(mentee, dailyPlanner.date)).thenReturn(dailyPlanner)
+            whenever(dailyPlannerService.getDailyPlannerByDate(mentee, dailyPlanner.date)).thenReturn(dailyPlanner)
             whenever(userRepository.findById(mentee.id)).thenReturn(Optional.of(mentee))
 
             // when
@@ -386,7 +386,7 @@ class FeedbackServiceTest {
         @DisplayName("종합 피드백이 없는 플래너를 조회하면 null이 반환된다")
         fun `종합 피드백 없는 플래너 조회`() {
             // given
-            whenever(deilyPlannerService.getDailyPlannerByDate(mentee, dailyPlanner.date)).thenReturn(dailyPlanner)
+            whenever(dailyPlannerService.getDailyPlannerByDate(mentee, dailyPlanner.date)).thenReturn(dailyPlanner)
             whenever(userRepository.findById(mentee.id)).thenReturn(Optional.of(mentee))
 
             // when
@@ -400,10 +400,10 @@ class FeedbackServiceTest {
         @DisplayName("플래너가 존재하지 않는 날로 조회하면 실패한다")
         fun `존재하지 않는 플래너 조회 실패`() {
             // given
-            val nonExistentPlannerDate: LocalDate = LocalDate.of(2026, 12, 31)
+            val nonExistentPlannerDate: LocalDate = LocalDate.of(2000, 1, 1)
 
             whenever(userRepository.findById(mentee.id)).thenReturn(Optional.of(mentee))
-            whenever(deilyPlannerService.getDailyPlannerByDate(mentee, nonExistentPlannerDate))
+            whenever(dailyPlannerService.getDailyPlannerByDate(mentee, nonExistentPlannerDate))
                 .thenThrow(CustomException(ErrorCode.DAILY_PLANNER_NOT_FOUND))
             // when & then
             assertThatThrownBy {

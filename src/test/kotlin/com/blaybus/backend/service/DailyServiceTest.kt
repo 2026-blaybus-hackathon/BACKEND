@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.springframework.dao.DataIntegrityViolationException
 import java.time.LocalDate
 
 @ExtendWith(MockitoExtension::class)
@@ -23,7 +24,7 @@ class DailyServiceTest {
     lateinit var dailyPlannerRepository: DailyPlannerRepository
 
     @InjectMocks
-    lateinit var deilyPlannerService: DailyPlannerService
+    lateinit var dailyPlannerService: DailyPlannerService
 
     private lateinit var user: User
     private lateinit var dailyPlanner: DailyPlanner
@@ -59,7 +60,7 @@ class DailyServiceTest {
             whenever(dailyPlannerRepository.save(any<DailyPlanner>())).thenReturn(dailyPlanner)
 
             // when
-            val result = deilyPlannerService.getOrCreateDailyPlannerByDate(user, dailyPlanner.date)
+            val result = dailyPlannerService.getOrCreateDailyPlannerByDate(user, dailyPlanner.date)
 
             // then
             assert(result.id == dailyPlanner.id)
@@ -73,7 +74,7 @@ class DailyServiceTest {
             whenever(dailyPlannerRepository.findByUserAndDate(user, dailyPlanner.date)).thenReturn(dailyPlanner)
 
             // when
-            val result = deilyPlannerService.getOrCreateDailyPlannerByDate(user, dailyPlanner.date)
+            val result = dailyPlannerService.getOrCreateDailyPlannerByDate(user, dailyPlanner.date)
 
             // then
             assert(result.id == dailyPlanner.id)
@@ -86,10 +87,10 @@ class DailyServiceTest {
             whenever(dailyPlannerRepository.findByUserAndDate(user, dailyPlanner.date))
                 .thenReturn(null)
                 .thenReturn(dailyPlanner)
-            whenever(dailyPlannerRepository.save(any<DailyPlanner>())).thenThrow(RuntimeException())
+            whenever(dailyPlannerRepository.save(any<DailyPlanner>())).thenThrow(DataIntegrityViolationException(""))
 
             // when
-            val result = deilyPlannerService.getOrCreateDailyPlannerByDate(user, dailyPlanner.date)
+            val result = dailyPlannerService.getOrCreateDailyPlannerByDate(user, dailyPlanner.date)
 
             // then
             assert(result.id == dailyPlanner.id)

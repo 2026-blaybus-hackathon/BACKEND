@@ -4,6 +4,7 @@ import com.blaybus.backend.entity.DailyPlanner
 import com.blaybus.backend.entity.User
 import com.blaybus.backend.repository.DailyPlannerRepository
 import com.blaybus.backend.repository.getByUserAndDate
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 
@@ -29,7 +30,7 @@ class DailyPlannerService(
                             date = date,
                         ),
                     )
-            } catch (e: Exception) {
+            } catch (e: DataIntegrityViolationException) {
                 dailyPlannerRepository.getByUserAndDate(user, date)
             }
         return dailyPlanner

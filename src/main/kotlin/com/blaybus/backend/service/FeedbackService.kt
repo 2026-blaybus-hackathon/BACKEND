@@ -18,7 +18,7 @@ class FeedbackService(
     private val userRepository: UserRepository,
     private val feedbackRepository: FeedbackRepository,
     private val taskRepository: TaskRepository,
-    private val deilyPlannerService: DailyPlannerService,
+    private val dailyPlannerService: DailyPlannerService,
 ) {
     @Transactional
     fun provideFeedbackForMenteesTask(
@@ -53,7 +53,7 @@ class FeedbackService(
     ) {
         val mentor = userRepository.getByUserId(mentorId)
         val mentee = userRepository.getByUserId(request.menteeId)
-        val dailyPlanner = deilyPlannerService.getOrCreateDailyPlannerByDate(mentee, date)
+        val dailyPlanner = dailyPlannerService.getOrCreateDailyPlannerByDate(mentee, date)
         mentor.validateMentee(dailyPlanner.user)
         dailyPlanner.updateTotalFeedback(request.content)
     }
@@ -116,7 +116,7 @@ class FeedbackService(
         date: LocalDate,
     ): FeedbackDto.GetTotalFeedbackResponse {
         val mentee = userRepository.getByUserId(menteeId)
-        val dailyPlanner = deilyPlannerService.getDailyPlannerByDate(mentee, date)
+        val dailyPlanner = dailyPlannerService.getDailyPlannerByDate(mentee, date)
 
         return FeedbackDto.GetTotalFeedbackResponse(
             dailyPlanner.totalFeedback,
