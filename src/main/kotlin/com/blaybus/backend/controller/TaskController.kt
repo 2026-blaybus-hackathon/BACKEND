@@ -37,6 +37,7 @@ class TaskController(
 ) {
     // ================== 멘티 기능 (Task CRUD) ==================
 
+    // TODO: 멘티가 할 일을 생성할 때도 파일 업로드를 선택적으로 할 수 있습니다. (피그마 유저 플로우 참고해주시기 바랍니다.)
     @Operation(summary = "Task 생성 (멘티)", description = "멘티가 자신의 플래너에 새로운 할 일을 등록합니다.")
     @PostMapping
     fun createTask(
@@ -47,6 +48,10 @@ class TaskController(
         return ResponseEntity.ok(response)
     }
 
+    // TODO: 이 경우에 공부 시간만 또는 완료 여부만 수정할 때도 모든 데이터를 넣어서 request를 해야합니다.
+    //  1. 일부 컬럼에 대한 변경인데 PUT Method를 사용한다는 것
+    //  2. null을 보내는 것과 값을 보내지 않는 것을 구분하지 못한다는 점
+    //  위 내용을 인지하고 계시고 작업한 것이라면 수정하지 않으셔도 됩니다.
     @Operation(summary = "Task 수정", description = "제목, 내용, 공부 시간 등을 수정합니다.")
     @PutMapping("/{taskId}")
     fun updateTask(
@@ -99,6 +104,7 @@ class TaskController(
 
     // ================== 멘토 기능 (과제 할당 및 조회) ==================
 
+    // TODO: 멘토가 과제를 부여할 때는 파일 업로드가 필수입니다. (피그마 유저 플로우 참고해주시기 바랍니다.)
     @Operation(
         summary = "멘티에게 과제 할당 (PDF 포함)",
         description = "멘토가 특정 멘티의 플래너에 과제(Task)를 생성합니다.",
@@ -116,6 +122,10 @@ class TaskController(
         return ResponseEntity.ok(response)
     }
 
+    // TODO:
+    //  이 부분에서 페이징이 필요한 것인지 궁금합니다. 지금 형태라면 멘티가 작성한 처음 과제부터 페이징해서 내려주는데 그럼 1년 뒤에 조회했을 떄도 1년 전에 작성한 내용부터 조회가 되는 것같습니다.
+    //  날짜별로 할 일의 개수가 일정해 특정 날짜(특정 페이지)의 할 일을 요청하는 것이 가능하다면 괜찮지만 그러기에는 어려움이 있어 보입니다.
+    //  -> 날짜를 파라미터로 받아서 해당 날짜에 대한 내용만 주는 것이 어떤지 여쭤봅니다.
     @Operation(
         summary = "특정 멘티의 과제 및 피드백 목록 조회",
         description = "멘토가 특정 멘티의 과제 수행 내역과 피드백을 조회합니다.",
