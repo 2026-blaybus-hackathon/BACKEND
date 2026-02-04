@@ -5,7 +5,6 @@ import com.blaybus.backend.dto.UserDto.SimpleUserDto
 import com.blaybus.backend.dto.UserProfileResponse
 import com.blaybus.backend.dto.mapper.toMenteeProfileResponse
 import com.blaybus.backend.dto.mapper.toUserProfileResponse
-import com.blaybus.backend.entity.User
 import com.blaybus.backend.repository.ObjectStorageRepository
 import com.blaybus.backend.repository.UserRepository
 import com.blaybus.backend.repository.getByUserId
@@ -35,9 +34,10 @@ class UserService(
             .getByUserId(mentorId)
             .mentees
             .map { mentee ->
-                val url = mentee.profileName?.let {
-                    objectStorageRepository.getDownloadUrl(it)
-                }
+                val url =
+                    mentee.profileName?.let {
+                        objectStorageRepository.getDownloadUrl(it)
+                    }
                 mentee.toMenteeProfileResponse(url)
             }
 
@@ -46,7 +46,7 @@ class UserService(
         val user = userRepository.getByUserId(userId)
 
         return user.toUserProfileResponse(
-            user.profileName?.let(objectStorageRepository::getDownloadUrl)
+            user.profileName?.let(objectStorageRepository::getDownloadUrl),
         )
     }
 }
