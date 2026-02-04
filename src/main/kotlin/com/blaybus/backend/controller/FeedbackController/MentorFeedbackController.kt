@@ -1,4 +1,4 @@
-package com.blaybus.backend.controller
+package com.blaybus.backend.controller.FeedbackController
 
 import com.blaybus.backend.annotation.ApiErrorCodes
 import com.blaybus.backend.dto.FeedbackDto
@@ -23,8 +23,8 @@ import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
 
 @RestController
-@RequestMapping("/api/v1")
-class FeedbackController(
+@RequestMapping("/api/v1/feedback/mentor")
+class MentorFeedbackController(
     private val feedbackService: FeedbackService,
 ) {
     private val logger = KotlinLogging.logger {}
@@ -35,7 +35,7 @@ class FeedbackController(
     )
     @Operation(summary = "피드백 작성(요약, 상세)", description = "멘토는 멘티의 할 일에 피드백 요약과 상세 내용을 작성합니다.")
     @ApiResponse(responseCode = "201", description = "피드백 작성 성공")
-    @PostMapping("/tasks/{taskId}/feedback")
+    @PostMapping("task/{taskId}")
     fun provideFeedback(
         @AuthenticationPrincipal userId: Long,
         @Valid @RequestBody request: FeedbackDto.CreateFeedbackRequest,
@@ -63,7 +63,7 @@ class FeedbackController(
     )
     @Operation(summary = "종합 피드백 작성 또는 수정", description = "멘토는 멘티의 플래너에 대한 종합 피드백을 작성합니다.")
     @ApiResponse(responseCode = "200", description = "종합 피드백 작성 성공")
-    @PatchMapping("/daily-planner/{dailyPlannerId}/feedback")
+    @PatchMapping("/daily-planner/{dailyPlannerId}")
     fun provideTotalFeedback(
         @AuthenticationPrincipal userId: Long,
         @Valid @RequestBody request: FeedbackDto.CreateTotalFeedbackRequest,
@@ -82,50 +82,12 @@ class FeedbackController(
             .build()
     }
 
-    @Operation(summary = "특정 날짜 플래너의 종합 피드백 조회", description = "멘티는 멘토의 특정 날짜에 대한 종합 피드백을 조회합니다.")
-    @ApiResponse(responseCode = "200", description = "종합 피드백 조회 성공")
-    @GetMapping("/daily-planner/{dailyPlannerId}/total-feedback")
-    fun getTotalFeedbackOfDailyPlanner(
-        @AuthenticationPrincipal userId: Long,
-        @Parameter(
-            name = "dailyPlannerId",
-            description = "종합 피드백을 조회할 플래너 ID",
-            required = true,
-            example = "1",
-        )
-        @PathVariable dailyPlannerId: Long,
-    ): ResponseEntity<FeedbackDto.GetTotalFeedbackResponse> =
-        ResponseEntity
-            .status(HttpStatus.OK)
-            .body(
-                feedbackService.findTotalFeedbackOfDailyPlanner(userId, dailyPlannerId),
-            )
-
-    @Operation(summary = "할 일의 피드백 요약, 상세 조회", description = "멘티는 멘토의 피드백 요약, 상세 내용을 조회합니다.")
-    @ApiResponse(responseCode = "200", description = "피드백 상세 조회 성공")
-    @GetMapping("/tasks/{taskId}/feedback")
-    fun getFeedbackOfTask(
-        @AuthenticationPrincipal userId: Long,
-        @Parameter(
-            name = "taskId",
-            description = "피드백을 조회할 할 일 ID",
-            required = true,
-            example = "1",
-        )
-        @PathVariable taskId: Long,
-    ): ResponseEntity<FeedbackDto.GetFeedbackOfTaskResponse> =
-        ResponseEntity
-            .status(HttpStatus.OK)
-            .body(
-                feedbackService.findFeedbackOfTask(userId, taskId),
-            )
-
     @Operation(
         summary = "멘티별 피드백 목록 조회",
         description = "멘토가 멘티별로 피드백 목록을 조회합니다.",
     )
     @ApiResponse(responseCode = "200", description = "멘티별 피드백 목록 조회 성공")
-    @GetMapping("/mentees/{menteeId}/feedbacks")
+    @GetMapping("/mentees/{menteeId}")
     fun getFeedbacksAboutMentees(
         @AuthenticationPrincipal userId: Long,
         @Parameter(
@@ -147,30 +109,5 @@ class FeedbackController(
             .status(HttpStatus.OK)
             .body(
                 feedbackService.findFeedbacksByMenteeId(menteeId, userId, date),
-            )
-
-    /**
-     * TODO: 특정 날짜에 대한 피드백 목록 조회
-     */
-    @Operation(
-        summary = "피드백 목록 조회",
-        description = "멘티는 자신의 피드백 목록을 날짜별로 조회합니다.",
-    )
-    @ApiResponse(responseCode = "200", description = "멘티별 피드백 목록 조회 성공")
-    @GetMapping("/feedbacks")
-    fun getFeedbacks(
-        @AuthenticationPrincipal userId: Long,
-        @Parameter(
-            name = "date",
-            description = "조회할 날짜 (YYYY-MM-DD 형식)",
-            example = "2026-02-03",
-            required = true,
-        )
-        @RequestParam date: LocalDate,
-    ): ResponseEntity<List<FeedbackDto.GetFeedbackOfTaskResponse>> =
-        ResponseEntity
-            .status(HttpStatus.OK)
-            .body(
-                feedbackService.findMyFeedbacks(userId, date),
             )
 }
