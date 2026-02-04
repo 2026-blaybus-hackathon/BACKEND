@@ -11,6 +11,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
+import jakarta.persistence.UniqueConstraint
 import java.time.LocalDate
 
 @Entity
@@ -21,6 +22,13 @@ import java.time.LocalDate
         Index(name = "idx_daily_planners_date", columnList = "date"),
         Index(name = "idx_daily_planners_user_id_date", columnList = "user_id, date"),
     ],
+    uniqueConstraints =
+        [
+            UniqueConstraint(
+                name = "uk_daily_planners_user_id_date",
+                columnNames = ["user_id", "date"],
+            ),
+        ],
 )
 class DailyPlanner(
     @Id
