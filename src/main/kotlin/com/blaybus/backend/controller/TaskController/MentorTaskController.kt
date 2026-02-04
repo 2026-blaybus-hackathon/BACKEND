@@ -53,7 +53,7 @@ class MentorTaskController(
         summary = "특정 멘티의 과제 및 피드백 목록 조회",
         description = "멘토가 특정 멘티의 과제 수행 내역과 피드백을 조회합니다.",
     )
-    @GetMapping("/mentee/{menteeId}") // URL 변경: /api/v1/tasks/mentee/{menteeId}
+    @GetMapping("/mentee/{menteeId}")
     fun getMenteeTasksWithFeedback(
         @AuthenticationPrincipal userId: Long,
         @PathVariable menteeId: Long,
