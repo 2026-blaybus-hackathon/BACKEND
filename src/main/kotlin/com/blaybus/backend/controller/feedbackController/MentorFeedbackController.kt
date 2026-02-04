@@ -63,7 +63,7 @@ class MentorFeedbackController(
     )
     @Operation(summary = "종합 피드백 작성 또는 수정", description = "멘토는 멘티의 플래너에 대한 종합 피드백을 작성합니다.")
     @ApiResponse(responseCode = "200", description = "종합 피드백 작성 성공")
-    @PatchMapping("/daily-planner/{date}/total-feedback")
+    @PatchMapping("/daily-planner/total-feedback")
     fun provideTotalFeedback(
         @AuthenticationPrincipal userId: Long,
         @Valid @RequestBody request: FeedbackDto.CreateTotalFeedbackRequest,
