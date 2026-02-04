@@ -103,7 +103,15 @@ class TaskService(
     ): TaskResponse {
         val task = taskRepository.getByTaskId(taskId)
 
+        // TODO: userRepository.getByUserId(userId) -> 해당 유저가 유효한 user인지 검증하는 과정이 필요한거아닌가요? 제가 Spring Security를 잘 몰라서 맞는지 모르겠습니다.
+
+        /**
+         * 아래 코드에 대한 suggestion
+         * userRepository.getByUserId(userId)
+         * task.writer.validateSameUser(user)
+         */
         if (task.writer.id != userId) throw CustomException(ErrorCode.NOT_YOUR_TASK)
+
 
         task.title = request.title
         task.content = request.content
