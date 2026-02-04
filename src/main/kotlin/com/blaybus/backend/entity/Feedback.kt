@@ -19,6 +19,7 @@ import jakarta.persistence.Table
         Index(name = "idx_feedbacks_task_id", columnList = "task_id"),
         Index(name = "idx_feedbacks_mentor_id", columnList = "mentor_id"),
         Index(name = "idx_feedbacks_created_datetime", columnList = "created_datetime"),
+        Index(name = "idx_feedbacks_task_id_created_datetime", columnList = "task_id, created_datetime"),
     ],
 )
 class Feedback(
@@ -32,12 +33,12 @@ class Feedback(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mentor_id", nullable = false)
     val mentor: User,
-    @Column(nullable = false)
-    var keepContent: String,
-    @Column(nullable = false)
-    var problemContent: String,
-    @Column(nullable = false)
-    var tryContent: String,
+    @Column(nullable = true)
+    var keepContent: String?,
+    @Column(nullable = true)
+    var problemContent: String?,
+    @Column(nullable = true)
+    var tryContent: String?,
     @Column(nullable = true, columnDefinition = "CLOB")
     var detail: String? = null,
 ) : BaseModifiableEntity() {

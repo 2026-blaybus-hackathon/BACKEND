@@ -53,6 +53,12 @@ class User(
             throw CustomException(ErrorCode.NOT_MY_MENTEE)
         }
     }
+
+    fun validateSameUser(user: User) {
+        if (this.id != user.id) {
+            throw CustomException(ErrorCode.NOT_SAME_USER)
+        }
+    }
 }
 
 enum class Role {

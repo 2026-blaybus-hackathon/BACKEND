@@ -22,6 +22,7 @@ import jakarta.persistence.Table
     indexes = [
         Index(name = "idx_tasks_daily_planner_id", columnList = "daily_planner_id"),
         Index(name = "idx_tasks_subject", columnList = "subject"),
+        Index(name = "idx_tasks_created_datetime", columnList = "created_datetime"),
     ],
 )
 class Task(
@@ -54,7 +55,11 @@ class Task(
     val studyImages: MutableList<StudyImage> = mutableListOf(),
     @OneToMany(mappedBy = "task", fetch = FetchType.LAZY)
     val assignments: MutableList<Assignment> = mutableListOf(),
-) : BaseModifiableEntity()
+) : BaseModifiableEntity() {
+    fun updateComment(comment: String) {
+        this.comment = comment
+    }
+}
 
 enum class Subject(
     val displayName: String,

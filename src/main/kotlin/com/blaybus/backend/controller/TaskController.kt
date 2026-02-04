@@ -17,7 +17,11 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/api/v1/tasks")
 @RestController
 class TaskController(
+<<<<<<< HEAD
+    val taskService: TaskService,
+=======
     private val taskService: TaskService
+>>>>>>> main
 ) {
 
     // ================== 멘티 기능 (Task CRUD) ==================
@@ -67,6 +71,20 @@ class TaskController(
         return ResponseEntity.ok(response)
     }
 
+    @Operation(
+        summary = "코멘트 또는 질문",
+        description = "멘티는 할 일에 멘토에게 코멘트 또는 질문을 남길 수 있다."
+    )
+    @PatchMapping("/{taskId}/comment")
+    fun commentOnTask(
+        @AuthenticationPrincipal userId: Long,
+        @PathVariable taskId: Long,
+        @RequestBody request: CommentOnTaskRequest
+    ): ResponseEntity<Void> {
+        taskService.updateComment(userId, taskId, request)
+
+        return ResponseEntity.ok().build()
+    }
 
     // ================== 멘토 기능 (과제 할당 및 조회) ==================
 
@@ -78,7 +96,10 @@ class TaskController(
     fun assignTask(
         @AuthenticationPrincipal userId: Long,
         @Parameter(description = "과제 정보 (JSON)") @Valid @RequestPart("request") request: MentorTaskAssignRequest,
-        @Parameter(description = "학습 자료 PDF (선택 사항)") @RequestPart("file", required = false) file: MultipartFile?
+        @Parameter(description = "학습 자료 PDF (선택 사항)") @RequestPart(
+            "file",
+            required = false
+        ) file: MultipartFile?
     ): ResponseEntity<TaskResponse> {
         val response = taskService.assignTask(userId, request, file)
         return ResponseEntity.ok(response)
@@ -88,7 +109,11 @@ class TaskController(
         summary = "특정 멘티의 과제 및 피드백 목록 조회",
         description = "멘토가 특정 멘티의 과제 수행 내역과 피드백을 조회합니다."
     )
+<<<<<<< HEAD
+    @GetMapping("/mentee/{menteeId}") // URL 변경: /api/v1/tasks/mentee/{menteeId}
+=======
     @GetMapping("/mentee/{menteeId}")
+>>>>>>> main
     fun getMenteeTasksWithFeedback(
         @AuthenticationPrincipal userId: Long,
         @PathVariable menteeId: Long,

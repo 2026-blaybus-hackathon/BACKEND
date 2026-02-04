@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 @RestController
@@ -52,7 +53,6 @@ class FeedbackController(
         val createdFeedbackId =
             feedbackService.provideFeedbackForMenteesTask(userId, taskId, request)
 
-        // 임시로 1L 응답
         return ResponseEntity
             .status(HttpStatus.CREATED)
             .body(
@@ -64,244 +64,113 @@ class FeedbackController(
         ErrorCode.FORBIDDEN_FOR_CREATE_FEEDBACK,
         ErrorCode.NOT_MY_MENTEE,
     )
-    @Operation(summary = "종합 피드백 작성", description = "멘토는 멘티의 플래너에 대한 종합 피드백을 작성합니다.")
+    @Operation(summary = "종합 피드백 작성 또는 수정", description = "멘토는 멘티의 플래너에 대한 종합 피드백을 작성합니다.")
     @ApiResponse(responseCode = "200", description = "종합 피드백 작성 성공")
-    @PatchMapping("/tasks/{taskId}/feedback")
+    @PatchMapping("/daily-planner/{dailyPlannerId}/feedback")
     fun provideTotalFeedback(
         @AuthenticationPrincipal userId: Long,
         @Valid @RequestBody request: FeedbackDto.CreateTotalFeedbackRequest,
         @Parameter(
-            name = "taskId",
+            name = "dailyPlannerId",
             description = "피드백을 작성할 플래너 ID",
             required = true,
             example = "1"
         )
-        @PathVariable taskId: Long
+        @PathVariable dailyPlannerId: Long
     ): ResponseEntity<Void> {
+
+        feedbackService.provideTotalFeedbackForMenteesDailyPlanner(userId, dailyPlannerId, request)
 
         return ResponseEntity
             .status(HttpStatus.OK)
             .build()
     }
 
-    @Operation(summary = "피드백 상세 조회", description = "멘티는 멘토의 피드백 상세 내용을 조회합니다.")
-    @ApiResponse(responseCode = "200", description = "피드백 상세 조회 성공")
-    @GetMapping("/feedback/{feedbackId}/detail")
-    fun getFeedbackDetail(
+    @Operation(summary = "특정 날짜 플래너의 종합 피드백 조회", description = "멘티는 멘토의 특정 날짜에 대한 종합 피드백을 조회합니다.")
+    @ApiResponse(responseCode = "200", description = "종합 피드백 조회 성공")
+    @GetMapping("/daily-planner/{dailyPlannerId}/total-feedback")
+    fun getTotalFeedbackOfDailyPlanner(
         @AuthenticationPrincipal userId: Long,
         @Parameter(
-            name = "feedbackId",
-            description = "조회할 피드백 ID",
+            name = "dailyPlannerId",
+            description = "종합 피드백을 조회할 플래너 ID",
             required = true,
             example = "1"
         )
-        @PathVariable feedbackId: Long
-    ): ResponseEntity<FeedbackDto.GetFeedbackDetailResponse> {
+        @PathVariable dailyPlannerId: Long
+    ): ResponseEntity<FeedbackDto.GetTotalFeedbackResponse> = ResponseEntity
+        .status(HttpStatus.OK)
+        .body(
+            feedbackService.findTotalFeedbackOfDailyPlanner(userId, dailyPlannerId)
+        )
 
-        // TODO: 조회 권한 검증
-
-        // dummy data 응답
-        return ResponseEntity
-            .status(HttpStatus.OK)
-            .body(
-                FeedbackDto.GetFeedbackDetailResponse(
-                    1L,
-                    "오늘 중요한 실수들과 아이디어를 얻은 것 같아서 기분이 좋네요! " +
-                            "틀린건 기분이 나쁠 부분이 아니라, “아 내가 이런 공통된 부분을 틀리니 " +
-                            "이것만 잡으면 저걸 다 맞겠구나~”라는 생각으로 내일도 공부 화이팅입니다!"
-                )
-            )
-    }
-
-
-    @Operation(
-        summary = "피드백 요약 조회",
-        description = "멘티는 피드백 요약본을 조회합니다."
-    )
-    @ApiResponse(responseCode = "200", description = "피드백 요약 조회 성공")
-    @GetMapping("/feedback/summary")
-    fun getFeedbacks(
+    @Operation(summary = "할 일의 피드백 요약, 상세 조회", description = "멘티는 멘토의 피드백 요약, 상세 내용을 조회합니다.")
+    @ApiResponse(responseCode = "200", description = "피드백 상세 조회 성공")
+    @GetMapping("/tasks/{taskId}/feedback")
+    fun getFeedbackOfTask(
         @AuthenticationPrincipal userId: Long,
         @Parameter(
-            name = "type",
-            description = "피드백 필터 조건",
+            name = "taskId",
+            description = "피드백을 조회할 할 일 ID",
             required = true,
-            schema = Schema(implementation = FeedbackFilterCondition::class),
-            example = "KOREAN"
+            example = "1"
         )
-        @RequestParam type: FeedbackFilterCondition
-    ): ResponseEntity<List<FeedbackDto.FeedbackSummaryResponse>> {
-
-        // TODO: 피드백 조회 로직 구현
-        // TODO: 과목별/전날 필터링 로직 구현
-
-        // dummy data 응답
-        val summaries = when (type) {
-            FeedbackFilterCondition.KOREAN -> listOf(
-                FeedbackDto.FeedbackSummaryResponse(
-                    id = 1L,
-                    subject = FeedbackFilterCondition.KOREAN.displayName,
-                    summary = "독해 문제에서 주제 파악 능력이 많이 향상되었습니다. 특히 글의 논리적 흐름을 잘 파악하고 있어요.",
-                    createdAt = LocalDateTime.of(2026, 2, 1, 14, 30)
-                ),
-                FeedbackDto.FeedbackSummaryResponse(
-                    id = 2L,
-                    subject = FeedbackFilterCondition.KOREAN.displayName,
-                    summary = "문법 문제에서 띄어쓰기와 맞춤법 부분을 조금 더 연습하면 좋을 것 같습니다.",
-                    createdAt = LocalDateTime.of(2026, 2, 2, 15, 20)
-                )
-            )
-            FeedbackFilterCondition.ENGLISH -> listOf(
-                FeedbackDto.FeedbackSummaryResponse(
-                    id = 3L,
-                    subject = FeedbackFilterCondition.ENGLISH.displayName,
-                    summary = "영어 단어 암기를 꾸준히 해서 어휘력이 향상되었습니다. 계속 유지하세요!",
-                    createdAt = LocalDateTime.of(2026, 2, 1, 16, 10)
-                ),
-                FeedbackDto.FeedbackSummaryResponse(
-                    id = 4L,
-                    subject = FeedbackFilterCondition.ENGLISH.displayName,
-                    summary = "문법 파트에서 시제 부분을 좀 더 집중적으로 공부하면 좋겠습니다.",
-                    createdAt = LocalDateTime.of(2026, 2, 2, 16, 45)
-                )
-            )
-            FeedbackFilterCondition.MATH -> listOf(
-                FeedbackDto.FeedbackSummaryResponse(
-                    id = 5L,
-                    subject = FeedbackFilterCondition.MATH.displayName,
-                    summary = "이차함수 문제 풀이가 많이 개선되었습니다. 풀이 과정이 깔끔해졌어요.",
-                    createdAt = LocalDateTime.of(2026, 2, 1, 17, 30)
-                ),
-                FeedbackDto.FeedbackSummaryResponse(
-                    id = 6L,
-                    subject = FeedbackFilterCondition.MATH.displayName,
-                    summary = "기하 파트에서 도형의 성질을 활용하는 연습을 더 하면 좋을 것 같습니다.",
-                    createdAt = LocalDateTime.of(2026, 2, 2, 18, 0)
-                )
-            )
-            FeedbackFilterCondition.YESTERDAY -> listOf(
-                FeedbackDto.FeedbackSummaryResponse(
-                    id = 2L,
-                    subject = FeedbackFilterCondition.KOREAN.displayName,
-                    summary = "문법 문제에서 띄어쓰기와 맞춤법 부분을 조금 더 연습하면 좋을 것 같습니다.",
-                    createdAt = LocalDateTime.of(2026, 2, 2, 15, 20)
-                ),
-                FeedbackDto.FeedbackSummaryResponse(
-                    id = 4L,
-                    subject = FeedbackFilterCondition.ENGLISH.displayName,
-                    summary = "문법 파트에서 시제 부분을 좀 더 집중적으로 공부하면 좋겠습니다.",
-                    createdAt = LocalDateTime.of(2026, 2, 2, 16, 45)
-                ),
-                FeedbackDto.FeedbackSummaryResponse(
-                    id = 6L,
-                    subject = FeedbackFilterCondition.MATH.displayName,
-                    summary = "기하 파트에서 도형의 성질을 활용하는 연습을 더 하면 좋을 것 같습니다.",
-                    createdAt = LocalDateTime.of(2026, 2, 2, 18, 0)
-                )
-            )
-        }
-
-        return ResponseEntity
-            .status(HttpStatus.OK)
-            .body(summaries)
-    }
+        @PathVariable taskId: Long,
+    ): ResponseEntity<FeedbackDto.GetFeedbackOfTaskResponse> = ResponseEntity
+        .status(HttpStatus.OK)
+        .body(
+            feedbackService.findFeedbackOfTask(userId, taskId)
+        )
 
     @Operation(
-        summary = "멘티별 피드백 요약 조회",
-        description = "멘토는 특정 멘티에게 제공한 피드백 요약본을 조회합니다."
+        summary = "멘티별 피드백 목록 조회",
+        description = "멘토가 멘티별로 피드백 목록을 조회합니다."
     )
-    @ApiResponse(responseCode = "200", description = "멘티 피드백 요약 조회 성공")
-    @GetMapping("/mentees/{menteeId}/feedback/summary")
-    fun getMenteeFeedbackSummary(
+    @ApiResponse(responseCode = "200", description = "멘티별 피드백 목록 조회 성공")
+    @GetMapping("/mentees/{menteeId}/feedbacks")
+    fun getFeedbacksAboutMentees(
         @AuthenticationPrincipal userId: Long,
         @Parameter(
             name = "menteeId",
-            description = "피드백을 조회할 멘티 ID",
+            description = "피드백 필터 조건",
             required = true,
             example = "1"
         )
         @PathVariable menteeId: Long,
         @Parameter(
-            name = "type",
-            description = "피드백 필터 조건",
-            required = true,
-            schema = Schema(implementation = FeedbackFilterCondition::class),
-            example = "KOREAN"
+            name = "date",
+            description = "조회할 날짜 (YYYY-MM-DD 형식)",
+            example = "2026-02-03",
+            required = true
         )
-        @RequestParam type: FeedbackFilterCondition
-    ): ResponseEntity<List<FeedbackDto.FeedbackSummaryResponse>> {
+        @RequestParam date: LocalDate
+    ): ResponseEntity<List<FeedbackDto.GetFeedbackOfTaskResponse>> = ResponseEntity
+        .status(HttpStatus.OK)
+        .body(
+            feedbackService.findFeedbacksByMenteeId(menteeId, userId, date)
+        )
 
-        // TODO: 멘토가 해당 멘티의 피드백을 조회할 권한이 있는지 검증
-        // TODO: menteeId로 필터링된 피드백 조회 로직 구현
-
-        // dummy data 응답 (menteeId별로 다른 데이터를 반환)
-        val summaries = when (type) {
-            FeedbackFilterCondition.KOREAN -> listOf(
-                FeedbackDto.FeedbackSummaryResponse(
-                    id = 1L,
-                    subject = FeedbackFilterCondition.KOREAN.displayName,
-                    summary = "멘티 ${menteeId}번 - 독해 문제에서 주제 파악 능력이 많이 향상되었습니다.",
-                    createdAt = LocalDateTime.of(2026, 2, 1, 14, 30)
-                ),
-                FeedbackDto.FeedbackSummaryResponse(
-                    id = 2L,
-                    subject = FeedbackFilterCondition.KOREAN.displayName,
-                    summary = "멘티 ${menteeId}번 - 문법 문제에서 띄어쓰기와 맞춤법 부분을 조금 더 연습하면 좋을 것 같습니다.",
-                    createdAt = LocalDateTime.of(2026, 2, 2, 15, 20)
-                )
-            )
-            FeedbackFilterCondition.ENGLISH -> listOf(
-                FeedbackDto.FeedbackSummaryResponse(
-                    id = 3L,
-                    subject = FeedbackFilterCondition.ENGLISH.displayName,
-                    summary = "멘티 ${menteeId}번 - 영어 단어 암기를 꾸준히 해서 어휘력이 향상되었습니다.",
-                    createdAt = LocalDateTime.of(2026, 2, 1, 16, 10)
-                ),
-                FeedbackDto.FeedbackSummaryResponse(
-                    id = 4L,
-                    subject = FeedbackFilterCondition.ENGLISH.displayName,
-                    summary = "멘티 ${menteeId}번 - 문법 파트에서 시제 부분을 좀 더 집중적으로 공부하면 좋겠습니다.",
-                    createdAt = LocalDateTime.of(2026, 2, 2, 16, 45)
-                )
-            )
-            FeedbackFilterCondition.MATH -> listOf(
-                FeedbackDto.FeedbackSummaryResponse(
-                    id = 5L,
-                    subject = FeedbackFilterCondition.MATH.displayName,
-                    summary = "멘티 ${menteeId}번 - 이차함수 문제 풀이가 많이 개선되었습니다.",
-                    createdAt = LocalDateTime.of(2026, 2, 1, 17, 30)
-                ),
-                FeedbackDto.FeedbackSummaryResponse(
-                    id = 6L,
-                    subject = FeedbackFilterCondition.MATH.displayName,
-                    summary = "멘티 ${menteeId}번 - 기하 파트에서 도형의 성질을 활용하는 연습을 더 하면 좋을 것 같습니다.",
-                    createdAt = LocalDateTime.of(2026, 2, 2, 18, 0)
-                )
-            )
-            FeedbackFilterCondition.YESTERDAY -> listOf(
-                FeedbackDto.FeedbackSummaryResponse(
-                    id = 2L,
-                    subject = FeedbackFilterCondition.KOREAN.displayName,
-                    summary = "멘티 ${menteeId}번 - 어제 문법 문제에서 띄어쓰기와 맞춤법이 좋았습니다.",
-                    createdAt = LocalDateTime.of(2026, 2, 2, 15, 20)
-                ),
-                FeedbackDto.FeedbackSummaryResponse(
-                    id = 4L,
-                    subject = FeedbackFilterCondition.ENGLISH.displayName,
-                    summary = "멘티 ${menteeId}번 - 어제 영어 시제 부분을 열심히 공부했습니다.",
-                    createdAt = LocalDateTime.of(2026, 2, 2, 16, 45)
-                ),
-                FeedbackDto.FeedbackSummaryResponse(
-                    id = 6L,
-                    subject = FeedbackFilterCondition.MATH.displayName,
-                    summary = "멘티 ${menteeId}번 - 어제 기하 파트 복습이 필요합니다.",
-                    createdAt = LocalDateTime.of(2026, 2, 2, 18, 0)
-                )
-            )
-        }
-
-        return ResponseEntity
-            .status(HttpStatus.OK)
-            .body(summaries)
-    }
+    /**
+     * TODO: 특정 날짜에 대한 피드백 목록 조회
+     */
+    @Operation(
+        summary = "피드백 목록 조회",
+        description = "멘티는 자신의 피드백 목록을 날짜별로 조회합니다."
+    )
+    @ApiResponse(responseCode = "200", description = "멘티별 피드백 목록 조회 성공")
+    @GetMapping("/feedbacks")
+    fun getFeedbacks(
+        @AuthenticationPrincipal userId: Long,
+        @Parameter(
+            name = "date",
+            description = "조회할 날짜 (YYYY-MM-DD 형식)",
+            example = "2026-02-03",
+            required = true
+        )
+        @RequestParam date: LocalDate
+    ): ResponseEntity<List<FeedbackDto.GetFeedbackOfTaskResponse>> = ResponseEntity
+        .status(HttpStatus.OK)
+        .body(
+            feedbackService.findMyFeedbacks(userId, date)
+        )
 }
