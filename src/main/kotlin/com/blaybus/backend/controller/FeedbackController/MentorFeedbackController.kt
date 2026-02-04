@@ -35,7 +35,7 @@ class MentorFeedbackController(
     )
     @Operation(summary = "피드백 작성(요약, 상세)", description = "멘토는 멘티의 할 일에 피드백 요약과 상세 내용을 작성합니다.")
     @ApiResponse(responseCode = "201", description = "피드백 작성 성공")
-    @PostMapping("task/{taskId}")
+    @PostMapping("/task/{taskId}")
     fun provideFeedback(
         @AuthenticationPrincipal userId: Long,
         @Valid @RequestBody request: FeedbackDto.CreateFeedbackRequest,
