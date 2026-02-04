@@ -1,4 +1,4 @@
-package com.blaybus.backend.controller.FeedbackController
+package com.blaybus.backend.controller.feedbackController
 
 import com.blaybus.backend.annotation.ApiErrorCodes
 import com.blaybus.backend.dto.FeedbackDto
@@ -63,19 +63,19 @@ class MentorFeedbackController(
     )
     @Operation(summary = "종합 피드백 작성 또는 수정", description = "멘토는 멘티의 플래너에 대한 종합 피드백을 작성합니다.")
     @ApiResponse(responseCode = "200", description = "종합 피드백 작성 성공")
-    @PatchMapping("/daily-planner/{dailyPlannerId}")
+    @PatchMapping("/daily-planner/{date}/total-feedback")
     fun provideTotalFeedback(
         @AuthenticationPrincipal userId: Long,
         @Valid @RequestBody request: FeedbackDto.CreateTotalFeedbackRequest,
         @Parameter(
-            name = "dailyPlannerId",
-            description = "피드백을 작성할 플래너 ID",
+            name = "date",
+            description = "조회할 날짜 (YYYY-MM-DD 형식)",
+            example = "2026-02-03",
             required = true,
-            example = "1",
         )
-        @PathVariable dailyPlannerId: Long,
+        @RequestParam date: LocalDate,
     ): ResponseEntity<Void> {
-        feedbackService.provideTotalFeedbackForMenteesDailyPlanner(userId, dailyPlannerId, request)
+        feedbackService.provideTotalFeedbackForMenteesDailyPlanner(userId, date, request)
 
         return ResponseEntity
             .status(HttpStatus.OK)

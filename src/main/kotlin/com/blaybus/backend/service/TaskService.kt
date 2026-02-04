@@ -12,13 +12,11 @@ import com.blaybus.backend.dto.TaskDetail
 import com.blaybus.backend.dto.TaskImageResponse
 import com.blaybus.backend.dto.TaskResponse
 import com.blaybus.backend.entity.Assignment
-import com.blaybus.backend.entity.DailyPlanner
 import com.blaybus.backend.entity.StudyImage
 import com.blaybus.backend.entity.Task
 import com.blaybus.backend.exception.CustomException
 import com.blaybus.backend.exception.ErrorCode
 import com.blaybus.backend.repository.AssignmentRepository
-import com.blaybus.backend.repository.DailyPlannerRepository
 import com.blaybus.backend.repository.ObjectStorageRepository
 import com.blaybus.backend.repository.StudyImageRepository
 import com.blaybus.backend.repository.TaskRepository
@@ -35,7 +33,7 @@ import org.springframework.web.multipart.MultipartFile
 class TaskService(
     private val taskRepository: TaskRepository,
     private val userRepository: UserRepository,
-    private val dailyPlannerRepository: DailyPlannerRepository,
+    private val dailyPlannerService: DailyPlannerService,
     private val assignmentRepository: AssignmentRepository,
     private val studyImageRepository: StudyImageRepository,
     private val objectStorageRepository: ObjectStorageRepository,
@@ -62,15 +60,7 @@ class TaskService(
         val user = userRepository.getByUserId(userId)
 
         // 에러 해결: DailyPlanner 생성 시 totalFeedback(null 가능) 명시
-        val planner =
-            dailyPlannerRepository.findByUserAndDate(user, request.date)
-                ?: dailyPlannerRepository.save(
-                    DailyPlanner(
-                        user = user,
-                        date = request.date,
-                        totalFeedback = "",
-                    ),
-                )
+        val planner = dailyPlannerService.getOrCreateDailyPlannerByDate(user, request.date)
 
         val task =
             taskRepository.save(
@@ -174,16 +164,7 @@ class TaskService(
 
         mentor.validateMentee(mentee)
 
-        val planner =
-            dailyPlannerRepository.findByUserAndDate(mentee, request.date)
-                ?: dailyPlannerRepository.save(
-                    DailyPlanner(
-                        user = mentee,
-                        date = request.date,
-                        totalFeedback = "",
-                    ),
-                )
-
+        val planner = dailyPlannerService.getOrCreateDailyPlannerByDate(mentee, request.date)
         val task =
             taskRepository.save(
                 Task(

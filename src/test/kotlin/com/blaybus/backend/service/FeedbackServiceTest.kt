@@ -41,6 +41,9 @@ class FeedbackServiceTest {
     lateinit var taskRepository: TaskRepository
 
     @Mock
+    lateinit var deilyPlannerService: DailyPlannerService
+
+    @Mock
     lateinit var dailyPlannerRepository: DailyPlannerRepository
 
     @InjectMocks
@@ -247,13 +250,17 @@ class FeedbackServiceTest {
             val request =
                 FeedbackDto.CreateTotalFeedbackRequest(
                     content = "오늘 하루 잘했습니다",
+                    menteeId = mentee.id,
                 )
 
             whenever(userRepository.findById(mentor.id)).thenReturn(Optional.of(mentor))
-            whenever(dailyPlannerRepository.findById(dailyPlanner.id)).thenReturn(Optional.of(dailyPlanner))
+            whenever(userRepository.findById(mentee.id)).thenReturn(Optional.of(mentee))
+            whenever(deilyPlannerService.getOrCreateDailyPlannerByDate(mentee, dailyPlanner.date)).thenReturn(
+                dailyPlanner,
+            )
 
             // when
-            feedbackService.provideTotalFeedbackForMenteesDailyPlanner(mentor.id, dailyPlanner.id, request)
+            feedbackService.provideTotalFeedbackForMenteesDailyPlanner(mentor.id, dailyPlanner.date, request)
 
             // then
             assertThat(dailyPlanner.totalFeedback).isEqualTo(request.content)
@@ -273,14 +280,18 @@ class FeedbackServiceTest {
             val request =
                 FeedbackDto.CreateTotalFeedbackRequest(
                     content = "오늘 하루 잘했습니다",
+                    menteeId = otherUser.id,
                 )
 
             whenever(userRepository.findById(mentor.id)).thenReturn(Optional.of(mentor))
-            whenever(dailyPlannerRepository.findById(otherUserPlanner.id)).thenReturn(Optional.of(otherUserPlanner))
+            whenever(userRepository.findById(otherUser.id)).thenReturn(Optional.of(otherUser))
+            whenever(deilyPlannerService.getOrCreateDailyPlannerByDate(otherUser, otherUserPlanner.date)).thenReturn(
+                otherUserPlanner,
+            )
 
             // when & then
             assertThatThrownBy {
-                feedbackService.provideTotalFeedbackForMenteesDailyPlanner(mentor.id, otherUserPlanner.id, request)
+                feedbackService.provideTotalFeedbackForMenteesDailyPlanner(mentor.id, otherUserPlanner.date, request)
             }.isInstanceOf(CustomException::class.java)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOT_MY_MENTEE)
         }
@@ -361,11 +372,11 @@ class FeedbackServiceTest {
             // given
             dailyPlanner.updateTotalFeedback("오늘 하루 잘했습니다")
 
-            whenever(dailyPlannerRepository.findById(dailyPlanner.id)).thenReturn(Optional.of(dailyPlanner))
+            whenever(deilyPlannerService.getDailyPlannerByDate(mentee, dailyPlanner.date)).thenReturn(dailyPlanner)
             whenever(userRepository.findById(mentee.id)).thenReturn(Optional.of(mentee))
 
             // when
-            val result = feedbackService.findTotalFeedbackOfDailyPlanner(mentee.id, dailyPlanner.id)
+            val result = feedbackService.findTotalFeedbackOfDailyPlanner(mentee.id, dailyPlanner.date)
 
             // then
             assertThat(result.totalFeedback).isEqualTo("오늘 하루 잘했습니다")
@@ -375,41 +386,28 @@ class FeedbackServiceTest {
         @DisplayName("종합 피드백이 없는 플래너를 조회하면 null이 반환된다")
         fun `종합 피드백 없는 플래너 조회`() {
             // given
-            whenever(dailyPlannerRepository.findById(dailyPlanner.id)).thenReturn(Optional.of(dailyPlanner))
+            whenever(deilyPlannerService.getDailyPlannerByDate(mentee, dailyPlanner.date)).thenReturn(dailyPlanner)
             whenever(userRepository.findById(mentee.id)).thenReturn(Optional.of(mentee))
 
             // when
-            val result = feedbackService.findTotalFeedbackOfDailyPlanner(mentee.id, dailyPlanner.id)
+            val result = feedbackService.findTotalFeedbackOfDailyPlanner(mentee.id, dailyPlanner.date)
 
             // then
             assertThat(result.totalFeedback).isNull()
         }
 
         @Test
-        @DisplayName("다른 사용자의 플래너 종합 피드백을 조회하면 실패한다")
-        fun `다른 사용자 플래너 종합 피드백 조회 실패`() {
-            // given
-            whenever(dailyPlannerRepository.findById(dailyPlanner.id)).thenReturn(Optional.of(dailyPlanner))
-            whenever(userRepository.findById(otherUser.id)).thenReturn(Optional.of(otherUser))
-
-            // when & then
-            assertThatThrownBy {
-                feedbackService.findTotalFeedbackOfDailyPlanner(otherUser.id, dailyPlanner.id)
-            }.isInstanceOf(CustomException::class.java)
-                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOT_SAME_USER)
-        }
-
-        @Test
-        @DisplayName("존재하지 않는 플래너 ID로 조회하면 실패한다")
+        @DisplayName("플래너가 존재하지 않는 날로 조회하면 실패한다")
         fun `존재하지 않는 플래너 조회 실패`() {
             // given
-            val nonExistentPlannerId = 99999L
+            val nonExistentPlannerDate: LocalDate = LocalDate.of(2026, 12, 31)
 
-            whenever(dailyPlannerRepository.findById(nonExistentPlannerId)).thenReturn(Optional.empty())
-
+            whenever(userRepository.findById(mentee.id)).thenReturn(Optional.of(mentee))
+            whenever(deilyPlannerService.getDailyPlannerByDate(mentee, nonExistentPlannerDate))
+                .thenThrow(CustomException(ErrorCode.DAILY_PLANNER_NOT_FOUND))
             // when & then
             assertThatThrownBy {
-                feedbackService.findTotalFeedbackOfDailyPlanner(mentee.id, nonExistentPlannerId)
+                feedbackService.findTotalFeedbackOfDailyPlanner(mentee.id, nonExistentPlannerDate)
             }.isInstanceOf(CustomException::class.java)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.DAILY_PLANNER_NOT_FOUND)
         }

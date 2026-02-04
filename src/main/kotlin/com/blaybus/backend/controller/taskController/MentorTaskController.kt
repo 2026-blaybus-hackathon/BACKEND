@@ -1,4 +1,4 @@
-package com.blaybus.backend.controller.TaskController
+package com.blaybus.backend.controller.taskController
 
 import com.blaybus.backend.dto.MenteeTaskFeedbackResponse
 import com.blaybus.backend.dto.MentorTaskAssignRequest
@@ -37,9 +37,10 @@ class MentorTaskController(
         @AuthenticationPrincipal userId: Long,
         @Parameter(
             description = "과제 정보 (JSON)",
-            content = [Content(mediaType = MediaType.APPLICATION_JSON_VALUE)]
+            content = [Content(mediaType = MediaType.APPLICATION_JSON_VALUE)],
         )
-        @Valid @RequestPart("request") request: MentorTaskAssignRequest,
+        @Valid
+        @RequestPart("request") request: MentorTaskAssignRequest,
         @Parameter(description = "학습 자료 PDF (선택 사항)") @RequestPart(
             "file",
             required = false,

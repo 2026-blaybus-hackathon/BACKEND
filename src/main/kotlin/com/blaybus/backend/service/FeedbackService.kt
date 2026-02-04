@@ -4,11 +4,9 @@ import com.blaybus.backend.dto.FeedbackDto
 import com.blaybus.backend.dto.mapper.toEmptyFeedbackResponse
 import com.blaybus.backend.dto.mapper.toGetFeedbackOfTaskResponse
 import com.blaybus.backend.entity.Feedback
-import com.blaybus.backend.repository.DailyPlannerRepository
 import com.blaybus.backend.repository.FeedbackRepository
 import com.blaybus.backend.repository.TaskRepository
 import com.blaybus.backend.repository.UserRepository
-import com.blaybus.backend.repository.getByDailyPlannerId
 import com.blaybus.backend.repository.getByTaskId
 import com.blaybus.backend.repository.getByUserId
 import org.springframework.stereotype.Service
@@ -20,8 +18,9 @@ class FeedbackService(
     private val userRepository: UserRepository,
     private val feedbackRepository: FeedbackRepository,
     private val taskRepository: TaskRepository,
-    private val dailyPlannerRepository: DailyPlannerRepository,
+    private val deilyPlannerService: DailyPlannerService,
 ) {
+    @Transactional
     fun provideFeedbackForMenteesTask(
         mentorId: Long,
         taskId: Long,
@@ -49,11 +48,12 @@ class FeedbackService(
     @Transactional
     fun provideTotalFeedbackForMenteesDailyPlanner(
         mentorId: Long,
-        dailyPlannerId: Long,
+        date: LocalDate,
         request: FeedbackDto.CreateTotalFeedbackRequest,
     ) {
         val mentor = userRepository.getByUserId(mentorId)
-        val dailyPlanner = dailyPlannerRepository.getByDailyPlannerId(dailyPlannerId)
+        val mentee = userRepository.getByUserId(request.menteeId)
+        val dailyPlanner = deilyPlannerService.getOrCreateDailyPlannerByDate(mentee, date)
         mentor.validateMentee(dailyPlanner.user)
         dailyPlanner.updateTotalFeedback(request.content)
     }
@@ -113,12 +113,10 @@ class FeedbackService(
     @Transactional(readOnly = true)
     fun findTotalFeedbackOfDailyPlanner(
         menteeId: Long,
-        dailyPlannerId: Long,
+        date: LocalDate,
     ): FeedbackDto.GetTotalFeedbackResponse {
-        val dailyPlanner = dailyPlannerRepository.getByDailyPlannerId(dailyPlannerId)
         val mentee = userRepository.getByUserId(menteeId)
-        // API를 요청한 사람과 dailyPlanner의 주인이 동일한지 검증
-        dailyPlanner.user.validateSameUser(mentee)
+        val dailyPlanner = deilyPlannerService.getDailyPlannerByDate(mentee, date)
 
         return FeedbackDto.GetTotalFeedbackResponse(
             dailyPlanner.totalFeedback,

@@ -53,6 +53,11 @@ class FeedbackDto {
         )
         @field:NotBlank(message = "종합 피드백 내용 작성은 필수 입력값입니다")
         val content: String,
+        @Schema(
+            description = "피드백을 작성할 멘티",
+            requiredMode = Schema.RequiredMode.REQUIRED,
+        )
+        val menteeId: Long,
     )
 
     // Response DTOs
