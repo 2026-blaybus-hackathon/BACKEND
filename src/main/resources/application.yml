@@ -46,6 +46,10 @@ spring:
         show_sql: true
         dialect: org.hibernate.dialect.OracleDialect
         hibernate.default_batch_fetch_size: 100
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
 logging:
   level:
     org.hibernate.SQL: debug
