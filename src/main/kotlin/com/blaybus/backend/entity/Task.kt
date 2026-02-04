@@ -40,7 +40,7 @@ class Task(
     @Lob
     @Column(nullable = true)
     var content: String? = null,
-    @Column(nullable = true, length = 1023)
+    @Column(nullable = true, length = 1023, name = "\"COMMENT\"")
     var comment: String? = null,
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

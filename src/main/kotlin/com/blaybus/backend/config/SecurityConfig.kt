@@ -52,7 +52,6 @@ class SecurityConfig(
                         "/ready",
                         "/api/v1/test/**",
                     ).permitAll()
-                it.requestMatchers("/api/v1/mentee/check").hasAnyAuthority(Role.MENTEE.name)
                 it.requestMatchers("/api/v1/mentor/**").hasAuthority(Role.MENTOR.name)
                 it.requestMatchers("/api/v1/daily-planner/{dailyPlannerId}/feedback").hasAuthority(Role.MENTOR.name)
                 it.requestMatchers("/api/v1/mentees/**").hasAuthority(Role.MENTOR.name)
@@ -61,15 +60,15 @@ class SecurityConfig(
                 // - 과제 할당 (tasks/assignment)
                 // - 멘티 과제 조회 (tasks/mentee/**)
                 // - 내 멘티 목록 조회 (users/**)
-                it.requestMatchers("/api/v1/tasks/assignment").hasAuthority(Role.MENTOR.name)
-                it.requestMatchers("/api/v1/tasks/mentee/**").hasAuthority(Role.MENTOR.name)
-                it.requestMatchers("/api/v1/users/**").hasAuthority(Role.MENTOR.name) // 멘티 목록 조회 등
+                it.requestMatchers("/api/v1/tasks/assignment", "/api/v1/tasks/mentee/**").hasAuthority(Role.MENTOR.name)
+                it
+                    .requestMatchers("/api/v1/users/**")
+                    .hasAuthority(Role.MENTOR.name) //  TODO : 멘티도 자기 프로필을 users/mentees로 조회하도록 구현해주셔서 뺴야할 듯 합니다.
 
                 // 3. 멘티(MENTEE) 전용 기능
                 // - 위의 멘토 전용 URL을 제외한 나머지 tasks 관련 기능은 멘티가 사용
                 // - (주의: 이 줄이 멘토 설정보다 아래에 있어야 함!)
                 it.requestMatchers("/api/v1/tasks/**").hasAuthority(Role.MENTEE.name)
-
             }.addFilterBefore(
                 jwtFilter,
                 UsernamePasswordAuthenticationFilter::class.java,
