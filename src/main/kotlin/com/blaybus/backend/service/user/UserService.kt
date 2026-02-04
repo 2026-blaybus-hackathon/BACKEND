@@ -17,11 +17,7 @@ class UserService(
 ) {
     fun findAllUser(): List<SimpleUserDto> =
         userRepository.findAll().map {
-            SimpleUserDto(
-                id = it.id,
-                nickname = it.nickname,
-                email = it.email,
-            )
+            SimpleUserDto(it)
         }
 
     @Transactional

@@ -48,9 +48,11 @@ enum class ErrorCode(
 
     // Authorization error 16000대
     NOT_MY_MENTEE(HttpStatus.FORBIDDEN, -16000, "해당 멘티를 담당하고 있지 않습니다."),
+    NOT_SAME_USER(HttpStatus.FORBIDDEN, -16001, "본인만 접근할 수 있습니다."),
 
     // Task API error 17000대
     TASK_NOT_FOUND(HttpStatus.NOT_FOUND, -17000, "할 일을 찾을 수 없습니다."),
+    NOT_YOUR_TASK(HttpStatus.FORBIDDEN, -17001, "해당 할 일에 대한 권한이 없습니다."),
 
     // Assignment API error 18000대
     ASSIGNMENT_NOT_FOUND(HttpStatus.NOT_FOUND, -18000, "과제를 찾을 수 없습니다."),

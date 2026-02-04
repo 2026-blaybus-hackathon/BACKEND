@@ -62,7 +62,7 @@ class AuthService(
                             it,
                         )
                     },
-                    )
+            )
         userRepository.save(user)
     }
 

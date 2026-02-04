@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Index
 import jakarta.persistence.JoinColumn
+import jakarta.persistence.Lob
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
@@ -21,6 +22,7 @@ import jakarta.persistence.Table
     indexes = [
         Index(name = "idx_tasks_daily_planner_id", columnList = "daily_planner_id"),
         Index(name = "idx_tasks_subject", columnList = "subject"),
+        Index(name = "idx_tasks_created_datetime", columnList = "created_datetime"),
     ],
 )
 class Task(
@@ -35,16 +37,17 @@ class Task(
     val subject: Subject,
     @Column(nullable = false, length = 255)
     var title: String,
-    @Column(nullable = true, columnDefinition = "TEXT")
+    @Lob
+    @Column(nullable = true)
     var content: String? = null,
-    @Column(nullable = true, length = 1023)
+    @Column(nullable = true, length = 1023, name = "\"COMMENT\"")
     var comment: String? = null,
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     var writer: User,
     @Column(nullable = true)
     var studyDurationInMinutes: Int? = null,
-    @Column(nullable = false)
+    @Column(name = "is_completed", nullable = false, columnDefinition = "NUMBER(1)")
     var isCompleted: Boolean = false,
     @OneToOne(mappedBy = "task", fetch = FetchType.LAZY)
     var feedback: Feedback? = null,
@@ -53,7 +56,9 @@ class Task(
     @OneToMany(mappedBy = "task", fetch = FetchType.LAZY)
     val assignments: MutableList<Assignment> = mutableListOf(),
 ) : BaseModifiableEntity() {
-
+    fun updateComment(comment: String) {
+        this.comment = comment
+    }
 }
 
 enum class Subject(

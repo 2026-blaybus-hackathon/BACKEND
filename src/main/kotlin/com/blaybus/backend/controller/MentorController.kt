@@ -1,6 +1,5 @@
 package com.blaybus.backend.controller
 
-import com.blaybus.backend.dto.MenteeListResponse
 import com.blaybus.backend.dto.MenteeTaskFeedbackResponse
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.ResponseEntity
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/mentor")
 @RestController
 class MentorController {
-
     @Operation(
         summary = "멘티 과제, 피드백 조회",
         description = "멘토가 특정 멘티의 과제 피드백을 조회합니다.",

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController
 @Tag(name = "User API", description = "사용자 정보 및 멘티/멘토 관계 조회")
 @RequestMapping("/api/v1/users") // URL 변경: users 자원 사용
 @RestController
+
 class UserController(
     private val userService: UserService
 ) {
