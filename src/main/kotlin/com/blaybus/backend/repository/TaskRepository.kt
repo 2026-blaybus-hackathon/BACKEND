@@ -13,12 +13,12 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
 
-fun TaskRepository.getByTaskId(taskId: Long): Task =
-    findById(taskId).orElseThrow { CustomException(ErrorCode.TASK_NOT_FOUND) }
+fun TaskRepository.getByTaskId(taskId: Long): Task = findById(taskId).orElseThrow { CustomException(ErrorCode.TASK_NOT_FOUND) }
 
 @Repository
 interface TaskRepository : JpaRepository<Task, Long> {
-    @Query("""
+    @Query(
+        """
     select f
     from Feedback f
     join fetch f.task t
@@ -26,14 +26,18 @@ interface TaskRepository : JpaRepository<Task, Long> {
     where dp.user.id = :userId
       and t.createdDateTime >= :start
       and t.createdDateTime < :end
-    """)
+    """,
+    )
     fun findByUserIdAndTaskCreatedBetween(
         userId: Long,
         start: LocalDateTime,
-        end: LocalDateTime
+        end: LocalDateTime,
     ): List<Feedback>
 
     // 특정 작성자(멘티)가 쓴 Task 목록 페이징 조회
     @EntityGraph(attributePaths = ["studyImages", "feedback"])
-    fun findByDailyPlannerUser(user: User, pageable: Pageable): Page<Task>
+    fun findByDailyPlannerUser(
+        user: User,
+        pageable: Pageable,
+    ): Page<Task>
 }

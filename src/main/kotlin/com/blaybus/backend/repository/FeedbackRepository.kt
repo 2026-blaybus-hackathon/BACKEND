@@ -10,5 +10,4 @@ fun FeedbackRepository.getByFeedbackId(feedbackId: Long): Feedback =
     findById(feedbackId).orElseThrow { CustomException(ErrorCode.FEEDBACK_NOT_FOUND) }
 
 @Repository
-interface FeedbackRepository : JpaRepository<Feedback, Long> {
-}
+interface FeedbackRepository : JpaRepository<Feedback, Long>

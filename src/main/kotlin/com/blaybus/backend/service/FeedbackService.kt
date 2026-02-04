@@ -11,8 +11,8 @@ import com.blaybus.backend.repository.UserRepository
 import com.blaybus.backend.repository.getByDailyPlannerId
 import com.blaybus.backend.repository.getByTaskId
 import com.blaybus.backend.repository.getByUserId
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 
 @Service
@@ -25,22 +25,23 @@ class FeedbackService(
     fun provideFeedbackForMenteesTask(
         mentorId: Long,
         taskId: Long,
-        request: FeedbackDto.CreateFeedbackRequest
+        request: FeedbackDto.CreateFeedbackRequest,
     ): Long {
         // 피드백을 작성할 수 있는 task인지 검증val mentor = userRepository.getByUserId(mentorId)
         val mentor = userRepository.getByUserId(mentorId)
         val task = taskRepository.getByTaskId(taskId)
         mentor.validateMentee(task.dailyPlanner.user)
-        val createdFeedback = feedbackRepository.save(
-            Feedback(
-                task,
-                mentor,
-                request.summary.keepContent,
-                request.summary.problemContent,
-                request.summary.tryContent,
-                request.content
+        val createdFeedback =
+            feedbackRepository.save(
+                Feedback(
+                    task,
+                    mentor,
+                    request.summary.keepContent,
+                    request.summary.problemContent,
+                    request.summary.tryContent,
+                    request.content,
+                ),
             )
-        )
 
         return createdFeedback.id
     }
@@ -49,7 +50,7 @@ class FeedbackService(
     fun provideTotalFeedbackForMenteesDailyPlanner(
         mentorId: Long,
         dailyPlannerId: Long,
-        request: FeedbackDto.CreateTotalFeedbackRequest
+        request: FeedbackDto.CreateTotalFeedbackRequest,
     ) {
         val mentor = userRepository.getByUserId(mentorId)
         val dailyPlanner = dailyPlannerRepository.getByDailyPlannerId(dailyPlannerId)
@@ -60,7 +61,7 @@ class FeedbackService(
     @Transactional(readOnly = true)
     fun findFeedbackOfTask(
         menteeId: Long,
-        taskId: Long
+        taskId: Long,
     ): FeedbackDto.GetFeedbackOfTaskResponse {
         val mentee = userRepository.getByUserId(menteeId)
         val task = taskRepository.getByTaskId(taskId)
@@ -76,7 +77,7 @@ class FeedbackService(
     fun findFeedbacksByMenteeId(
         menteeId: Long,
         mentorId: Long,
-        date: LocalDate
+        date: LocalDate,
     ): List<FeedbackDto.GetFeedbackOfTaskResponse> {
         val mentor = userRepository.getByUserId(mentorId)
         val mentee = userRepository.getByUserId(menteeId)
@@ -84,33 +85,35 @@ class FeedbackService(
         val start = date.atStartOfDay()
         val end = date.plusDays(1).atStartOfDay()
 
-        return taskRepository.findByUserIdAndTaskCreatedBetween(
-            menteeId,
-            start,
-            end
-        ).map(Feedback::toGetFeedbackOfTaskResponse)
+        return taskRepository
+            .findByUserIdAndTaskCreatedBetween(
+                menteeId,
+                start,
+                end,
+            ).map(Feedback::toGetFeedbackOfTaskResponse)
     }
 
     @Transactional(readOnly = true)
     fun findMyFeedbacks(
         userId: Long,
-        date: LocalDate
+        date: LocalDate,
     ): List<FeedbackDto.GetFeedbackOfTaskResponse> {
         userRepository.getByUserId(userId)
         val start = date.atStartOfDay()
         val end = date.plusDays(1).atStartOfDay()
 
-        return taskRepository.findByUserIdAndTaskCreatedBetween(
-            userId,
-            start,
-            end
-        ).map(Feedback::toGetFeedbackOfTaskResponse)
+        return taskRepository
+            .findByUserIdAndTaskCreatedBetween(
+                userId,
+                start,
+                end,
+            ).map(Feedback::toGetFeedbackOfTaskResponse)
     }
 
     @Transactional(readOnly = true)
     fun findTotalFeedbackOfDailyPlanner(
         menteeId: Long,
-        dailyPlannerId: Long
+        dailyPlannerId: Long,
     ): FeedbackDto.GetTotalFeedbackResponse {
         val dailyPlanner = dailyPlannerRepository.getByDailyPlannerId(dailyPlannerId)
         val mentee = userRepository.getByUserId(menteeId)
@@ -118,7 +121,7 @@ class FeedbackService(
         dailyPlanner.user.validateSameUser(mentee)
 
         return FeedbackDto.GetTotalFeedbackResponse(
-            dailyPlanner.totalFeedback
+            dailyPlanner.totalFeedback,
         )
     }
 }

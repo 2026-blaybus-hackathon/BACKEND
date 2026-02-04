@@ -32,7 +32,7 @@ class DailyPlanner(
     @Column(nullable = false, name = "\"DATE\"")
     val date: LocalDate,
     @Column(nullable = true)
-    var totalFeedback: String? = null,  // 종합 피드백 (멘토가 멘티에게 작성)
+    var totalFeedback: String? = null, // 종합 피드백 (멘토가 멘티에게 작성)
     @OneToMany(mappedBy = "dailyPlanner", fetch = FetchType.LAZY)
     val tasks: MutableList<Task> = mutableListOf(),
 ) : BaseModifiableEntity() {

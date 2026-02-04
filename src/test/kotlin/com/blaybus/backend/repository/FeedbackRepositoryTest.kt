@@ -2,7 +2,7 @@ package com.blaybus.backend.repository
 
 import com.blaybus.backend.entity.DailyPlanner
 import com.blaybus.backend.entity.Feedback
-import com.blaybus.backend.entity.Provider
+import com.blaybus.backend.entity.Role
 import com.blaybus.backend.entity.Subject
 import com.blaybus.backend.entity.Task
 import com.blaybus.backend.entity.User
@@ -23,7 +23,6 @@ import java.time.LocalDate
 @DataJpaTest
 @EnableJpaAuditing
 class FeedbackRepositoryTest {
-
     @Autowired
     lateinit var feedbackRepository: FeedbackRepository
 
@@ -37,37 +36,41 @@ class FeedbackRepositoryTest {
 
     @BeforeEach
     fun setUp() {
-        mentor = User(
-            email = "mentor@test.com",
-            name = "mentor",
-            nickname = "mentor_nick",
-            provider = Provider.LOCAL,
-            contactEmail = "mentor@test.com"
-        )
+        mentor =
+            User(
+                email = "mentor@test.com",
+                name = "mentor",
+                nickname = "mentor_nick",
+                role = Role.MENTOR,
+                password = "123",
+            )
         entityManager.persist(mentor)
 
-        mentee = User(
-            email = "mentee@test.com",
-            name = "mentee",
-            nickname = "mentee_nick",
-            provider = Provider.LOCAL,
-            contactEmail = "mentee@test.com",
-            mentor = mentor
-        )
+        mentee =
+            User(
+                email = "mentee@test.com",
+                name = "mentee",
+                nickname = "mentee_nick",
+                role = Role.MENTEE,
+                mentor = mentor,
+                password = "123",
+            )
         entityManager.persist(mentee)
 
-        dailyPlanner = DailyPlanner(
-            user = mentee,
-            date = LocalDate.now()
-        )
+        dailyPlanner =
+            DailyPlanner(
+                user = mentee,
+                date = LocalDate.now(),
+            )
         entityManager.persist(dailyPlanner)
 
-        task = Task(
-            dailyPlanner = dailyPlanner,
-            subject = Subject.KOREAN,
-            title = "test task",
-            writer = mentee
-        )
+        task =
+            Task(
+                dailyPlanner = dailyPlanner,
+                subject = Subject.KOREAN,
+                title = "test task",
+                writer = mentee,
+            )
         entityManager.persist(task)
 
         entityManager.flush()
@@ -77,21 +80,21 @@ class FeedbackRepositoryTest {
     @Nested
     @DisplayName("Save Feedback")
     inner class SaveFeedbackTest {
-
         @Test
         @DisplayName("success - save feedback generates ID")
         fun saveFeedbackSuccess() {
             // given
             val foundTask = entityManager.find(Task::class.java, task.id)!!
             val foundMentor = entityManager.find(User::class.java, mentor.id)!!
-            val feedback = Feedback(
-                task = foundTask,
-                mentor = foundMentor,
-                keepContent = "keep",
-                problemContent = "problem",
-                tryContent = "try",
-                detail = "detail"
-            )
+            val feedback =
+                Feedback(
+                    task = foundTask,
+                    mentor = foundMentor,
+                    keepContent = "keep",
+                    problemContent = "problem",
+                    tryContent = "try",
+                    detail = "detail",
+                )
 
             // when
             val savedFeedback = feedbackRepository.save(feedback)
@@ -112,14 +115,15 @@ class FeedbackRepositoryTest {
 
             val foundTask = entityManager.find(Task::class.java, task.id)!!
             val foundMentor = entityManager.find(User::class.java, mentor.id)!!
-            val feedback = Feedback(
-                task = foundTask,
-                mentor = foundMentor,
-                keepContent = keepContent,
-                problemContent = problemContent,
-                tryContent = tryContent,
-                detail = detail
-            )
+            val feedback =
+                Feedback(
+                    task = foundTask,
+                    mentor = foundMentor,
+                    keepContent = keepContent,
+                    problemContent = problemContent,
+                    tryContent = tryContent,
+                    detail = detail,
+                )
 
             // when
             val savedFeedback = feedbackRepository.save(feedback)
@@ -140,14 +144,15 @@ class FeedbackRepositoryTest {
             // given
             val foundTask = entityManager.find(Task::class.java, task.id)!!
             val foundMentor = entityManager.find(User::class.java, mentor.id)!!
-            val feedback = Feedback(
-                task = foundTask,
-                mentor = foundMentor,
-                keepContent = "keep",
-                problemContent = "problem",
-                tryContent = "try",
-                detail = null
-            )
+            val feedback =
+                Feedback(
+                    task = foundTask,
+                    mentor = foundMentor,
+                    keepContent = "keep",
+                    problemContent = "problem",
+                    tryContent = "try",
+                    detail = null,
+                )
 
             // when
             val savedFeedback = feedbackRepository.save(feedback)
@@ -163,20 +168,20 @@ class FeedbackRepositoryTest {
     @Nested
     @DisplayName("getByFeedbackId extension function")
     inner class GetByFeedbackIdTest {
-
         @Test
         @DisplayName("success - get existing feedback by ID")
         fun getExistingFeedbackSuccess() {
             // given
             val foundTask = entityManager.find(Task::class.java, task.id)!!
             val foundMentor = entityManager.find(User::class.java, mentor.id)!!
-            val feedback = Feedback(
-                task = foundTask,
-                mentor = foundMentor,
-                keepContent = "keep",
-                problemContent = "problem",
-                tryContent = "try"
-            )
+            val feedback =
+                Feedback(
+                    task = foundTask,
+                    mentor = foundMentor,
+                    keepContent = "keep",
+                    problemContent = "problem",
+                    tryContent = "try",
+                )
             val savedFeedback = feedbackRepository.save(feedback)
             entityManager.flush()
             entityManager.clear()
@@ -205,20 +210,20 @@ class FeedbackRepositoryTest {
     @Nested
     @DisplayName("Delete Feedback")
     inner class DeleteFeedbackTest {
-
         @Test
         @DisplayName("success - delete feedback")
         fun deleteFeedbackSuccess() {
             // given
             val foundTask = entityManager.find(Task::class.java, task.id)!!
             val foundMentor = entityManager.find(User::class.java, mentor.id)!!
-            val feedback = Feedback(
-                task = foundTask,
-                mentor = foundMentor,
-                keepContent = "keep",
-                problemContent = "problem",
-                tryContent = "try"
-            )
+            val feedback =
+                Feedback(
+                    task = foundTask,
+                    mentor = foundMentor,
+                    keepContent = "keep",
+                    problemContent = "problem",
+                    tryContent = "try",
+                )
             val savedFeedback = feedbackRepository.save(feedback)
             entityManager.flush()
             entityManager.clear()
