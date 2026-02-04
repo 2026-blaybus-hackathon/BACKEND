@@ -4,15 +4,15 @@ import com.blaybus.backend.dto.MenteeProfileResponse
 import com.blaybus.backend.dto.UserProfileResponse
 import com.blaybus.backend.entity.User
 
-fun User.toMenteeProfileResponse() = MenteeProfileResponse(
+fun User.toMenteeProfileResponse(profileUrl: String?) = MenteeProfileResponse(
     menteeId = id,
     nickname = nickname,
     name = name,
-    profileUrl = profileName
+    profileUrl = profileUrl
 )
-fun User.toUserProfileResponse() = UserProfileResponse(
+fun User.toUserProfileResponse(profileUrl: String?) = UserProfileResponse(
     userId = id,
     nickname = nickname,
     name = name,
-    profileUrl = profileName
+    profileUrl = profileUrl
 )

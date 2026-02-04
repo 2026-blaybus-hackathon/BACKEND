@@ -6,6 +6,7 @@ import com.blaybus.backend.dto.UserProfileResponse
 import com.blaybus.backend.dto.mapper.toMenteeProfileResponse
 import com.blaybus.backend.dto.mapper.toUserProfileResponse
 import com.blaybus.backend.entity.User
+import com.blaybus.backend.repository.ObjectStorageRepository
 import com.blaybus.backend.repository.UserRepository
 import com.blaybus.backend.repository.getByUserId
 import org.springframework.stereotype.Service
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class UserService(
     private val userRepository: UserRepository,
+    private val objectStorageRepository: ObjectStorageRepository,
 ) {
     fun findAllUser(): List<SimpleUserDto> =
         userRepository.findAll().map {
@@ -32,11 +34,19 @@ class UserService(
         userRepository
             .getByUserId(mentorId)
             .mentees
-            .map(User::toMenteeProfileResponse)
+            .map { mentee ->
+                val url = mentee.profileName?.let {
+                    objectStorageRepository.getDownloadUrl(it)
+                }
+                mentee.toMenteeProfileResponse(url)
+            }
 
     @Transactional(readOnly = true)
-    fun findMyProfile(userId: Long): UserProfileResponse =
-        userRepository
-            .getByUserId(userId)
-            .toUserProfileResponse()
+    fun findMyProfile(userId: Long): UserProfileResponse {
+        val user = userRepository.getByUserId(userId)
+
+        return user.toUserProfileResponse(
+            user.profileName?.let(objectStorageRepository::getDownloadUrl)
+        )
+    }
 }
