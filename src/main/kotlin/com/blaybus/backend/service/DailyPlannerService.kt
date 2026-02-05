@@ -35,4 +35,10 @@ class DailyPlannerService(
             }
         return dailyPlanner
     }
+
+    fun getDailyPlannerByPeriod(
+        userId: Long,
+        startDate: LocalDate,
+        endDate: LocalDate,
+    ): List<DailyPlanner> = dailyPlannerRepository.findAllByUserIdAndDateBetween(userId, startDate, endDate)
 }

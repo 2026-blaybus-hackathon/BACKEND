@@ -1,5 +1,6 @@
 package com.blaybus.backend.controller.taskController
 
+import com.blaybus.backend.dto.AchievementRateResponse
 import com.blaybus.backend.dto.CommentOnTaskRequest
 import com.blaybus.backend.dto.FileUploadResponse
 import com.blaybus.backend.dto.MenteeTaskCreateRequest
@@ -14,15 +15,18 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
+import java.time.LocalDate
 
 @Tag(name = "mentee-task-controller", description = "멘티의 할 일(Task) 관리, CRUD")
 @RequestMapping("/api/v1/tasks/mentee")
@@ -89,4 +93,19 @@ class MenteeTaskController(
 
         return ResponseEntity.ok().build()
     }
+
+    @Operation(
+        summary = "주/일간 달성 정보 조회",
+        description = "멘티는 자신의 주/일간 달성 정보를 조회할 수 있습니다.",
+    )
+    @GetMapping("/achievement-rate")
+    fun getWeeklyAchievementRate(
+        @AuthenticationPrincipal userId: Long,
+        @Parameter(
+            name = "todayDate",
+            description = "오늘 날짜",
+            required = true,
+        )
+        @RequestParam todayDate: LocalDate,
+    ): ResponseEntity<AchievementRateResponse> = ResponseEntity.ok(taskService.getAchievementRate(userId, todayDate))
 }
