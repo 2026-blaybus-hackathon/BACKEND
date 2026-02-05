@@ -34,7 +34,7 @@ class Task(
     val dailyPlanner: DailyPlanner,
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    val subject: Subject,
+    var subject: Subject,
     @Column(nullable = false, length = 255)
     var title: String,
     @Lob
@@ -52,12 +52,18 @@ class Task(
     @OneToOne(mappedBy = "task", fetch = FetchType.LAZY)
     var feedback: Feedback? = null,
     @OneToMany(mappedBy = "task", fetch = FetchType.LAZY)
-    val studyImages: MutableList<StudyImage> = mutableListOf(),
+    var studyImages: MutableList<StudyImage> = mutableListOf(),
     @OneToMany(mappedBy = "task", fetch = FetchType.LAZY)
-    val assignments: MutableList<Assignment> = mutableListOf(),
+    var assignments: MutableList<Assignment> = mutableListOf(),
 ) : BaseModifiableEntity() {
     fun updateComment(comment: String) {
         this.comment = comment
+    }
+    fun updateStudyDurationInMinutes(minutes : Int){
+        this.studyDurationInMinutes = minutes;
+    }
+    fun updateCompletionStatus(isCompleted: Boolean) {
+        this.isCompleted = isCompleted
     }
 }
 

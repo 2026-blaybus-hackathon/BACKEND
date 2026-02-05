@@ -3,17 +3,22 @@ package com.blaybus.backend.service
 import com.blaybus.backend.dto.CommentOnTaskRequest
 import com.blaybus.backend.dto.FeedbackDetail
 import com.blaybus.backend.dto.FileUploadResponse
+import com.blaybus.backend.dto.MenteeStudyTimeUpdateRequest
+import com.blaybus.backend.dto.MenteeTaskCompletionUpdateRequest
 import com.blaybus.backend.dto.MenteeTaskCreateRequest
 import com.blaybus.backend.dto.MenteeTaskFeedbackResponse
 import com.blaybus.backend.dto.MenteeTaskUpdateRequest
 import com.blaybus.backend.dto.MentorTaskAssignRequest
+import com.blaybus.backend.dto.MentorTaskUpdateRequest
 import com.blaybus.backend.dto.PagedResponse
 import com.blaybus.backend.dto.TaskDetail
 import com.blaybus.backend.dto.TaskImageResponse
 import com.blaybus.backend.dto.TaskResponse
 import com.blaybus.backend.entity.Assignment
 import com.blaybus.backend.entity.StudyImage
+import com.blaybus.backend.entity.Subject
 import com.blaybus.backend.entity.Task
+import com.blaybus.backend.entity.User
 import com.blaybus.backend.exception.CustomException
 import com.blaybus.backend.exception.ErrorCode
 import com.blaybus.backend.repository.AssignmentRepository
@@ -27,6 +32,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
+import java.time.LocalDate
 
 @Service
 @Transactional(readOnly = true)
@@ -50,38 +56,43 @@ class TaskService(
         task.updateComment(request.comment)
     }
 
-    // ================== 멘티 기능 (Task CRUD) ==================
-
     @Transactional
     fun createTask(
         userId: Long,
         request: MenteeTaskCreateRequest,
+        file: MultipartFile?
     ): TaskResponse {
-        val user = userRepository.getByUserId(userId)
+        val mentee = userRepository.getByUserId(userId)
 
-        // 에러 해결: DailyPlanner 생성 시 totalFeedback(null 가능) 명시
-        val planner = dailyPlannerService.getOrCreateDailyPlannerByDate(user, request.date)
+        return createAndSaveTask(
+            writer = mentee,
+            targetMentee = mentee,
+            date = request.date,
+            title = request.title,
+            content = request.content,
+            subject = request.subject,
+            file = file
+        )
+    }
 
-        val task =
-            taskRepository.save(
-                Task(
-                    dailyPlanner = planner,
-                    subject = request.subject,
-                    title = request.title,
-                    content = request.content,
-                    writer = user,
-                    isCompleted = false,
-                ),
-            )
+    @Transactional
+    fun assignTask(
+        mentorId: Long,
+        request: MentorTaskAssignRequest,
+        file: MultipartFile?,
+    ): TaskResponse {
+        val mentor = userRepository.getByUserId(mentorId)
+        val mentee = userRepository.getByUserId(request.menteeId)
+        mentor.validateMentee(mentee)
 
-        return TaskResponse(
-            id = task.id,
-            content = task.title,
-            subject =
-                com.blaybus.backend.dto.Subject
-                    .valueOf(task.subject.name),
-            priority = null,
-            studyTime = task.studyDurationInMinutes ?: 0,
+        return createAndSaveTask(
+            writer = mentor,
+            targetMentee = mentee,
+            date = request.date,
+            title = request.title,
+            content = request.content,
+            subject = request.subject,
+            file = file
         )
     }
 
@@ -93,22 +104,83 @@ class TaskService(
     ): TaskResponse {
         val task = taskRepository.getByTaskId(taskId)
 
-        if (task.writer.id != userId) throw CustomException(ErrorCode.NOT_YOUR_TASK)
+        if (task.writer.id != userId && task.dailyPlanner.user.id != userId) {
+            throw CustomException(ErrorCode.NOT_YOUR_TASK)
+        }
 
-        task.title = request.title
-        task.content = request.content
-        task.studyDurationInMinutes = request.studyTime // studyTime으로 매핑
-        task.isCompleted = request.isCompleted ?: false
+        if (task.writer.id == userId) {
+            task.title = request.title ?: task.title
+            task.content = request.content ?: task.content
+            task.subject = request.subject ?: task.subject
+            task.studyDurationInMinutes = request.studyTime ?: task.studyDurationInMinutes
+            task.isCompleted = request.isCompleted ?: task.isCompleted
 
-        return TaskResponse(
-            id = task.id,
-            content = task.title,
-            subject =
-                com.blaybus.backend.dto.Subject
-                    .valueOf(task.subject.name),
-            priority = null,
-            studyTime = task.studyDurationInMinutes ?: 0,
-        )
+        } else {
+            if (request.studyTime != null) {
+                task.studyDurationInMinutes = request.studyTime
+            }
+        }
+
+        return TaskResponse.from(task)
+    }
+
+    @Transactional
+    fun updateAssignedTask(
+        userId: Long,
+        taskId: Long,
+        request: MentorTaskUpdateRequest,
+        file: MultipartFile?
+    ): TaskResponse {
+        val task = taskRepository.getByTaskId(taskId)
+
+        // 권한 검증: 작성자(멘토) 본인만 수정 가능
+        if (task.writer.id != userId) {
+            throw CustomException(ErrorCode.NOT_YOUR_TASK)
+        }
+
+        task.title = request.title ?: task.title
+        task.content = request.content ?: task.content
+        task.subject = request.subject ?: task.subject
+
+        if (file != null && !file.isEmpty) {
+            manageAssignmentFile(task, file)
+        }
+
+        return TaskResponse.from(task)
+    }
+
+    @Transactional
+    fun updateStudyTime(
+        userId: Long,
+        taskId: Long,
+        request: MenteeStudyTimeUpdateRequest
+    ): TaskResponse {
+        val task = taskRepository.getByTaskId(taskId)
+
+        if (task.dailyPlanner.user.id != userId) {
+            throw CustomException(ErrorCode.NOT_YOUR_TASK)
+        }
+
+        task.updateStudyDurationInMinutes(request.studyTime)
+
+        return TaskResponse.from(task)
+    }
+
+    @Transactional
+    fun updateTaskCompletion(
+        userId: Long,
+        taskId: Long,
+        request: MenteeTaskCompletionUpdateRequest
+    ): TaskResponse {
+        val task = taskRepository.getByTaskId(taskId)
+
+        if (task.writer.id != userId) {
+            throw CustomException(ErrorCode.NOT_YOUR_TASK)
+        }
+
+        task.updateCompletionStatus(request.isCompleted)
+
+        return TaskResponse.from(task)
     }
 
     @Transactional
@@ -148,51 +220,6 @@ class TaskService(
             fileId = studyImage.id,
             url = downloadUrl,
             originalFilename = studyImage.originalFileName,
-        )
-    }
-
-    // ================== 멘토 기능 (과제 할당 및 조회) ==================
-
-    @Transactional
-    fun assignTask(
-        mentorId: Long,
-        request: MentorTaskAssignRequest,
-        file: MultipartFile?,
-    ): TaskResponse {
-        val mentor = userRepository.getByUserId(mentorId)
-        val mentee = userRepository.getByUserId(request.menteeId)
-
-        mentor.validateMentee(mentee)
-
-        val planner = dailyPlannerService.getOrCreateDailyPlannerByDate(mentee, request.date)
-        val task =
-            taskRepository.save(
-                Task(
-                    dailyPlanner = planner,
-                    subject =
-                        com.blaybus.backend.entity.Subject
-                            .valueOf(request.subject.name),
-                    title = request.title,
-                    content = request.content,
-                    writer = mentor,
-                    isCompleted = false,
-                ),
-            )
-
-        file?.let {
-            val filePath = "tasks/${task.id}/assignments/"
-            val uploadedKey = objectStorageRepository.upload(filePath, it)
-            assignmentRepository.save(Assignment(task = task, pdfFileName = uploadedKey))
-        }
-
-        return TaskResponse(
-            id = task.id,
-            content = task.title,
-            subject =
-                com.blaybus.backend.dto.Subject
-                    .valueOf(task.subject.name),
-            priority = null,
-            studyTime = task.studyDurationInMinutes ?: 0,
         )
     }
 
@@ -241,6 +268,54 @@ class TaskService(
                     totalPages = tasksPage.totalPages,
                     totalElements = tasksPage.totalElements,
                 ),
+        )
+    }
+
+    private fun createAndSaveTask(
+        writer: User,
+        targetMentee: User,
+        date: LocalDate,
+        title: String,
+        content: String?,
+        subject: Subject,
+        file: MultipartFile?
+    ): TaskResponse {
+        val planner = dailyPlannerService.getOrCreateDailyPlannerByDate(targetMentee, date)
+
+        val task = taskRepository.save(
+            Task(
+                dailyPlanner = planner,
+                subject = subject,
+                title = title,
+                content = content,
+                writer = writer,
+                isCompleted = false,
+            )
+        )
+
+        if (file != null && !file.isEmpty) {
+            manageAssignmentFile(task, file)
+        }
+
+        return TaskResponse.from(task)
+    }
+
+    private fun manageAssignmentFile(task: Task, file: MultipartFile) {
+        val filePath = "tasks/${task.id}/assignments/"
+        val uploadedKey = objectStorageRepository.upload(filePath, file)
+        val existingAssignment = assignmentRepository.findByTask(task)
+
+        if (existingAssignment != null) {
+            assignmentRepository.delete(existingAssignment)
+            assignmentRepository.flush() // 즉시 반영
+        }
+
+        assignmentRepository.save(
+            Assignment(
+                task = task,
+                fileKey = uploadedKey,
+                originalFileName = file.originalFilename ?: "unknown.pdf"
+            )
         )
     }
 }

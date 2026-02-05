@@ -1,7 +1,10 @@
 package com.blaybus.backend.dto
 
+import com.blaybus.backend.entity.Subject
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotNull
 import java.time.LocalDate
 
 data class MenteeTaskCreateRequest(
@@ -18,15 +21,15 @@ data class MenteeTaskCreateRequest(
 
 data class MenteeTaskUpdateRequest(
     @field:Schema(description = "수정할 제목")
-    val title: String,
+    val title: String?=null,
     @field:Schema(description = "수정할 상세 내용")
-    val content: String?,
+    val content: String?=null,
     @field:Schema(description = "수정할 과목", allowableValues = ["KOREAN", "MATH", "ENGLISH", "OTHERS"])
-    val subject: Subject,
+    val subject: Subject?=null,
     @field:Schema(description = "공부 시간 (분 단위)", example = "60")
-    val studyTime: Int?,
+    val studyTime: Int?=null,
     @field:Schema(description = "완료 여부 (체크박스)", example = "true")
-    val isCompleted: Boolean?,
+    val isCompleted: Boolean?=null,
 )
 
 data class FileUploadResponse(
@@ -41,4 +44,26 @@ data class FileUploadResponse(
 data class CommentOnTaskRequest(
     @field:Schema(description = "멘토에게 남길 코멘트 또는 질문")
     val comment: String,
+)
+
+data class MentorTaskUpdateRequest(
+    @field:Schema(description = "수정할 제목 (null이면 유지)")
+    val title: String? = null,
+    @field:Schema(description = "수정할 내용 (null이면 유지)")
+    val content: String? = null,
+    @field:Schema(description = "수정할 과목 (null이면 유지)")
+    val subject: Subject? = null,
+)
+
+data class MenteeStudyTimeUpdateRequest(
+    @field:Schema(description = "공부한 시간 (분 단위)", example = "60")
+    @field:NotNull(message = "공부 시간은 필수입니다.")
+    @field:Min(value = 0, message = "공부 시간은 0분 이상이어야 합니다.")
+    val studyTime: Int
+)
+
+data class MenteeTaskCompletionUpdateRequest(
+    @field:Schema(description = "완료 여부 (true: 완료, false: 미완료)", example = "true")
+    @field:NotNull(message = "완료 여부는 필수입니다.")
+    val isCompleted: Boolean
 )
