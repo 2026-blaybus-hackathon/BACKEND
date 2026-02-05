@@ -2,8 +2,11 @@ package com.blaybus.backend.controller.taskController
 
 import com.blaybus.backend.dto.CommentOnTaskRequest
 import com.blaybus.backend.dto.FileUploadResponse
+import com.blaybus.backend.dto.MenteeStudyTimeUpdateRequest
+import com.blaybus.backend.dto.MenteeTaskCompletionUpdateRequest
 import com.blaybus.backend.dto.MenteeTaskCreateRequest
 import com.blaybus.backend.dto.MenteeTaskUpdateRequest
+import com.blaybus.backend.dto.MentorTaskAssignRequest
 import com.blaybus.backend.dto.TaskResponse
 import com.blaybus.backend.service.TaskService
 import io.swagger.v3.oas.annotations.Operation
@@ -35,13 +38,17 @@ class MenteeTaskController(
     fun createTask(
         @AuthenticationPrincipal userId: Long,
         @Valid @RequestBody request: MenteeTaskCreateRequest,
+        @Parameter(description = "학습 자료 PDF (선택 사항)") @RequestPart(
+            "file",
+            required = false,
+        ) file: MultipartFile?,
     ): ResponseEntity<TaskResponse> {
-        val response = taskService.createTask(userId, request)
+        val response = taskService.createTask(userId, request, file)
         return ResponseEntity.ok(response)
     }
 
-    @Operation(summary = "Task 수정", description = "제목, 내용, 공부 시간 등을 수정합니다.")
-    @PutMapping("/{taskId}")
+    @Operation(summary = "Task 전체 수정", description = "제목, 내용, 공부 시간 등을 수정합니다.")
+    @PatchMapping("/{taskId}")
     fun updateTask(
         @AuthenticationPrincipal userId: Long,
         @PathVariable taskId: Long,
@@ -88,5 +95,33 @@ class MenteeTaskController(
         taskService.updateComment(userId, taskId, request)
 
         return ResponseEntity.ok().build()
+    }
+
+    @Operation(
+        summary = "공부시간 수정",
+        description = "멘티는 공부시간(분 단위)을 기록하고 수정할 수 있다."
+    )
+    @PatchMapping("/{taskId}/studyTime")
+    fun updateStudyTime(
+        @AuthenticationPrincipal userId: Long,
+        @Parameter(description = "Task ID") @PathVariable taskId: Long,
+        @Valid @RequestBody request: MenteeStudyTimeUpdateRequest
+    ): ResponseEntity<TaskResponse> {
+        val response = taskService.updateStudyTime(userId, taskId, request)
+        return ResponseEntity.ok(response)
+    }
+
+    @Operation(
+        summary = "완료여부 수정",
+        description = "멘티는 자신이 생성한 Task의 완료 여부를 체크할 수 있다."
+    )
+    @PatchMapping("/{taskId}/isCompleted")
+    fun updateIsCompleted(
+        @AuthenticationPrincipal userId: Long,
+        @Parameter(description = "Task ID") @PathVariable taskId: Long,
+        @Valid @RequestBody request: MenteeTaskCompletionUpdateRequest
+    ): ResponseEntity<TaskResponse> {
+        val response = taskService.updateTaskCompletion(userId, taskId, request)
+        return ResponseEntity.ok(response)
     }
 }
