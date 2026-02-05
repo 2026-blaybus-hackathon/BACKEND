@@ -20,7 +20,6 @@ import java.time.LocalDate
     indexes = [
         Index(name = "idx_daily_planners_user_id", columnList = "user_id"),
         Index(name = "idx_daily_planners_date", columnList = "date"),
-        Index(name = "idx_daily_planners_user_id_date", columnList = "user_id, date"),
     ],
     uniqueConstraints =
         [
