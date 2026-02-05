@@ -15,6 +15,8 @@ import java.time.LocalDateTime
 
 fun TaskRepository.getByTaskId(taskId: Long): Task = findById(taskId).orElseThrow { CustomException(ErrorCode.TASK_NOT_FOUND) }
 
+fun TaskRepository.getTaskWithDailyPlannerById(taskId: Long): Task = findTaskById(taskId) ?: throw CustomException(ErrorCode.TASK_NOT_FOUND)
+
 @Repository
 interface TaskRepository : JpaRepository<Task, Long> {
     @Query(
@@ -33,6 +35,9 @@ interface TaskRepository : JpaRepository<Task, Long> {
         start: LocalDateTime,
         end: LocalDateTime,
     ): List<Feedback>
+
+    @EntityGraph(attributePaths = ["dailyPlanner"])
+    fun findTaskById(taskId: Long): Task?
 
     // 특정 작성자(멘티)가 쓴 Task 목록 페이징 조회
     @EntityGraph(attributePaths = ["studyImages", "feedback"])

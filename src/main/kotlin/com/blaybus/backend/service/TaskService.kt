@@ -25,6 +25,7 @@ import com.blaybus.backend.repository.TaskRepository
 import com.blaybus.backend.repository.UserRepository
 import com.blaybus.backend.repository.getByTaskId
 import com.blaybus.backend.repository.getByUserId
+import com.blaybus.backend.repository.getTaskWithDailyPlannerById
 import com.blaybus.backend.util.getWeekRange
 import mu.KotlinLogging
 import org.redisson.api.RedissonClient
@@ -85,7 +86,7 @@ class TaskService(
                     isCompleted = false,
                 ),
             )
-        deleteWeeklyAchievementRateCache(userId)
+        deleteWeeklyAchievementRateCache(userId, request.date)
         return TaskResponse(
             id = task.id,
             content = task.title,
@@ -101,7 +102,7 @@ class TaskService(
         taskId: Long,
         request: MenteeTaskUpdateRequest,
     ): TaskResponse {
-        val task = taskRepository.getByTaskId(taskId)
+        val task = taskRepository.getTaskWithDailyPlannerById(taskId)
 
         if (task.writer.id != userId) throw CustomException(ErrorCode.NOT_YOUR_TASK)
 
@@ -109,7 +110,7 @@ class TaskService(
         task.content = request.content
         task.studyDurationInMinutes = request.studyTime // studyTime으로 매핑
         task.isCompleted = request.isCompleted ?: false
-        deleteWeeklyAchievementRateCache(userId)
+        deleteWeeklyAchievementRateCache(userId, task.dailyPlanner.date)
         return TaskResponse(
             id = task.id,
             content = task.title,
@@ -124,10 +125,10 @@ class TaskService(
         userId: Long,
         taskId: Long,
     ) {
-        val task = taskRepository.getByTaskId(taskId)
+        val task = taskRepository.getTaskWithDailyPlannerById(taskId)
         if (task.writer.id != userId) throw CustomException(ErrorCode.NOT_YOUR_TASK)
         taskRepository.delete(task)
-        deleteWeeklyAchievementRateCache(userId)
+        deleteWeeklyAchievementRateCache(userId, task.dailyPlanner.date)
     }
 
     @Transactional
@@ -166,14 +167,14 @@ class TaskService(
         date: LocalDate,
     ): AchievementRateResponse {
         userRepository.getByUserId(userId)
-        val bucket = redissonClient.getBucket<AchievementRateResponse>("$achievementRateCacheKey::$userId")
+        val (startOfWeek, endOfWeek) = getWeekRange(date)
+        val bucket =
+            redissonClient.getBucket<AchievementRateResponse>("$achievementRateCacheKey::$userId::$startOfWeek::")
         val response = bucket.get()
         if (response != null) {
             logger.info("캐시에서 주간 달성률 정보 조회됨")
             return response
         }
-        val (startOfWeek, endOfWeek) = getWeekRange(date)
-        logger.info("월요일 : $startOfWeek, 일요일 : $endOfWeek")
         val dailyPlannerList = dailyPlannerService.getDailyPlannerByPeriod(userId, startOfWeek, endOfWeek)
         val todayTask = dailyPlannerList.filter { it.date == date }.flatMap { it.tasks }
         val todayCompleteTaskSize = todayTask.filter { it.isCompleted }.size
@@ -225,7 +226,7 @@ class TaskService(
             val uploadedKey = objectStorageRepository.upload(filePath, it)
             assignmentRepository.save(Assignment(task = task, pdfFileName = uploadedKey))
         }
-        deleteWeeklyAchievementRateCache(request.menteeId)
+        deleteWeeklyAchievementRateCache(request.menteeId, request.date)
         return TaskResponse(
             id = task.id,
             content = task.title,
@@ -283,8 +284,13 @@ class TaskService(
         )
     }
 
-    private fun deleteWeeklyAchievementRateCache(userId: Long) {
-        val bucket = redissonClient.getBucket<AchievementRateResponse>("$achievementRateCacheKey::$userId")
+    private fun deleteWeeklyAchievementRateCache(
+        userId: Long,
+        date: LocalDate,
+    ) {
+        val (startOfWeek, endOfWeek) = getWeekRange(date)
+        val bucket =
+            redissonClient.getBucket<AchievementRateResponse>("$achievementRateCacheKey::$userId::$startOfWeek::")
         if (bucket.isExists) {
             bucket.delete()
             logger.info("$userId : 주간 달성률 캐시 삭제됨")
