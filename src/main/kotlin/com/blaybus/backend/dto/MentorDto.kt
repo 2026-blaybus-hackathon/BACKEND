@@ -1,5 +1,6 @@
 package com.blaybus.backend.dto
 
+import com.blaybus.backend.entity.Subject
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
@@ -71,7 +72,7 @@ data class MentorTaskAssignRequest(
     val title: String,
     @field:Schema(description = "과제 상세 설명", example = "첨부된 PDF 3페이지부터 10페이지까지 풀기")
     val content: String? = null,
-    @field:Schema(description = "과목", allowableValues = ["KOREAN", "MATH", "ENGLISH", "OTHERS"])
+    @field:Schema(description = "과목", allowableValues = ["KOREAN", "MATH", "ENGLISH"])
     val subject: Subject,
     @field:Schema(description = "할당할 날짜", example = "2026-02-06")
     val date: LocalDate,

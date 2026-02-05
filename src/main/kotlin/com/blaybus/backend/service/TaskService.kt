@@ -89,9 +89,7 @@ class TaskService(
         return TaskResponse(
             id = task.id,
             content = task.title,
-            subject =
-                com.blaybus.backend.dto.Subject
-                    .valueOf(task.subject.name),
+            subject = task.subject,
             priority = null,
             studyTime = task.studyDurationInMinutes ?: 0,
         )
@@ -115,9 +113,7 @@ class TaskService(
         return TaskResponse(
             id = task.id,
             content = task.title,
-            subject =
-                com.blaybus.backend.dto.Subject
-                    .valueOf(task.subject.name),
+            subject = task.subject,
             priority = null,
             studyTime = task.studyDurationInMinutes ?: 0,
         )
@@ -216,9 +212,7 @@ class TaskService(
             taskRepository.save(
                 Task(
                     dailyPlanner = planner,
-                    subject =
-                        com.blaybus.backend.entity.Subject
-                            .valueOf(request.subject.name),
+                    subject = request.subject,
                     title = request.title,
                     content = request.content,
                     writer = mentor,
@@ -235,9 +229,7 @@ class TaskService(
         return TaskResponse(
             id = task.id,
             content = task.title,
-            subject =
-                com.blaybus.backend.dto.Subject
-                    .valueOf(task.subject.name),
+            subject = task.subject,
             priority = null,
             studyTime = task.studyDurationInMinutes ?: 0,
         )
