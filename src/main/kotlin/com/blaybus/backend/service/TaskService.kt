@@ -13,7 +13,6 @@ import com.blaybus.backend.dto.TaskImageResponse
 import com.blaybus.backend.dto.TaskResponse
 import com.blaybus.backend.entity.Assignment
 import com.blaybus.backend.entity.StudyImage
-import com.blaybus.backend.entity.Subject
 import com.blaybus.backend.entity.Task
 import com.blaybus.backend.exception.CustomException
 import com.blaybus.backend.exception.ErrorCode
@@ -78,9 +77,7 @@ class TaskService(
         return TaskResponse(
             id = task.id,
             content = task.title,
-            subject =
-                Subject
-                    .valueOf(task.subject.name),
+            subject = task.subject,
             priority = null,
             studyTime = task.studyDurationInMinutes ?: 0,
         )
@@ -104,9 +101,7 @@ class TaskService(
         return TaskResponse(
             id = task.id,
             content = task.title,
-            subject =
-                Subject
-                    .valueOf(task.subject.name),
+            subject = task.subject,
             priority = null,
             studyTime = task.studyDurationInMinutes ?: 0,
         )
@@ -170,7 +165,7 @@ class TaskService(
             taskRepository.save(
                 Task(
                     dailyPlanner = planner,
-                    subject = Subject.valueOf(request.subject.name),
+                    subject = request.subject,
                     title = request.title,
                     content = request.content,
                     writer = mentor,
@@ -187,9 +182,7 @@ class TaskService(
         return TaskResponse(
             id = task.id,
             content = task.title,
-            subject =
-                Subject
-                    .valueOf(task.subject.name),
+            subject = task.subject,
             priority = null,
             studyTime = task.studyDurationInMinutes ?: 0,
         )

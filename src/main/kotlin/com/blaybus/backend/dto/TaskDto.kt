@@ -11,7 +11,7 @@ data class MenteeTaskCreateRequest(
     val title: String,
     @field:Schema(description = "상세 내용 (선택)", example = "틀린 문제 오답노트까지 작성")
     val content: String? = null,
-    @field:Schema(description = "과목", allowableValues = ["KOREAN", "MATH", "ENGLISH", "OTHERS"])
+    @field:Schema(description = "과목", allowableValues = ["KOREAN", "MATH", "ENGLISH"])
     val subject: Subject,
     @field:Schema(description = "플래너 날짜 (어느 날짜에 등록할지)", example = "2026-02-05")
     val date: LocalDate,
@@ -22,7 +22,7 @@ data class MenteeTaskUpdateRequest(
     val title: String,
     @field:Schema(description = "수정할 상세 내용")
     val content: String?,
-    @field:Schema(description = "수정할 과목", allowableValues = ["KOREAN", "MATH", "ENGLISH", "OTHERS"])
+    @field:Schema(description = "수정할 과목", allowableValues = ["KOREAN", "MATH", "ENGLISH"])
     val subject: Subject,
     @field:Schema(description = "공부 시간 (분 단위)", example = "60")
     val studyTime: Int?,
@@ -49,7 +49,7 @@ data class TaskResponse(
     val id: Long,
     @Schema(description = "할 일의 내용")
     val content: String,
-    @Schema(description = "할 일의 과목", allowableValues = ["KOREAN, MATH, ENGLISH, OTHERS"])
+    @Schema(description = "할 일의 과목", allowableValues = ["KOREAN, MATH, ENGLISH"])
     val subject: Subject,
     @Schema(description = "할 일의 우선순위, 만일 멘토가 준 과제라면 null")
     val priority: Int?,
