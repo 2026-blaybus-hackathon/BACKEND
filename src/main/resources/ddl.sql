@@ -37,8 +37,6 @@ CREATE TABLE daily_planners
 
 CREATE INDEX idx_daily_planners_date ON daily_planners ("DATE");
 
-CREATE INDEX idx_daily_planners_user_id_date ON daily_planners (user_id, "DATE");
-
 ALTER TABLE daily_planners
     ADD CONSTRAINT FK_DAILY_PLANNERS_ON_USER FOREIGN KEY (user_id) REFERENCES users (id);
 
@@ -135,3 +133,6 @@ ALTER TABLE feedbacks
     );
 
 CREATE INDEX idx_tasks_created_datetime ON tasks (created_datetime);
+
+ALTER TABLE daily_planners
+    ADD CONSTRAINT uk_daily_planners_user_id_date UNIQUE (user_id, "DATE");

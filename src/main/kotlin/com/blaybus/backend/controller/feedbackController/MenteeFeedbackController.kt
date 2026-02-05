@@ -1,4 +1,4 @@
-package com.blaybus.backend.controller.FeedbackController
+package com.blaybus.backend.controller.feedbackController
 
 import com.blaybus.backend.dto.FeedbackDto
 import com.blaybus.backend.service.FeedbackService
@@ -25,21 +25,21 @@ class MenteeFeedbackController(
 
     @Operation(summary = "특정 날짜 플래너의 종합 피드백 조회", description = "멘티는 멘토의 특정 날짜에 대한 종합 피드백을 조회합니다.")
     @ApiResponse(responseCode = "200", description = "종합 피드백 조회 성공")
-    @GetMapping("/daily-planner/{dailyPlannerId}/total-feedback")
+    @GetMapping("/daily-planner/total-feedback")
     fun getTotalFeedbackOfDailyPlanner(
         @AuthenticationPrincipal userId: Long,
         @Parameter(
-            name = "dailyPlannerId",
-            description = "종합 피드백을 조회할 플래너 ID",
+            name = "date",
+            description = "조회할 날짜 (YYYY-MM-DD 형식)",
+            example = "2026-02-03",
             required = true,
-            example = "1",
         )
-        @PathVariable dailyPlannerId: Long,
+        @RequestParam date: LocalDate,
     ): ResponseEntity<FeedbackDto.GetTotalFeedbackResponse> =
         ResponseEntity
             .status(HttpStatus.OK)
             .body(
-                feedbackService.findTotalFeedbackOfDailyPlanner(userId, dailyPlannerId),
+                feedbackService.findTotalFeedbackOfDailyPlanner(userId, date),
             )
 
     @Operation(summary = "할 일의 피드백 요약, 상세 조회", description = "멘티는 멘토의 피드백 요약, 상세 내용을 조회합니다.")

@@ -13,6 +13,11 @@ import java.time.LocalDate
 fun DailyPlannerRepository.getByDailyPlannerId(dailyPlannerId: Long): DailyPlanner =
     findById(dailyPlannerId).orElseThrow { CustomException(ErrorCode.DAILY_PLANNER_NOT_FOUND) }
 
+fun DailyPlannerRepository.getByUserAndDate(
+    user: User,
+    date: LocalDate,
+): DailyPlanner = findByUserAndDate(user, date) ?: throw CustomException(ErrorCode.DAILY_PLANNER_NOT_FOUND)
+
 @Repository
 interface DailyPlannerRepository : JpaRepository<DailyPlanner, Long> {
     fun findByUserAndDate(

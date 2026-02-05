@@ -1,4 +1,4 @@
-package com.blaybus.backend.controller.TaskController
+package com.blaybus.backend.controller.taskController
 
 import com.blaybus.backend.dto.CommentOnTaskRequest
 import com.blaybus.backend.dto.FileUploadResponse
