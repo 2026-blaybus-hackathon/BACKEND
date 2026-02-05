@@ -26,6 +26,7 @@ import com.blaybus.backend.repository.UserRepository
 import com.blaybus.backend.repository.getByTaskId
 import com.blaybus.backend.repository.getByUserId
 import com.blaybus.backend.repository.getTaskWithDailyPlannerById
+import com.blaybus.backend.util.getMondayOfWeek
 import com.blaybus.backend.util.getWeekRange
 import mu.KotlinLogging
 import org.redisson.api.RedissonClient
@@ -288,7 +289,7 @@ class TaskService(
         userId: Long,
         date: LocalDate,
     ) {
-        val (startOfWeek, endOfWeek) = getWeekRange(date)
+        val startOfWeek = getMondayOfWeek(date)
         val bucket =
             redissonClient.getBucket<AchievementRateResponse>("$achievementRateCacheKey::$userId::$startOfWeek::")
         if (bucket.isExists) {
