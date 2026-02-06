@@ -8,12 +8,14 @@ import com.blaybus.backend.dto.mapper.toUserProfileResponse
 import com.blaybus.backend.repository.ObjectStorageRepository
 import com.blaybus.backend.repository.UserRepository
 import com.blaybus.backend.repository.getByUserId
+import com.blaybus.backend.service.TaskService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
 class UserService(
     private val userRepository: UserRepository,
+    private val taskService: TaskService,
     private val objectStorageRepository: ObjectStorageRepository,
 ) {
     fun findAllUser(): List<SimpleUserDto> =
@@ -48,5 +50,12 @@ class UserService(
         return user.toUserProfileResponse(
             user.profileName?.let(objectStorageRepository::getDownloadUrl),
         )
+    }
+
+    @Transactional(readOnly = true)
+    fun getDailyStudyAmount(userId: Long): Int {
+        val user = userRepository.getByUserId(userId)
+        val todayTasks = taskService.getTodayTasksForUser(user)
+        return todayTasks.mapNotNull { it.studyDurationInMinutes }.sum()
     }
 }
