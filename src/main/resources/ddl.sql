@@ -142,7 +142,7 @@ ALTER TABLE USERS
         school_name VARCHAR2(100),
         grade VARCHAR2(20),
         target_school VARCHAR2(100),
-        target_date DATE
+        target_date date
         );
 
 ALTER TABLE USERS
