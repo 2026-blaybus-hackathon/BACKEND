@@ -1,8 +1,9 @@
 package com.blaybus.backend.service.user
 
 import com.blaybus.backend.dto.MenteeProfileResponse
-import com.blaybus.backend.dto.UserDto.SimpleUserDto
+import com.blaybus.backend.dto.SimpleUserDto
 import com.blaybus.backend.dto.UserProfileResponse
+import com.blaybus.backend.dto.UserTodayStudyTimeDto
 import com.blaybus.backend.dto.mapper.toMenteeProfileResponse
 import com.blaybus.backend.dto.mapper.toUserProfileResponse
 import com.blaybus.backend.repository.ObjectStorageRepository
@@ -53,9 +54,9 @@ class UserService(
     }
 
     @Transactional(readOnly = true)
-    fun getDailyStudyAmount(userId: Long): Int {
+    fun getDailyStudyAmount(userId: Long): UserTodayStudyTimeDto {
         val user = userRepository.getByUserId(userId)
         val todayTasks = taskService.getTodayTasksForUser(user)
-        return todayTasks.mapNotNull { it.studyDurationInMinutes }.sum()
+        return UserTodayStudyTimeDto(todayTasks.mapNotNull { it.studyDurationInMinutes }.sum())
     }
 }

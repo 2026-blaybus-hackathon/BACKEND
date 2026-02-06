@@ -1,6 +1,7 @@
 package com.blaybus.backend.controller.user
 
 import com.blaybus.backend.dto.UserProfileResponse
+import com.blaybus.backend.dto.UserTodayStudyTimeDto
 import com.blaybus.backend.service.user.UserService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -39,7 +40,7 @@ class MenteeUserController(
     @GetMapping("/daily-study-amount")
     fun getMyDailyStudyAmount(
         @AuthenticationPrincipal userId: Long,
-    ): ResponseEntity<Int> =
+    ): ResponseEntity<UserTodayStudyTimeDto> =
         ResponseEntity
             .status(HttpStatus.OK)
             .body(userService.getDailyStudyAmount(userId))
