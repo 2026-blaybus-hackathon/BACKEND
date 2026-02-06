@@ -25,7 +25,6 @@ import com.blaybus.backend.repository.TaskRepository
 import com.blaybus.backend.repository.UserRepository
 import com.blaybus.backend.repository.getByTaskId
 import com.blaybus.backend.repository.getByUserId
-import com.blaybus.backend.repository.getTaskWithDailyPlannerById
 import com.blaybus.backend.util.getWeekRange
 import mu.KotlinLogging
 import org.springframework.data.domain.Pageable
@@ -96,7 +95,7 @@ class TaskService(
         taskId: Long,
         request: MenteeTaskUpdateRequest,
     ): TaskResponse {
-        val task = taskRepository.getTaskWithDailyPlannerById(taskId)
+        val task = taskRepository.getByTaskId(taskId)
 
         if (task.writer.id != userId) throw CustomException(ErrorCode.NOT_YOUR_TASK)
 
@@ -118,7 +117,7 @@ class TaskService(
         userId: Long,
         taskId: Long,
     ) {
-        val task = taskRepository.getTaskWithDailyPlannerById(taskId)
+        val task = taskRepository.getByTaskId(taskId)
         if (task.writer.id != userId) throw CustomException(ErrorCode.NOT_YOUR_TASK)
         taskRepository.delete(task)
     }
