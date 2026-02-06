@@ -1,7 +1,7 @@
 package com.blaybus.backend.controller.taskController
 
-import com.blaybus.backend.dto.AchievementRate
 import com.blaybus.backend.dto.CommentOnTaskRequest
+import com.blaybus.backend.dto.DailyAchievementRate
 import com.blaybus.backend.dto.FileUploadResponse
 import com.blaybus.backend.dto.MenteeTaskCreateRequest
 import com.blaybus.backend.dto.MenteeTaskUpdateRequest
@@ -107,5 +107,5 @@ class MenteeTaskController(
             required = true,
         )
         @RequestParam date: LocalDate,
-    ): ResponseEntity<List<AchievementRate>> = ResponseEntity.ok(taskService.getWeeklyAchievement(userId, date))
+    ): ResponseEntity<List<DailyAchievementRate>> = ResponseEntity.ok(taskService.getWeeklyAchievement(userId, date))
 }

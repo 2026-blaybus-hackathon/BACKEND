@@ -1,7 +1,7 @@
 package com.blaybus.backend.service
 
-import com.blaybus.backend.dto.AchievementRate
 import com.blaybus.backend.dto.CommentOnTaskRequest
+import com.blaybus.backend.dto.DailyAchievementRate
 import com.blaybus.backend.dto.FeedbackDetail
 import com.blaybus.backend.dto.FileUploadResponse
 import com.blaybus.backend.dto.MenteeTaskCreateRequest
@@ -156,18 +156,28 @@ class TaskService(
     fun getWeeklyAchievement(
         userId: Long,
         date: LocalDate,
-    ): List<AchievementRate> {
+    ): List<DailyAchievementRate> {
         userRepository.getByUserId(userId)
         val (startOfWeek, endOfWeek) = getWeekRange(date)
         val dailyPlannerList = dailyPlannerService.getDailyPlannerByPeriod(userId, startOfWeek, endOfWeek)
-        val weeklyTaskList: List<Pair<Int, Int>> =
-            dailyPlannerList.map { dailyPlanner ->
-                val tasks = dailyPlanner.tasks
-                Pair(tasks.count { it.isCompleted }, tasks.size)
+        var day = startOfWeek
+        val weeklyAchievementList: MutableList<DailyAchievementRate> = mutableListOf()
+        for (dailyPlanner in dailyPlannerList) {
+            val tasks = dailyPlanner.tasks
+            while (day.isBefore(dailyPlanner.date)) {
+                weeklyAchievementList.add(DailyAchievementRate(day, 0, 0))
+                day = day.plusDays(1)
             }
-        return weeklyTaskList.map { (completed, total) ->
-            AchievementRate(completed, total)
+            weeklyAchievementList.add(
+                DailyAchievementRate(
+                    day,
+                    completedTasks = tasks.count { it.isCompleted },
+                    totalTasks = tasks.size,
+                ),
+            )
+            day = day.plusDays(1)
         }
+        return weeklyAchievementList
     }
     // ================== 멘토 기능 (과제 할당 및 조회) ==================
 
