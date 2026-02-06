@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
-@Tag(name = "User API", description = "멘티 관련 조회")
+@Tag(name = "mentee-user-controller API", description = "멘티 관련 조회")
 @RequestMapping("/api/v1/users/mentee")
 @RestController
 class MenteeUserController(

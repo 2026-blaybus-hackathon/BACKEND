@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
-@Tag(name = "User API", description = "멘토 관련 조회")
+@Tag(name = "mentor-user-controller", description = "멘토 관련 조회")
 @RequestMapping("/api/v1/users/mentor")
 @RestController
 class MentorUserController(
