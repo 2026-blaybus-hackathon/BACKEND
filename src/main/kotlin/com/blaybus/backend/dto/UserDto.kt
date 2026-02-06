@@ -40,7 +40,7 @@ data class MenteeProfileResponse(
         name = user.name,
         profileUrl = profileUrl,
         schoolName = user.schoolName,
-        grade = user.grade?.name,
+        grade = user.grade?.description,
         targetSchool = user.targetSchool,
         targetDate = user.targetDate,
     )
@@ -64,7 +64,7 @@ data class UserProfileResponse(
         name = user.name,
         profileUrl = profileUrl,
         schoolName = user.schoolName,
-        grade = user.grade?.name,
+        grade = user.grade?.description,
         targetSchool = user.targetSchool,
         targetDate = user.targetDate,
     )

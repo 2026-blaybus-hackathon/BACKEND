@@ -133,7 +133,7 @@ class JwtTokenProvider(
         val accessToken = generateAccessToken(userId, authorities)
         val refreshToken =
             createToken(
-                "userId" to user.id,
+                "userId" to userId,
                 expirationMinutes = refreshTokenExpirationTime,
             )
         val existingRefreshToken: RefreshToken? = refreshTokenRepository.findByUserId(userId)

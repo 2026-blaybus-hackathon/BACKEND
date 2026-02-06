@@ -12,12 +12,12 @@ import java.time.LocalDate
 data class EmailSignupRequest(
     @field:Schema(requiredMode = Schema.RequiredMode.REQUIRED)
     @field:Email
-    @field:NotBlank(message = "이메일은 필수 입력값입니다")
+    @field:NotBlank(message = "이메일은 필수 입력값입니다.")
     val email: String,
-    @field:NotBlank(message = "이름은 필수 입력값입니다")
+    @field:NotBlank(message = "이름은 필수 입력값입니다.")
     val name: String,
     @field:Schema(requiredMode = Schema.RequiredMode.REQUIRED)
-    @field:NotBlank(message = "비밀번호는 필수 입력값입니다")
+    @field:NotBlank(message = "비밀번호는 필수 입력값입니다.")
     val password: String,
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "사용자 역할", allowableValues = ["MENTOR", "MENTEE"])
     val role: Role,
@@ -26,7 +26,7 @@ data class EmailSignupRequest(
     @Schema(description = "학년")
     val grade: Grade?,
     @Schema(description = "목표 학교", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotBlank(message = "목표 학교는 필수 입력값입니다")
+    @NotBlank(message = "목표 학교는 필수 입력값입니다.")
     val targetSchool: String,
     @Schema(description = "목표일", example = "2024-11-15")
     val targetDate: LocalDate?,
@@ -35,10 +35,10 @@ data class EmailSignupRequest(
 data class EmailLoginRequest(
     @field:Schema(requiredMode = Schema.RequiredMode.REQUIRED)
     @field:Email
-    @field:NotBlank(message = "이메일은 필수 입력값입니다")
+    @field:NotBlank(message = "이메일은 필수 입력값입니다.")
     val email: String,
     @field:Schema(requiredMode = Schema.RequiredMode.REQUIRED)
-    @field:NotBlank(message = "비밀번호는 필수 입력값입니다")
+    @field:NotBlank(message = "비밀번호는 필수 입력값입니다.")
     val password: String,
 )
 
