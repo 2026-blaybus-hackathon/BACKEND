@@ -23,11 +23,12 @@ data class EmailSignupRequest(
     @Schema(description = "학교 이름")
     val schoolName: String?,
     @Schema(description = "학년")
-    val grade: Grade,
-    @Schema(description = "목표 학교", required = true)
+    val grade: Grade?,
+    @Schema(description = "목표 학교", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotBlank(message = "목표 학교는 필수 입력값입니다")
     val targetSchool: String,
-    @Schema(description = "목표 시험일", example = "2024-11-15")
-    val targetExamDate: LocalDate,
+    @Schema(description = "목표일", example = "2024-11-15")
+    val targetDate: LocalDate?,
 )
 
 data class EmailLoginRequest(

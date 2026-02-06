@@ -61,7 +61,7 @@ class AuthService(
                 schoolName = request.schoolName,
                 grade = request.grade,
                 targetSchool = request.targetSchool,
-                targetDate = request.targetExamDate,
+                targetDate = request.targetDate,
             )
         userRepository.save(user)
     }
