@@ -136,3 +136,11 @@ CREATE INDEX idx_tasks_created_datetime ON tasks (created_datetime);
 
 ALTER TABLE daily_planners
     ADD CONSTRAINT uk_daily_planners_user_id_date UNIQUE (user_id, "DATE");
+
+ALTER TABLE USERS
+    ADD (
+        school_name VARCHAR2(100),
+        grade INTEGER,
+        target_school VARCHAR2(100),
+        target_exam_date DATE
+        );

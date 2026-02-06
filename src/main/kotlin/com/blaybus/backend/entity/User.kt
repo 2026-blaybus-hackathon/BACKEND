@@ -15,6 +15,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
+import java.time.LocalDate
 
 @Entity
 @Table(
@@ -42,6 +43,12 @@ class User(
     @Column(length = 100)
     var profileName: String? = null,
     var originFileName: String? = null,
+    @Column(length = 100)
+    var schoolName: String? = null,
+    var grade: Int? = null,
+    @Column(length = 100)
+    var targetSchool: String? = null,
+    var targetExamDate: LocalDate? = null,
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mentor_id", nullable = true)
     var mentor: User? = null,
