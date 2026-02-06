@@ -35,4 +35,13 @@ class DailyPlannerService(
             }
         return dailyPlanner
     }
+
+    fun getDailyPlannerOrNullByUserAndDate(
+        user: User,
+        date: LocalDate,
+    ): DailyPlanner? =
+        dailyPlannerRepository.findByUserAndDate(
+            user = user,
+            date = date,
+        )
 }

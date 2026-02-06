@@ -1,6 +1,7 @@
 package com.blaybus.backend.dto
 
 import com.blaybus.backend.entity.Subject
+import com.blaybus.backend.entity.Task
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 import java.time.LocalDate
@@ -47,12 +48,45 @@ data class CommentOnTaskRequest(
 data class TaskResponse(
     @Schema(description = "할 일 ID")
     val id: Long,
-    @Schema(description = "할 일의 내용")
-    val content: String,
+    @Schema(description = "할 일의 제목")
+    val title: String,
     @Schema(description = "할 일의 과목", allowableValues = ["KOREAN, MATH, ENGLISH"])
     val subject: Subject,
-    @Schema(description = "할 일의 우선순위, 만일 멘토가 준 과제라면 null")
-    val priority: Int?,
-    @Schema(description = "할 일에 할당된 공부 시간(분 단위)")
+    @Schema(description = "해당 할 일의 공부 시간 (분 단위), 안 한 경우 0")
     val studyTime: Int = 0,
-)
+    @Schema(description = "완료했는지 여부")
+    val isCompleted: Boolean,
+) {
+    constructor(task: Task) : this(
+        id = task.id,
+        title = task.title,
+        subject = task.subject,
+        studyTime = task.studyDurationInMinutes ?: 0,
+        isCompleted = task.isCompleted,
+    )
+}
+
+data class TaskDetailResponse(
+    @Schema(description = "할 일 ID")
+    val id: Long,
+    @Schema(description = "할 일의 제목")
+    val title: String,
+    @Schema(description = "할 일의 과목", allowableValues = ["KOREAN, MATH, ENGLISH"])
+    val subject: Subject,
+    @Schema(description = "해당 할 일의 공부 시간 (분 단위), 안 한 경우 0")
+    val studyTime: Int = 0,
+    @Schema(description = "완료했는지 여부")
+    val isCompleted: Boolean,
+    @Schema(description = "멘토에게 남긴 코멘트 또는 질문")
+    val comment: String?,
+    // TODO: 디자인 나오면 제대로 구현
+) {
+    constructor(task: Task) : this(
+        id = task.id,
+        title = task.title,
+        subject = task.subject,
+        studyTime = task.studyDurationInMinutes ?: 0,
+        isCompleted = task.isCompleted,
+        comment = task.comment,
+    )
+}

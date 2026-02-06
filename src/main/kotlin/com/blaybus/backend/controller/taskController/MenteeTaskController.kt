@@ -4,6 +4,8 @@ import com.blaybus.backend.dto.CommentOnTaskRequest
 import com.blaybus.backend.dto.FileUploadResponse
 import com.blaybus.backend.dto.MenteeTaskCreateRequest
 import com.blaybus.backend.dto.MenteeTaskUpdateRequest
+import com.blaybus.backend.dto.SliceResponse
+import com.blaybus.backend.dto.TaskDetailResponse
 import com.blaybus.backend.dto.TaskResponse
 import com.blaybus.backend.service.TaskService
 import io.swagger.v3.oas.annotations.Operation
@@ -14,15 +16,18 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
+import java.time.LocalDate
 
 @Tag(name = "mentee-task-controller", description = "멘티의 할 일(Task) 관리, CRUD")
 @RequestMapping("/api/v1/tasks/mentee")
@@ -88,5 +93,53 @@ class MenteeTaskController(
         taskService.updateComment(userId, taskId, request)
 
         return ResponseEntity.ok().build()
+    }
+
+    @Operation(
+        summary = "특정 날짜의 할 일 목록 조회",
+        description = "멘티는 특정 날짜에 등록된 할 일 목록을 조회할 수 있습니다.",
+    )
+    @GetMapping("/list")
+    fun getTasksByDate(
+        @AuthenticationPrincipal userId: Long,
+        @Parameter(
+            name = "date",
+            description = "조회할 날짜 (YYYY-MM-DD 형식)",
+            example = "2026-02-03",
+            required = true,
+        )
+        @RequestParam date: LocalDate,
+        @Parameter(
+            description = "마지막에 조회한 할 일 ID (페이징용, 선택 사항)",
+            required = false,
+        )
+        @RequestParam(required = false) lastTaskId: Long?,
+        @Parameter(
+            description = "한 번에 조회할 할 일 개수 (기본값: 20)",
+            required = false,
+        )
+        @RequestParam(required = false, defaultValue = "20") size: Int,
+    ): ResponseEntity<SliceResponse<TaskResponse>> {
+        val tasks = taskService.getTasksByDateList(userId, date, lastTaskId, size)
+        return ResponseEntity.ok(tasks)
+    }
+
+    @Operation(
+        summary = "할 일 ID로 상세 조회",
+        description = "멘티는 할 일 ID로 해당 할 일의 상세 정보를 조회할 수 있습니다.",
+    )
+    @GetMapping("/{taskId}")
+    fun getTaskById(
+        @AuthenticationPrincipal userId: Long,
+        @Parameter(
+            name = "taskId",
+            description = "조회할 할 일 ID",
+            example = "1",
+            required = true,
+        )
+        @PathVariable taskId: Long,
+    ): ResponseEntity<TaskDetailResponse> {
+        val task = taskService.getTaskByTaskId(userId, taskId)
+        return ResponseEntity.ok(task)
     }
 }
