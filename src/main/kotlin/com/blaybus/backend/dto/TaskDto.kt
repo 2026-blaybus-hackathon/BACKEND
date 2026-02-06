@@ -4,7 +4,7 @@ import com.blaybus.backend.entity.Subject
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 import java.time.LocalDate
-import kotlin.math.roundToInt
+import kotlin.math.floor
 
 data class MenteeTaskCreateRequest(
     @field:Schema(description = "할 일 제목", example = "매3비 3일차 풀기")
@@ -65,7 +65,8 @@ data class AchievementDetails(
     val totalTasks: Int,
 ) {
     @Schema(description = "달성률 (%)")
-    val achievementRate: Int = if (totalTasks == 0) 0 else ((completedTasks.toDouble() / totalTasks) * 100).roundToInt()
+    val achievementRate: Int =
+        if (totalTasks == 0) 0 else floor((completedTasks.toDouble() / totalTasks) * 100).toInt() // 소수점 버림
 }
 
 data class AchievementRateResponse(

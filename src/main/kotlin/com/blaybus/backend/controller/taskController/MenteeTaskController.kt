@@ -99,13 +99,13 @@ class MenteeTaskController(
         description = "멘티는 자신의 주/일간 달성 정보를 조회할 수 있습니다.",
     )
     @GetMapping("/achievement-rate")
-    fun getWeeklyAchievementRate(
+    fun getAchievementRate(
         @AuthenticationPrincipal userId: Long,
         @Parameter(
-            name = "todayDate",
-            description = "오늘 날짜",
+            name = "date",
+            description = "조회할 날짜 (해당 날짜가 속한 주의 달성률이 조회됩니다)",
             required = true,
         )
-        @RequestParam todayDate: LocalDate,
-    ): ResponseEntity<AchievementRateResponse> = ResponseEntity.ok(taskService.getAchievementRate(userId, todayDate))
+        @RequestParam date: LocalDate,
+    ): ResponseEntity<AchievementRateResponse> = ResponseEntity.ok(taskService.getAchievementRate(userId, date))
 }

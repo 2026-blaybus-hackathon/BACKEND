@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController
 @Tag(name = "User API", description = "멘토 관련 조회")
 @RequestMapping("/api/v1/users/mentor")
 @RestController
-class MontorUserController(
+class MentorUserController(
     private val userService: UserService,
 ) {
     @Operation(

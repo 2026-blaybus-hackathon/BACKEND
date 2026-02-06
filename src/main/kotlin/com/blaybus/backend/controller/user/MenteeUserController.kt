@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController
 @Tag(name = "User API", description = "멘티 관련 조회")
 @RequestMapping("/api/v1/users/mentee")
 @RestController
-class UserController(
+class MenteeUserController(
     private val userService: UserService,
 ) {
     // TODO : 멘토, 멘티 공통 프로필 조회 API로 변경될 수도 있음

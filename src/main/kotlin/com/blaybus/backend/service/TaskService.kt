@@ -162,7 +162,7 @@ class TaskService(
         )
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     fun getAchievementRate(
         userId: Long,
         date: LocalDate,
@@ -181,10 +181,7 @@ class TaskService(
         val todayCompleteTaskSize = todayTask.filter { it.isCompleted }.size
         val weeklyTaskList = dailyPlannerList.flatMap { it.tasks }
         val weeklyStudyTimeMinutes =
-            weeklyTaskList
-                .filter {
-                    it.studyDurationInMinutes != null
-                }.sumOf { it.studyDurationInMinutes!!.toInt() }
+            weeklyTaskList.mapNotNull { it.studyDurationInMinutes }.sum()
         val weeklyCompleteTaskSize = weeklyTaskList.filter { it.isCompleted }.size
         val achievementRateResponse =
             AchievementRateResponse(
