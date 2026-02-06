@@ -4,7 +4,6 @@ import com.blaybus.backend.entity.Subject
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 import java.time.LocalDate
-import kotlin.math.floor
 
 data class MenteeTaskCreateRequest(
     @field:Schema(description = "할 일 제목", example = "매3비 3일차 풀기")
@@ -58,22 +57,20 @@ data class TaskResponse(
     val studyTime: Int = 0,
 )
 
-data class AchievementDetails(
-    @Schema(description = "완료된 할 일 수")
-    val completedTasks: Int,
-    @Schema(description = "총 할 일 수")
-    val totalTasks: Int,
+data class AchievementRate(
+    @Schema(description = "달성률 (0~10 사이의 짝수 값)")
+    val achievementRate: Int,
 ) {
-    @Schema(description = "달성률 (%)")
-    val achievementRate: Int =
-        if (totalTasks == 0) 0 else floor((completedTasks.toDouble() / totalTasks) * 100).toInt() // 소수점 버림
+    constructor(completedTasks: Int, totalTasks: Int) : this(
+        if (totalTasks == 0 || completedTasks == 0) {
+            0
+        } else {
+            val achievementRate = ((completedTasks.toDouble() / totalTasks) * 10).toInt()
+            if (achievementRate % 2 != 0) {
+                achievementRate - 1
+            } else {
+                achievementRate
+            }
+        },
+    )
 }
-
-data class AchievementRateResponse(
-    @Schema(description = "주간 달성률 정보")
-    val weekly: AchievementDetails,
-    @Schema(description = "오늘 달성률 정보")
-    val today: AchievementDetails,
-    @Schema(description = "주간 총 공부 시간 (분)")
-    val weeklyStudyTimeMinutes: Int,
-)

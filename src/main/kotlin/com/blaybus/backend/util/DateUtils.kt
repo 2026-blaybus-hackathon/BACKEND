@@ -13,5 +13,3 @@ fun getWeekRange(date: LocalDate): Pair<LocalDate, LocalDate> {
     logger.info("월요일 : $startOfWeek, 일요일 : $endOfWeek")
     return Pair(startOfWeek, endOfWeek)
 }
-
-fun getMondayOfWeek(date: LocalDate): LocalDate = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))

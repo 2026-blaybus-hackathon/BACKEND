@@ -31,4 +31,16 @@ class MenteeUserController(
             .body(
                 userService.findMyProfile(userId),
             )
+
+    @Operation(
+        summary = "하루 공부량 조회",
+        description = "멘티는 자신의 하루 공부량을 조회할 수 있습니다.",
+    )
+    @GetMapping("/daily-study-amount")
+    fun getMyDailyStudyAmount(
+        @AuthenticationPrincipal userId: Long,
+    ): ResponseEntity<Int> =
+        ResponseEntity
+            .status(HttpStatus.OK)
+            .body(userService.getDailyStudyAmount(userId))
 }

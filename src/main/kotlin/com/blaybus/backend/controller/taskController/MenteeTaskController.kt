@@ -1,6 +1,6 @@
 package com.blaybus.backend.controller.taskController
 
-import com.blaybus.backend.dto.AchievementRateResponse
+import com.blaybus.backend.dto.AchievementRate
 import com.blaybus.backend.dto.CommentOnTaskRequest
 import com.blaybus.backend.dto.FileUploadResponse
 import com.blaybus.backend.dto.MenteeTaskCreateRequest
@@ -95,17 +95,17 @@ class MenteeTaskController(
     }
 
     @Operation(
-        summary = "주/일간 달성 정보 조회",
-        description = "멘티는 자신의 주/일간 달성 정보를 조회할 수 있습니다.",
+        summary = "주간 유저 달성 정보 조회",
+        description = "멘티는 자신의 주간 달성 정보를 조회할 수 있습니다.(유저 주간 히트맵)",
     )
-    @GetMapping("/achievement-rate")
-    fun getAchievementRate(
+    @GetMapping("/weekly-achievement-rate")
+    fun getWeeklyAchievement(
         @AuthenticationPrincipal userId: Long,
         @Parameter(
             name = "date",
-            description = "조회할 날짜 (해당 날짜가 속한 주의 달성률이 조회됩니다)",
+            description = "조회할 날짜 (해당 날짜가 속한 주의 달성 정보가 조회됩니다)",
             required = true,
         )
         @RequestParam date: LocalDate,
-    ): ResponseEntity<AchievementRateResponse> = ResponseEntity.ok(taskService.getAchievementRate(userId, date))
+    ): ResponseEntity<List<AchievementRate>> = ResponseEntity.ok(taskService.getWeeklyAchievement(userId, date))
 }

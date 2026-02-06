@@ -25,7 +25,7 @@ interface DailyPlannerRepository : JpaRepository<DailyPlanner, Long> {
     ): DailyPlanner?
 
     @EntityGraph(attributePaths = ["tasks"])
-    fun findAllByUserIdAndDateBetween(
+    fun findAllByUserIdAndDateBetweenOrderByDateAsc(
         userId: Long,
         startDate: LocalDate,
         endDate: LocalDate,
