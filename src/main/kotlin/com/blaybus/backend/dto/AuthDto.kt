@@ -2,6 +2,7 @@ package com.blaybus.backend.dto
 
 import com.blaybus.backend.entity.Grade
 import com.blaybus.backend.entity.Role
+import com.blaybus.backend.entity.User
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
@@ -23,11 +24,12 @@ data class EmailSignupRequest(
     @Schema(description = "학교 이름")
     val schoolName: String?,
     @Schema(description = "학년")
-    val grade: Grade,
+    val grade: Grade?,
     @Schema(description = "목표 학교", required = true)
+    @NotBlank(message = "목표 학교는 필수 입력값입니다")
     val targetSchool: String,
     @Schema(description = "목표 시험일", example = "2024-11-15")
-    val targetExamDate: LocalDate,
+    val targetExamDate: LocalDate?,
 )
 
 data class EmailLoginRequest(
@@ -42,14 +44,64 @@ data class EmailLoginRequest(
 
 // Response DTOs
 data class TokenResponse(
+    @Schema(description = "액세스 토큰")
     val accessToken: String,
-    val refreshToken: String?,
-    val name: String?,
-    // TODO: 학적, 목표, role 등 추가 정보
-)
+    @Schema(description = "리프레시 토큰")
+    val refreshToken: String,
+    @Schema(description = "사용자 이름")
+    val name: String,
+    @Schema(description = "사용자 역할")
+    val role: String,
+    @Schema(description = "이메일")
+    val email: String,
+    @Schema(description = "사용자 출신 학교")
+    val schoolName: String?,
+    @Schema(description = "사용자 학년")
+    val grade: String?,
+    @Schema(description = "사용자 목표 학교")
+    val targetSchool: String?,
+    @Schema(description = "사용자 목표일")
+    val targetDate: LocalDate?,
+) {
+    constructor(accessToken: String, refreshToken: String, user: User) : this(
+        accessToken = accessToken,
+        refreshToken = refreshToken,
+        name = user.name,
+        role = user.role.name,
+        email = user.email,
+        schoolName = user.schoolName,
+        grade = user.grade?.description,
+        targetSchool = user.targetSchool,
+        targetDate = user.targetDate,
+    )
+}
 
 data class LoginResponse(
+    @Schema(description = "액세스 토큰")
     val accessToken: String,
-    val name: String?,
-    // TODO: 학적, 목표, role 등 추가 정보
-)
+    @Schema(description = "사용자 이름")
+    val name: String,
+    @Schema(description = "사용자 역할")
+    val role: String,
+    @Schema(description = "이메일")
+    val email: String,
+    @Schema(description = "사용자 출신 학교")
+    val schoolName: String?,
+    @Schema(description = "사용자 학년")
+    val grade: String?,
+    @Schema(description = "사용자 목표 학교")
+    val targetSchool: String?,
+    @Schema(description = "사용자 목표일")
+    val targetDate: LocalDate?,
+) {
+    constructor(tokenResponse: TokenResponse) : this(
+        accessToken = tokenResponse.accessToken,
+        name = tokenResponse.name,
+        role = tokenResponse.role,
+        email = tokenResponse.email,
+        schoolName = tokenResponse.schoolName,
+        grade = tokenResponse.grade,
+        targetSchool = tokenResponse.targetSchool,
+        targetDate = tokenResponse.targetDate,
+    )
+}

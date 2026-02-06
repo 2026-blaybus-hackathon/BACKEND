@@ -1,7 +1,7 @@
 package com.blaybus.backend.service.user
 
 import com.blaybus.backend.dto.MenteeProfileResponse
-import com.blaybus.backend.dto.UserDto.SimpleUserDto
+import com.blaybus.backend.dto.SimpleUserDto
 import com.blaybus.backend.dto.UserProfileResponse
 import com.blaybus.backend.dto.mapper.toMenteeProfileResponse
 import com.blaybus.backend.dto.mapper.toUserProfileResponse

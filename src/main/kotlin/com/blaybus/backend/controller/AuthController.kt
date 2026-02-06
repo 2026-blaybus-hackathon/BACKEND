@@ -1,5 +1,6 @@
 package com.blaybus.backend.controller
 
+import com.blaybus.backend.annotation.ApiErrorCodes
 import com.blaybus.backend.annotation.SwaggerBody
 import com.blaybus.backend.config.JwtProperties
 import com.blaybus.backend.dto.EmailLoginRequest
@@ -49,6 +50,13 @@ class AuthController(
             ),
         ],
     )
+    @ApiErrorCodes(
+        ErrorCode.REQUIRED_TARGET_SCHOOL,
+        ErrorCode.REGISTERED_ALREADY,
+        ErrorCode.REQUIRED_NAME,
+        ErrorCode.REQUIRED_EMAIL,
+        ErrorCode.REQUIRED_PASSWORD,
+    )
     @PostMapping("/signup/email", consumes = [MULTIPART_FORM_DATA_VALUE])
     fun signupWithEmail(
         @Valid @RequestPart request: EmailSignupRequest,
@@ -59,6 +67,9 @@ class AuthController(
         return ResponseEntity.status(HttpStatus.CREATED).build()
     }
 
+    @ApiErrorCodes(
+        ErrorCode.INVALID_CREDENTIALS,
+    )
     @PostMapping("/login/email")
     fun loginWithEmail(
         @Valid @RequestBody request: EmailLoginRequest,
@@ -66,8 +77,8 @@ class AuthController(
         val tokenResponse: TokenResponse = authService.loginWithEmail(request)
         return ResponseEntity
             .status(HttpStatus.OK)
-            .header(HttpHeaders.SET_COOKIE, getRefreshTokenCookie(tokenResponse.refreshToken!!).toString())
-            .body(LoginResponse(tokenResponse.accessToken, tokenResponse.name))
+            .header(HttpHeaders.SET_COOKIE, getRefreshTokenCookie(tokenResponse.refreshToken).toString())
+            .body(LoginResponse(tokenResponse))
     }
 
     @PostMapping("/refresh")
@@ -77,8 +88,8 @@ class AuthController(
         val tokenResponse: TokenResponse = authService.refresh(refreshToken)
         return ResponseEntity
             .status(HttpStatus.OK)
-            .header(HttpHeaders.SET_COOKIE, getRefreshTokenCookie(tokenResponse.refreshToken!!).toString())
-            .body(LoginResponse(tokenResponse.accessToken, tokenResponse.name))
+            .header(HttpHeaders.SET_COOKIE, getRefreshTokenCookie(tokenResponse.refreshToken).toString())
+            .body(LoginResponse(tokenResponse))
     }
 
     @PostMapping("/logout")

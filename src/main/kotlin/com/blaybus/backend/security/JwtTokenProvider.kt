@@ -3,6 +3,7 @@ package com.blaybus.backend.security
 import com.blaybus.backend.config.JwtProperties
 import com.blaybus.backend.dto.TokenResponse
 import com.blaybus.backend.entity.Role
+import com.blaybus.backend.entity.User
 import com.blaybus.backend.entity.auth.RefreshToken
 import com.blaybus.backend.exception.CustomException
 import com.blaybus.backend.exception.ErrorCode
@@ -92,7 +93,7 @@ class JwtTokenProvider(
 
             throw Exception("unsupported claim type: requested=$type, actual=${raw::class}")
         } catch (e: ExpiredJwtException) {
-            handleExpiredJwtException(e)
+            throw CustomException(ErrorCode.EXPIRED_TOKEN)
         } catch (e: Exception) {
             throw CustomException(ErrorCode.INVALID_TOKEN, e.message)
         }
@@ -108,7 +109,7 @@ class JwtTokenProvider(
                     .parseSignedClaims(token)
             return !claims.payload.expiration.before(Date()) // 토큰의 만료시간이 현재 시간 이전인지 확인
         } catch (e: ExpiredJwtException) {
-            handleExpiredJwtException(e)
+            throw CustomException(ErrorCode.EXPIRED_TOKEN)
         } catch (e: Exception) {
             throw CustomException(ErrorCode.INVALID_TOKEN, e.message)
         }
@@ -125,14 +126,14 @@ class JwtTokenProvider(
         )
 
     fun getTokenResponse(
-        userId: Long,
         authorities: Collection<GrantedAuthority>,
-        name: String,
+        user: User,
     ): TokenResponse {
+        val userId = user.id
         val accessToken = generateAccessToken(userId, authorities)
         val refreshToken =
             createToken(
-                "userId" to userId,
+                "userId" to user.id,
                 expirationMinutes = refreshTokenExpirationTime,
             )
         val existingRefreshToken: RefreshToken? = refreshTokenRepository.findByUserId(userId)
@@ -140,7 +141,7 @@ class JwtTokenProvider(
             refreshTokenRepository.delete(existingRefreshToken)
         }
         refreshTokenRepository.save(RefreshToken(userId, refreshToken, refreshTokenExpirationTime))
-        return TokenResponse(accessToken, refreshToken, name)
+        return TokenResponse(accessToken, refreshToken, user)
     }
 
     fun getTokenExpirationTime(token: String): Date =
@@ -153,20 +154,4 @@ class JwtTokenProvider(
             .expiration
 
     fun getAuthorities(role: Role): MutableList<GrantedAuthority> = mutableListOf(SimpleGrantedAuthority(role.name))
-
-    private fun handleExpiredJwtException(e: ExpiredJwtException): Nothing {
-        val tokenType: TokenType =
-            try {
-                TokenType.valueOf(e.claims.get("tokenType", String::class.java))
-            } catch (_: Exception) {
-                TokenType.UNKNOWN
-            }
-        throw CustomException(ErrorCode.EXPIRED_TOKEN)
-    }
-
-    enum class TokenType {
-        EMAIL_VERIFICATION,
-        SOCIAL_SIGNUP,
-        UNKNOWN,
-    }
 }

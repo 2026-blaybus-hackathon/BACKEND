@@ -74,7 +74,7 @@ enum class Role {
 }
 
 enum class Grade(
-    description: String,
+    val description: String,
 ) {
     FIRST("1학년"),
     SECOND("2학년"),
