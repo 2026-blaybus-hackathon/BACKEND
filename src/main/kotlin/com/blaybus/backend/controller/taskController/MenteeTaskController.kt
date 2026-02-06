@@ -120,7 +120,8 @@ class MenteeTaskController(
         )
         @RequestParam(required = false, defaultValue = "20") size: Int,
     ): ResponseEntity<SliceResponse<TaskResponse>> {
-        val tasks = taskService.getTasksByDateList(userId, date, lastTaskId, size)
+        val normalizedSize = if (size <= 0) 1 else size
+        val tasks = taskService.getTasksByDateList(userId, date, lastTaskId, normalizedSize)
         return ResponseEntity.ok(tasks)
     }
 

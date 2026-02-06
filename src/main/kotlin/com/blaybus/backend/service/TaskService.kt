@@ -92,6 +92,7 @@ class TaskService(
 
         task.title = request.title
         task.content = request.content
+        task.subject = request.subject
         task.studyDurationInMinutes = request.studyTime // studyTime으로 매핑
         task.isCompleted = request.isCompleted ?: false
         return TaskResponse(task)
@@ -160,9 +161,10 @@ class TaskService(
         userId: Long,
         taskId: Long,
     ): TaskDetailResponse {
-        val user = userRepository.getByUserId(userId)
         val task = taskRepository.getTaskAndDailyPlannerById(taskId)
-        user.validateSameUser(task.dailyPlanner.user)
+        if (task.dailyPlanner.user.id != userId) {
+            throw CustomException(ErrorCode.NOT_YOUR_TASK)
+        }
 
         return TaskDetailResponse(task)
     }

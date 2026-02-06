@@ -34,7 +34,7 @@ class Task(
     val dailyPlanner: DailyPlanner,
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    val subject: Subject,
+    var subject: Subject,
     @Column(nullable = false, length = 255)
     var title: String,
     @Lob

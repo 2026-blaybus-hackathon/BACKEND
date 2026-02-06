@@ -50,7 +50,7 @@ data class TaskResponse(
     val id: Long,
     @Schema(description = "할 일의 제목")
     val title: String,
-    @Schema(description = "할 일의 과목", allowableValues = ["KOREAN, MATH, ENGLISH"])
+    @Schema(description = "할 일의 과목", allowableValues = ["KOREAN", "MATH", "ENGLISH"])
     val subject: Subject,
     @Schema(description = "해당 할 일의 공부 시간 (분 단위), 안 한 경우 0")
     val studyTime: Int = 0,
@@ -71,7 +71,7 @@ data class TaskDetailResponse(
     val id: Long,
     @Schema(description = "할 일의 제목")
     val title: String,
-    @Schema(description = "할 일의 과목", allowableValues = ["KOREAN, MATH, ENGLISH"])
+    @Schema(description = "할 일의 과목", allowableValues = ["KOREAN", "MATH", "ENGLISH"])
     val subject: Subject,
     @Schema(description = "해당 할 일의 공부 시간 (분 단위), 안 한 경우 0")
     val studyTime: Int = 0,
