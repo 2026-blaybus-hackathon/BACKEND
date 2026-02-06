@@ -152,7 +152,7 @@ class TaskService(
         )
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     fun getWeeklyAchievement(
         userId: Long,
         date: LocalDate,
@@ -178,6 +178,14 @@ class TaskService(
             day = day.plusDays(1)
         }
         return weeklyAchievementList
+    }
+
+    fun getTodayTasksForUser(
+        user: User,
+        date: LocalDate,
+    ): List<Task> {
+        val dailyPlanner = dailyPlannerService.getDailyPlannerOrNullByUserAndDate(user, date)
+        return dailyPlanner?.tasks ?: emptyList()
     }
     // ================== 멘토 기능 (과제 할당 및 조회) ==================
 
@@ -265,11 +273,5 @@ class TaskService(
                     totalElements = tasksPage.totalElements,
                 ),
         )
-    }
-
-    fun getTodayTasksForUser(user: User): List<Task> {
-        val date = LocalDate.now()
-        val dailyPlanner = dailyPlannerService.getDailyPlannerOrNullByUserAndDate(user, date)
-        return dailyPlanner?.tasks ?: emptyList()
     }
 }

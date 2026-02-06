@@ -12,6 +12,7 @@ import com.blaybus.backend.repository.getByUserId
 import com.blaybus.backend.service.TaskService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
 
 @Service
 class UserService(
@@ -54,9 +55,12 @@ class UserService(
     }
 
     @Transactional(readOnly = true)
-    fun getDailyStudyAmount(userId: Long): UserTodayStudyTimeDto {
+    fun getDailyStudyAmount(
+        userId: Long,
+        date: LocalDate,
+    ): UserTodayStudyTimeDto {
         val user = userRepository.getByUserId(userId)
-        val todayTasks = taskService.getTodayTasksForUser(user)
+        val todayTasks = taskService.getTodayTasksForUser(user, date)
         return UserTodayStudyTimeDto(todayTasks.mapNotNull { it.studyDurationInMinutes }.sum())
     }
 }

@@ -10,7 +10,9 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDate
 
 @Tag(name = "mentee-user-controller API", description = "멘티 관련 조회")
 @RequestMapping("/api/v1/users/mentee")
@@ -37,11 +39,12 @@ class MenteeUserController(
         summary = "하루 공부량 조회",
         description = "멘티는 자신의 하루 공부량을 조회할 수 있습니다.",
     )
-    @GetMapping("/daily-study-amount")
+    @GetMapping("/study-amount")
     fun getMyDailyStudyAmount(
         @AuthenticationPrincipal userId: Long,
+        @RequestParam(required = true) date: LocalDate,
     ): ResponseEntity<UserTodayStudyTimeDto> =
         ResponseEntity
             .status(HttpStatus.OK)
-            .body(userService.getDailyStudyAmount(userId))
+            .body(userService.getDailyStudyAmount(userId, date))
 }
