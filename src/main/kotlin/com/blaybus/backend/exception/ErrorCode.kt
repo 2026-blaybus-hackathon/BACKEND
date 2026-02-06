@@ -20,7 +20,6 @@ enum class ErrorCode(
     EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, -11001, "토큰이 만료되었습니다."),
     REGISTERED_ALREADY(HttpStatus.CONFLICT, -11002, "이미 가입된 이메일입니다."),
     REQUIRED_NAME(HttpStatus.BAD_REQUEST, -110003, "이름은 필수 입력값입니다."),
-    CONFLICT_NICKNAME(HttpStatus.CONFLICT, -11004, "이미 존재하는 닉네임입니다."),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, -11005, "사용자를 찾을 수 없습니다."),
     UNAUTHENTICATED_ACCESS(HttpStatus.UNAUTHORIZED, -11006, "인증되지 않은 접근입니다."),
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, -11007, "유효하지 않은 리프레시 토큰입니다."),

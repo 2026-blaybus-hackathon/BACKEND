@@ -6,13 +6,13 @@ import com.blaybus.backend.entity.User
 class UserDto {
     data class SimpleUserDto(
         val id: Long,
-        val nickname: String,
+        val name: String,
         val email: String,
         val role: Role,
     ) {
         constructor(user: User) : this(
             id = user.id,
-            nickname = user.nickname,
+            name = user.name,
             email = user.email,
             role = user.role,
         )

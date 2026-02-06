@@ -40,7 +40,6 @@ class FeedbackRepositoryTest {
             User(
                 email = "mentor@test.com",
                 name = "mentor",
-                nickname = "mentor_nick",
                 role = Role.MENTOR,
                 password = "123",
             )
@@ -50,7 +49,6 @@ class FeedbackRepositoryTest {
             User(
                 email = "mentee@test.com",
                 name = "mentee",
-                nickname = "mentee_nick",
                 role = Role.MENTEE,
                 mentor = mentor,
                 password = "123",

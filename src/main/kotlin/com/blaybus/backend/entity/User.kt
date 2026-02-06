@@ -21,8 +21,8 @@ import java.time.LocalDate
 @Table(
     name = "users",
     indexes = [
-        Index(name = "idx_users_nickname", columnList = "nickname"),
         Index(name = "idx_users_mentor_id", columnList = "mentor_id"),
+        Index(name = "idx_users_mentor_id_name", columnList = "mentor_id, name"),
     ],
 )
 class User(
@@ -35,8 +35,6 @@ class User(
     var password: String,
     @Column(nullable = false, length = 100)
     var name: String,
-    @Column(nullable = false, length = 100, updatable = false)
-    val nickname: String,
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     var role: Role,
@@ -45,10 +43,12 @@ class User(
     var originFileName: String? = null,
     @Column(length = 100)
     var schoolName: String? = null,
-    var grade: Int? = null,
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    var grade: Grade? = null,
     @Column(length = 100)
     var targetSchool: String? = null,
-    var targetExamDate: LocalDate? = null,
+    var targetDate: LocalDate? = null,
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mentor_id", nullable = true)
     var mentor: User? = null,
@@ -71,4 +71,14 @@ class User(
 enum class Role {
     MENTOR,
     MENTEE,
+}
+
+enum class Grade(
+    description: String,
+) {
+    FIRST("1학년"),
+    SECOND("2학년"),
+    THIRD("3학년"),
+    DROPOUT("자퇴생"),
+    GRADUATED("졸업생"),
 }

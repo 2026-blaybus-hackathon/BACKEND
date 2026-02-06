@@ -67,7 +67,7 @@ class AuthController(
         return ResponseEntity
             .status(HttpStatus.OK)
             .header(HttpHeaders.SET_COOKIE, getRefreshTokenCookie(tokenResponse.refreshToken!!).toString())
-            .body(LoginResponse(tokenResponse.accessToken, tokenResponse.nickname))
+            .body(LoginResponse(tokenResponse.accessToken, tokenResponse.name))
     }
 
     @PostMapping("/refresh")
@@ -78,7 +78,7 @@ class AuthController(
         return ResponseEntity
             .status(HttpStatus.OK)
             .header(HttpHeaders.SET_COOKIE, getRefreshTokenCookie(tokenResponse.refreshToken!!).toString())
-            .body(LoginResponse(tokenResponse.accessToken, tokenResponse.nickname))
+            .body(LoginResponse(tokenResponse.accessToken, tokenResponse.name))
     }
 
     @PostMapping("/logout")

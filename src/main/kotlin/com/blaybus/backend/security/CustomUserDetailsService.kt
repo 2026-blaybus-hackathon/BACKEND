@@ -22,7 +22,7 @@ class CustomUserDetailsService(
             email = user.email,
             password = user.password,
             authorities = listOf(SimpleGrantedAuthority(user.role.name)),
-            nickname = user.nickname,
+            name = user.name,
             userId = user.id,
         )
     }
@@ -32,6 +32,7 @@ class CustomUserDto(
     email: String,
     password: String,
     authorities: Collection<SimpleGrantedAuthority>,
-    val nickname: String,
+    val name: String,
     val userId: Long,
+    // TODO: 학적, 목표, role 등 추가 정보
 ) : User(email, password, authorities)

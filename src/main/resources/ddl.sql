@@ -140,7 +140,12 @@ ALTER TABLE daily_planners
 ALTER TABLE USERS
     ADD (
         school_name VARCHAR2(100),
-        grade INTEGER,
+        grade VARCHAR2(20),
         target_school VARCHAR2(100),
-        target_exam_date DATE
+        target_date DATE
         );
+
+ALTER TABLE USERS
+    DROP (nickname);
+
+CREATE INDEX idx_users_mentor_id_name ON users (mentor_id, name);
