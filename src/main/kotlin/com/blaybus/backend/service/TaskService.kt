@@ -56,6 +56,8 @@ class TaskService(
         task.updateComment(request.comment)
     }
 
+    // ================== 멘티 기능 (Task CRUD) ==================
+
     @Transactional
     fun createTask(
         userId: Long,

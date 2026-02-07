@@ -35,12 +35,7 @@ enum class ErrorCode(
     REDISSON_LOCK_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, -13000, "Redis Lock 획득에 실패했습니다. 잠시 후 다시 시도해주세요."),
 
     // Daily Planner API error 14000대
-    STUDY_TIME_MINIMUM_ERROR(HttpStatus.BAD_REQUEST, -14000, "공부 시간은 최소 0분 이상이어야 합니다."),
-    STUDY_TIME_MAXIMUM_ERROR(HttpStatus.BAD_REQUEST, -14001, "공부 시간은 최대 1440분 이하여야 합니다."),
-    REQUIRED_DATE(HttpStatus.BAD_REQUEST, -14002, "날짜는 비어 있을 수 없습니다."),
-    REQUIRED_CONTENT(HttpStatus.BAD_REQUEST, -14003, "내용은 비어 있을 수 없습니다."),
-    REQUIRED_SUBJECT(HttpStatus.BAD_REQUEST, -14004, "과목은 비어 있을 수 없습니다."),
-    DAILY_PLANNER_NOT_FOUND(HttpStatus.NOT_FOUND, -14005, "플래너를 찾을 수 없습니다."),
+    DAILY_PLANNER_NOT_FOUND(HttpStatus.NOT_FOUND, -14000, "플래너를 찾을 수 없습니다."),
 
     // Feedback API error 15000대
     FORBIDDEN_FOR_CREATE_FEEDBACK(HttpStatus.FORBIDDEN, -15000, "해당 할 일에 피드백을 작성할 수 없습니다."),

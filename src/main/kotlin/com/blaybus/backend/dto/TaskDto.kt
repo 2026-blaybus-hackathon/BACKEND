@@ -13,8 +13,8 @@ data class MenteeTaskCreateRequest(
     val title: String,
     @field:Schema(description = "상세 내용 (선택)", example = "틀린 문제 오답노트까지 작성")
     val content: String? = null,
-    @field:Schema(description = "과목", allowableValues = ["KOREAN", "MATH", "ENGLISH", "OTHERS"])
-    val subject: com.blaybus.backend.entity.Subject,
+    @field:Schema(description = "과목", allowableValues = ["KOREAN", "MATH", "ENGLISH"])
+    val subject: Subject,
     @field:Schema(description = "플래너 날짜 (어느 날짜에 등록할지)", example = "2026-02-05")
     val date: LocalDate,
 )
@@ -66,4 +66,17 @@ data class MenteeTaskCompletionUpdateRequest(
     @field:Schema(description = "완료 여부 (true: 완료, false: 미완료)", example = "true")
     @field:NotNull(message = "완료 여부는 필수입니다.")
     val isCompleted: Boolean
+)
+
+data class TaskResponse(
+    @Schema(description = "할 일 ID")
+    val id: Long,
+    @Schema(description = "할 일의 내용")
+    val content: String,
+    @Schema(description = "할 일의 과목", allowableValues = ["KOREAN, MATH, ENGLISH"])
+    val subject: Subject,
+    @Schema(description = "할 일의 우선순위, 만일 멘토가 준 과제라면 null")
+    val priority: Int?,
+    @Schema(description = "할 일에 할당된 공부 시간(분 단위)")
+    val studyTime: Int = 0,
 )
