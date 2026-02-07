@@ -19,6 +19,10 @@ data class SimpleUserDto(
     )
 }
 
+data class UserTodayStudyTimeDto(
+    val todayStudyTime: Int,
+)
+
 data class MenteeProfileResponse(
     @Schema(description = "멘티 ID")
     val menteeId: Long,
@@ -45,6 +49,7 @@ data class MenteeProfileResponse(
         targetDate = user.targetDate,
     )
 }
+
 
 data class UserProfileResponse(
     @Schema(description = "이름")

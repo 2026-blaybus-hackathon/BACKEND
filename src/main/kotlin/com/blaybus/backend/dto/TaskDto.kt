@@ -1,8 +1,11 @@
 package com.blaybus.backend.dto
 
 import com.blaybus.backend.entity.Subject
+import com.blaybus.backend.entity.Task
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotNull
 import java.time.LocalDate
 
 data class MenteeTaskCreateRequest(
@@ -19,15 +22,15 @@ data class MenteeTaskCreateRequest(
 
 data class MenteeTaskUpdateRequest(
     @field:Schema(description = "수정할 제목")
-    val title: String,
+    val title: String? = null,
     @field:Schema(description = "수정할 상세 내용")
-    val content: String?,
-    @field:Schema(description = "수정할 과목", allowableValues = ["KOREAN", "MATH", "ENGLISH"])
-    val subject: Subject,
+    val content: String? = null,
+    @field:Schema(description = "수정할 과목", allowableValues = ["KOREAN", "MATH", "ENGLISH", "OTHERS"])
+    val subject: Subject? = null,
     @field:Schema(description = "공부 시간 (분 단위)", example = "60")
-    val studyTime: Int?,
+    val studyTime: Int? = null,
     @field:Schema(description = "완료 여부 (체크박스)", example = "true")
-    val isCompleted: Boolean?,
+    val isCompleted: Boolean? = null,
 )
 
 data class FileUploadResponse(
@@ -44,15 +47,75 @@ data class CommentOnTaskRequest(
     val comment: String,
 )
 
+data class MentorTaskUpdateRequest(
+    @field:Schema(description = "수정할 제목 (null이면 유지)")
+    val title: String? = null,
+    @field:Schema(description = "수정할 내용 (null이면 유지)")
+    val content: String? = null,
+    @field:Schema(description = "수정할 과목 (null이면 유지)")
+    val subject: Subject? = null,
+)
+
+data class MenteeStudyTimeUpdateRequest(
+    @field:Schema(description = "공부한 시간 (분 단위)", example = "60")
+    @field:NotNull(message = "공부 시간은 필수입니다.")
+    @field:Min(value = 0, message = "공부 시간은 0분 이상이어야 합니다.")
+    val studyTime: Int,
+)
+
+data class MenteeTaskCompletionUpdateRequest(
+    @field:Schema(description = "완료 여부 (true: 완료, false: 미완료)", example = "true")
+    @field:NotNull(message = "완료 여부는 필수입니다.")
+    val isCompleted: Boolean,
+)
+
 data class TaskResponse(
     @Schema(description = "할 일 ID")
     val id: Long,
+    @Schema(description = "할일 제목")
+    val title: String?,
     @Schema(description = "할 일의 내용")
-    val content: String,
-    @Schema(description = "할 일의 과목", allowableValues = ["KOREAN, MATH, ENGLISH"])
+    val content: String?,
+    @Schema(description = "할 일의 과목", allowableValues = ["KOREAN", "MATH", "ENGLISH"])
     val subject: Subject,
-    @Schema(description = "할 일의 우선순위, 만일 멘토가 준 과제라면 null")
-    val priority: Int?,
     @Schema(description = "할 일에 할당된 공부 시간(분 단위)")
-    val studyTime: Int = 0,
-)
+    val studyDurationInMinutes: Int = 0,
+) {
+    companion object {
+        fun from(task: Task): TaskResponse =
+            TaskResponse(
+                id = task.id,
+                title = task.title,
+                content = task.content,
+                subject = task.subject,
+                studyDurationInMinutes = task.studyDurationInMinutes ?: 0,
+            )
+    }
+}
+
+data class DailyAchievementRate(
+    @Schema(description = "해당 날짜")
+    val date: LocalDate,
+    @Schema(description = "완료한 할 일 수")
+    val completedTaskCount: Int,
+    @Schema(description = "전체 할 일 수")
+    val totalTaskCount: Int,
+    @Schema(description = "달성률 (0~10 사이의 짝수 값)")
+    val achievementRate: Int,
+) {
+    constructor(date: LocalDate, completedTasks: Int, totalTasks: Int) : this(
+        date,
+        completedTasks,
+        totalTasks,
+        if (totalTasks == 0 || completedTasks == 0) {
+            0
+        } else {
+            val achievementRate = ((completedTasks.toDouble() / totalTasks) * 10).toInt()
+            if (achievementRate % 2 != 0) {
+                achievementRate - 1
+            } else {
+                achievementRate
+            }
+        },
+    )
+}

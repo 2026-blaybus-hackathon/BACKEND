@@ -1,19 +1,25 @@
 package com.blaybus.backend.service
 
 import com.blaybus.backend.dto.CommentOnTaskRequest
+import com.blaybus.backend.dto.DailyAchievementRate
 import com.blaybus.backend.dto.FeedbackDetail
 import com.blaybus.backend.dto.FileUploadResponse
+import com.blaybus.backend.dto.MenteeStudyTimeUpdateRequest
+import com.blaybus.backend.dto.MenteeTaskCompletionUpdateRequest
 import com.blaybus.backend.dto.MenteeTaskCreateRequest
 import com.blaybus.backend.dto.MenteeTaskFeedbackResponse
 import com.blaybus.backend.dto.MenteeTaskUpdateRequest
 import com.blaybus.backend.dto.MentorTaskAssignRequest
+import com.blaybus.backend.dto.MentorTaskUpdateRequest
 import com.blaybus.backend.dto.PagedResponse
 import com.blaybus.backend.dto.TaskDetail
 import com.blaybus.backend.dto.TaskImageResponse
 import com.blaybus.backend.dto.TaskResponse
 import com.blaybus.backend.entity.Assignment
 import com.blaybus.backend.entity.StudyImage
+import com.blaybus.backend.entity.Subject
 import com.blaybus.backend.entity.Task
+import com.blaybus.backend.entity.User
 import com.blaybus.backend.exception.CustomException
 import com.blaybus.backend.exception.ErrorCode
 import com.blaybus.backend.repository.AssignmentRepository
@@ -23,10 +29,12 @@ import com.blaybus.backend.repository.TaskRepository
 import com.blaybus.backend.repository.UserRepository
 import com.blaybus.backend.repository.getByTaskId
 import com.blaybus.backend.repository.getByUserId
+import com.blaybus.backend.util.getWeekRange
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
+import java.time.LocalDate
 
 @Service
 @Transactional(readOnly = true)
@@ -56,30 +64,39 @@ class TaskService(
     fun createTask(
         userId: Long,
         request: MenteeTaskCreateRequest,
+        files: List<MultipartFile>?,
     ): TaskResponse {
-        val user = userRepository.getByUserId(userId)
+        val mentee = userRepository.getByUserId(userId)
 
-        // 에러 해결: DailyPlanner 생성 시 totalFeedback(null 가능) 명시
-        val planner = dailyPlannerService.getOrCreateDailyPlannerByDate(user, request.date)
+        return createAndSaveTask(
+            writer = mentee,
+            targetMentee = mentee,
+            date = request.date,
+            title = request.title,
+            content = request.content,
+            subject = request.subject,
+            files = files,
+        )
+    }
 
-        val task =
-            taskRepository.save(
-                Task(
-                    dailyPlanner = planner,
-                    subject = request.subject,
-                    title = request.title,
-                    content = request.content,
-                    writer = user,
-                    isCompleted = false,
-                ),
-            )
+    @Transactional
+    fun assignTask(
+        mentorId: Long,
+        request: MentorTaskAssignRequest,
+        files: List<MultipartFile>?,
+    ): TaskResponse {
+        val mentor = userRepository.getByUserId(mentorId)
+        val mentee = userRepository.getByUserId(request.menteeId)
+        mentor.validateMentee(mentee)
 
-        return TaskResponse(
-            id = task.id,
-            content = task.title,
-            subject = task.subject,
-            priority = null,
-            studyTime = task.studyDurationInMinutes ?: 0,
+        return createAndSaveTask(
+            writer = mentor,
+            targetMentee = mentee,
+            date = request.date,
+            title = request.title,
+            content = request.content,
+            subject = request.subject,
+            files = files,
         )
     }
 
@@ -91,20 +108,82 @@ class TaskService(
     ): TaskResponse {
         val task = taskRepository.getByTaskId(taskId)
 
-        if (task.writer.id != userId) throw CustomException(ErrorCode.NOT_YOUR_TASK)
+        if (task.writer.id != userId && task.dailyPlanner.user.id != userId) {
+            throw CustomException(ErrorCode.NOT_YOUR_TASK)
+        }
 
-        task.title = request.title
-        task.content = request.content
-        task.studyDurationInMinutes = request.studyTime // studyTime으로 매핑
-        task.isCompleted = request.isCompleted ?: false
+        if (task.writer.id == userId) {
+            task.title = request.title ?: task.title
+            task.content = request.content ?: task.content
+            task.subject = request.subject ?: task.subject
+            task.studyDurationInMinutes = request.studyTime ?: task.studyDurationInMinutes
+            task.isCompleted = request.isCompleted ?: task.isCompleted
+        } else {
+            if (request.studyTime != null) {
+                task.studyDurationInMinutes = request.studyTime
+            }
+        }
 
-        return TaskResponse(
-            id = task.id,
-            content = task.title,
-            subject = task.subject,
-            priority = null,
-            studyTime = task.studyDurationInMinutes ?: 0,
-        )
+        return TaskResponse.from(task)
+    }
+
+    @Transactional
+    fun updateAssignedTask(
+        userId: Long,
+        taskId: Long,
+        request: MentorTaskUpdateRequest,
+        files: List<MultipartFile>?,
+    ): TaskResponse {
+        val task = taskRepository.getByTaskId(taskId)
+
+        // 권한 검증: 작성자(멘토) 본인만 수정 가능
+        if (task.writer.id != userId) {
+            throw CustomException(ErrorCode.NOT_YOUR_TASK)
+        }
+
+        task.title = request.title ?: task.title
+        task.content = request.content ?: task.content
+        task.subject = request.subject ?: task.subject
+
+        if (!files.isNullOrEmpty()) {
+            manageAssignmentFiles(task, files)
+        }
+
+        return TaskResponse.from(task)
+    }
+
+    @Transactional
+    fun updateStudyTime(
+        userId: Long,
+        taskId: Long,
+        request: MenteeStudyTimeUpdateRequest,
+    ): TaskResponse {
+        val task = taskRepository.getByTaskId(taskId)
+
+        if (task.dailyPlanner.user.id != userId) {
+            throw CustomException(ErrorCode.NOT_YOUR_TASK)
+        }
+
+        task.updateStudyDurationInMinutes(request.studyTime)
+
+        return TaskResponse.from(task)
+    }
+
+    @Transactional
+    fun updateTaskCompletion(
+        userId: Long,
+        taskId: Long,
+        request: MenteeTaskCompletionUpdateRequest,
+    ): TaskResponse {
+        val task = taskRepository.getByTaskId(taskId)
+
+        if (task.writer.id != userId) {
+            throw CustomException(ErrorCode.NOT_YOUR_TASK)
+        }
+
+        task.updateCompletionStatus(request.isCompleted)
+
+        return TaskResponse.from(task)
     }
 
     @Transactional
@@ -147,45 +226,40 @@ class TaskService(
         )
     }
 
-    // ================== 멘토 기능 (과제 할당 및 조회) ==================
-
-    @Transactional
-    fun assignTask(
-        mentorId: Long,
-        request: MentorTaskAssignRequest,
-        file: MultipartFile?,
-    ): TaskResponse {
-        val mentor = userRepository.getByUserId(mentorId)
-        val mentee = userRepository.getByUserId(request.menteeId)
-
-        mentor.validateMentee(mentee)
-
-        val planner = dailyPlannerService.getOrCreateDailyPlannerByDate(mentee, request.date)
-        val task =
-            taskRepository.save(
-                Task(
-                    dailyPlanner = planner,
-                    subject = request.subject,
-                    title = request.title,
-                    content = request.content,
-                    writer = mentor,
-                    isCompleted = false,
+    @Transactional(readOnly = true)
+    fun getWeeklyAchievement(
+        userId: Long,
+        date: LocalDate,
+    ): List<DailyAchievementRate> {
+        userRepository.getByUserId(userId)
+        val (startOfWeek, endOfWeek) = getWeekRange(date)
+        val dailyPlannerList = dailyPlannerService.getDailyPlannerByPeriod(userId, startOfWeek, endOfWeek)
+        var day = startOfWeek
+        val weeklyAchievementList: MutableList<DailyAchievementRate> = mutableListOf()
+        for (dailyPlanner in dailyPlannerList) {
+            val tasks = dailyPlanner.tasks
+            while (day.isBefore(dailyPlanner.date)) {
+                weeklyAchievementList.add(DailyAchievementRate(day, 0, 0))
+                day = day.plusDays(1)
+            }
+            weeklyAchievementList.add(
+                DailyAchievementRate(
+                    day,
+                    completedTasks = tasks.count { it.isCompleted },
+                    totalTasks = tasks.size,
                 ),
             )
-
-        file?.let {
-            val filePath = "tasks/${task.id}/assignments/"
-            val uploadedKey = objectStorageRepository.upload(filePath, it)
-            assignmentRepository.save(Assignment(task = task, pdfFileName = uploadedKey))
+            day = day.plusDays(1)
         }
+        return weeklyAchievementList
+    }
 
-        return TaskResponse(
-            id = task.id,
-            content = task.title,
-            subject = task.subject,
-            priority = null,
-            studyTime = task.studyDurationInMinutes ?: 0,
-        )
+    fun getTodayTasksForUser(
+        user: User,
+        date: LocalDate,
+    ): List<Task> {
+        val dailyPlanner = dailyPlannerService.getDailyPlannerOrNullByUserAndDate(user, date)
+        return dailyPlanner?.tasks ?: emptyList()
     }
 
     fun getMenteeTasksWithFeedback(
@@ -234,5 +308,61 @@ class TaskService(
                     totalElements = tasksPage.totalElements,
                 ),
         )
+    }
+
+    private fun createAndSaveTask(
+        writer: User,
+        targetMentee: User,
+        date: LocalDate,
+        title: String,
+        content: String?,
+        subject: Subject,
+        files: List<MultipartFile>?,
+    ): TaskResponse {
+        val planner = dailyPlannerService.getOrCreateDailyPlannerByDate(targetMentee, date)
+
+        val task =
+            taskRepository.save(
+                Task(
+                    dailyPlanner = planner,
+                    subject = subject,
+                    title = title,
+                    content = content,
+                    writer = writer,
+                    isCompleted = false,
+                ),
+            )
+
+        if (!files.isNullOrEmpty()) {
+            manageAssignmentFiles(task, files)
+        }
+
+        return TaskResponse.from(task)
+    }
+
+    private fun manageAssignmentFiles(
+        task: Task,
+        files: List<MultipartFile>,
+    ) {
+        val existingAssignments = assignmentRepository.findAllByTask(task)
+
+        if (existingAssignments.isNotEmpty()) {
+            assignmentRepository.deleteAll(existingAssignments)
+            assignmentRepository.flush() // 즉시 반영
+        }
+
+        // 2. 새 파일들 반복 업로드 및 저장
+        files.forEach { file ->
+            val filePath = "tasks/${task.id}/assignments/"
+            val uploadedKey = objectStorageRepository.upload(filePath, file)
+
+            assignmentRepository.save(
+                Assignment(
+                    task = task,
+                    fileKey = uploadedKey,
+                    originalFileName = file.originalFilename ?: "unknown.pdf",
+                ),
+            )
+        }
     }
 }
