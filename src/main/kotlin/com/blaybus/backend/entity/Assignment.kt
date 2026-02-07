@@ -25,6 +25,8 @@ class Assignment(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id", nullable = false)
     val task: Task,
-    @Column(name = "pdf_file_name", nullable = false, length = 500)
-    val pdfFileName: String,
+    @Column(name = "file_key", nullable = false)
+    val fileKey: String,
+    @Column(name = "original_file_name", nullable = false)
+    val originalFileName: String,
 ) : BaseTimeEntity()
