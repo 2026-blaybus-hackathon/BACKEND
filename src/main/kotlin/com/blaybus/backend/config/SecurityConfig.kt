@@ -52,16 +52,10 @@ class SecurityConfig(
                         "/ready",
                         "/api/v1/test/**",
                     ).permitAll()
-                it.requestMatchers("/api/v1/mentor/**").hasAuthority(Role.MENTOR.name)
-                it.requestMatchers("/api/v1/daily-planner/{dailyPlannerId}/feedback").hasAuthority(Role.MENTOR.name)
+                it.requestMatchers("/api/v1/mentor/**", "/api/v1/users/mentor/**").hasAuthority(Role.MENTOR.name)
                 it.requestMatchers("/api/v1/mentees/**").hasAuthority(Role.MENTOR.name)
-
-                it
-                    .requestMatchers("/api/v1/users/**")
-                    .hasAuthority(Role.MENTOR.name) //  TODO : 멘티도 자기 프로필을 users/mentees로 조회하도록 구현해주셔서 뺴야할 듯 합니다.
-
                 it.requestMatchers("/api/v1/tasks/mentor/**").hasAuthority(Role.MENTOR.name)
-                it.requestMatchers("/api/v1/tasks/mentee/**").hasAuthority(Role.MENTEE.name)
+                it.requestMatchers("/api/v1/tasks/mentee/**", "/api/v1/users/mentee/**").hasAuthority(Role.MENTEE.name)
                 it.requestMatchers("/api/v1/feedback/mentor/**").hasAuthority(Role.MENTOR.name)
                 it.requestMatchers("/api/v1/feedback/mentee/**").hasAuthority(Role.MENTEE.name)
             }.addFilterBefore(

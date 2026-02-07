@@ -92,3 +92,30 @@ data class TaskResponse(
             )
     }
 }
+
+data class DailyAchievementRate(
+    @Schema(description = "해당 날짜")
+    val date: LocalDate,
+    @Schema(description = "완료한 할 일 수")
+    val completedTaskCount: Int,
+    @Schema(description = "전체 할 일 수")
+    val totalTaskCount: Int,
+    @Schema(description = "달성률 (0~10 사이의 짝수 값)")
+    val achievementRate: Int,
+) {
+    constructor(date: LocalDate, completedTasks: Int, totalTasks: Int) : this(
+        date,
+        completedTasks,
+        totalTasks,
+        if (totalTasks == 0 || completedTasks == 0) {
+            0
+        } else {
+            val achievementRate = ((completedTasks.toDouble() / totalTasks) * 10).toInt()
+            if (achievementRate % 2 != 0) {
+                achievementRate - 1
+            } else {
+                achievementRate
+            }
+        },
+    )
+}
