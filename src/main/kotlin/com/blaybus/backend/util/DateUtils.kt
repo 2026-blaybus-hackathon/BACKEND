@@ -13,3 +13,11 @@ fun getWeekRange(date: LocalDate): Pair<LocalDate, LocalDate> {
     logger.info("월요일 : $startOfWeek, 일요일 : $endOfWeek")
     return Pair(startOfWeek, endOfWeek)
 }
+
+fun getDDay(
+    targetDate: LocalDate,
+    currentDate: LocalDate = LocalDate.now(),
+): Int =
+    (targetDate.toEpochDay() - currentDate.toEpochDay()).toInt().let {
+        if (it < 0) 0 else it
+    }
