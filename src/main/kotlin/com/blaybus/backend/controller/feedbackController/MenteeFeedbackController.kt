@@ -105,7 +105,7 @@ class MenteeFeedbackController(
     @GetMapping("/unread-feedbacks")
     fun getUnreadFeedbacks(
         @AuthenticationPrincipal userId: Long,
-    ): ResponseEntity<List<FeedbackDto.GetUnReadFeedbackResponse>> =
+    ): ResponseEntity<List<FeedbackDto.GetUnreadFeedbackResponse>> =
         ResponseEntity.ok(
             feedbackService.getUnreadFeedbacks(userId),
         )

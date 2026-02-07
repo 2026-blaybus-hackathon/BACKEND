@@ -163,7 +163,7 @@ ALTER TABLE USERS
 CREATE INDEX idx_users_mentor_id_name ON users (mentor_id, name);
 
 ALTER TABLE FEEDBACKS
-    ADD (is_read NUMBER(1));
+    ADD (is_read NUMBER(1) DEFAULT 0 NOT NULL);
 
 ALTER TABLE TASKS
     ADD (completed_time TIMESTAMP);

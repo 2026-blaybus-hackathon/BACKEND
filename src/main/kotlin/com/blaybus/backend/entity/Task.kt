@@ -68,10 +68,11 @@ class Task(
     }
 
     fun updateCompletionStatus(isCompleted: Boolean) {
+        val wasCompleted = this.isCompleted
         this.isCompleted = isCompleted
-        if (isCompleted) {
+        if (!wasCompleted && isCompleted) {
             this.completedTime = LocalDateTime.now()
-        } else {
+        } else if (wasCompleted && !isCompleted) {
             this.completedTime = null
         }
     }

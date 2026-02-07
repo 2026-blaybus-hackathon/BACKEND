@@ -5,6 +5,8 @@ import com.blaybus.backend.dto.StudyImagetDto
 import com.blaybus.backend.dto.mapper.toEmptyFeedbackResponse
 import com.blaybus.backend.dto.mapper.toGetFeedbackOfTaskResponse
 import com.blaybus.backend.entity.Feedback
+import com.blaybus.backend.exception.CustomException
+import com.blaybus.backend.exception.ErrorCode
 import com.blaybus.backend.repository.FeedbackRepository
 import com.blaybus.backend.repository.ObjectStorageRepository
 import com.blaybus.backend.repository.TaskRepository
@@ -138,11 +140,11 @@ class FeedbackService(
     }
 
     @Transactional(readOnly = true)
-    fun getUnreadFeedbacks(userId: Long): List<FeedbackDto.GetUnReadFeedbackResponse> {
+    fun getUnreadFeedbacks(userId: Long): List<FeedbackDto.GetUnreadFeedbackResponse> {
         userRepository.getByUserId(userId)
         return feedbackRepository
             .findByTaskDailyPlannerUserIdAndIsReadFalse(userId)
-            .map { FeedbackDto.GetUnReadFeedbackResponse(it) }
+            .map { FeedbackDto.GetUnreadFeedbackResponse(it) }
     }
 
     @Transactional
@@ -151,12 +153,13 @@ class FeedbackService(
         feedbackId: Long,
     ): FeedbackDto.GetFeedbackByIdResponse {
         val feedback = feedbackRepository.getFeedbackWithTaskAndMentorById(feedbackId)
-        feedback.task.dailyPlanner.user
-            .validateSameUser(userRepository.getByUserId(userId))
+        if (feedback.task.dailyPlanner.user.id != userId) {
+            throw CustomException(ErrorCode.NOT_SAME_USER)
+        }
         val task = feedback.task
         val studyImageList =
             task.studyImages.map {
-                StudyImagetDto.StudyImageResponse(it, objectStorageRepository.getDownloadUrl(it.originalFileName))
+                StudyImagetDto.StudyImageResponse(it, objectStorageRepository.getDownloadUrl(it.imageFileName))
             }
         feedback.isRead = true
         return FeedbackDto.GetFeedbackByIdResponse(
