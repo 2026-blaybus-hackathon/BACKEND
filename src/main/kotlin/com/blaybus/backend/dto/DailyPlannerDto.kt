@@ -1,7 +1,6 @@
 package com.blaybus.backend.dto
 
 import com.blaybus.backend.entity.Subject
-import com.blaybus.backend.entity.Task
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min

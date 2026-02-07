@@ -1,5 +1,6 @@
 package com.blaybus.backend.service
 
+import com.blaybus.backend.dto.AssignmentResponse
 import com.blaybus.backend.dto.CommentOnTaskRequest
 import com.blaybus.backend.dto.FeedbackDetail
 import com.blaybus.backend.dto.FileUploadResponse
@@ -12,6 +13,7 @@ import com.blaybus.backend.dto.MentorTaskAssignRequest
 import com.blaybus.backend.dto.MentorTaskUpdateRequest
 import com.blaybus.backend.dto.PagedResponse
 import com.blaybus.backend.dto.SliceResponse
+import com.blaybus.backend.dto.TaskAndAssignmentResponse
 import com.blaybus.backend.dto.TaskDetail
 import com.blaybus.backend.dto.TaskDetailResponse
 import com.blaybus.backend.dto.TaskImageResponse
@@ -65,7 +67,7 @@ class TaskService(
     fun createTask(
         userId: Long,
         request: MenteeTaskCreateRequest,
-        files: List<MultipartFile>?
+        files: List<MultipartFile>?,
     ): TaskResponse {
         val mentee = userRepository.getByUserId(userId)
 
@@ -76,7 +78,7 @@ class TaskService(
             title = request.title,
             content = request.content,
             subject = request.subject,
-            files = files
+            files = files,
         )
     }
 
@@ -97,7 +99,7 @@ class TaskService(
             title = request.title,
             content = request.content,
             subject = request.subject,
-            files = files
+            files = files,
         )
     }
 
@@ -119,7 +121,6 @@ class TaskService(
             task.subject = request.subject ?: task.subject
             task.studyDurationInMinutes = request.studyTime ?: task.studyDurationInMinutes
             task.isCompleted = request.isCompleted ?: task.isCompleted
-
         } else {
             if (request.studyTime != null) {
                 task.studyDurationInMinutes = request.studyTime
@@ -134,7 +135,7 @@ class TaskService(
         userId: Long,
         taskId: Long,
         request: MentorTaskUpdateRequest,
-        files: List<MultipartFile>?
+        files: List<MultipartFile>?,
     ): TaskResponse {
         val task = taskRepository.getByTaskId(taskId)
 
@@ -158,7 +159,7 @@ class TaskService(
     fun updateStudyTime(
         userId: Long,
         taskId: Long,
-        request: MenteeStudyTimeUpdateRequest
+        request: MenteeStudyTimeUpdateRequest,
     ): TaskResponse {
         val task = taskRepository.getByTaskId(taskId)
 
@@ -175,7 +176,7 @@ class TaskService(
     fun updateTaskCompletion(
         userId: Long,
         taskId: Long,
-        request: MenteeTaskCompletionUpdateRequest
+        request: MenteeTaskCompletionUpdateRequest,
     ): TaskResponse {
         val task = taskRepository.getByTaskId(taskId)
 
@@ -234,7 +235,7 @@ class TaskService(
         date: LocalDate,
         lastId: Long?,
         size: Int,
-    ): SliceResponse<TaskResponse> {
+    ): SliceResponse<TaskAndAssignmentResponse> {
         val user = userRepository.getByUserId(userId)
         val dailyPlanner =
             dailyPlannerService.getDailyPlannerOrNullByUserAndDate(user, date) ?: return SliceResponse(
@@ -243,7 +244,20 @@ class TaskService(
             )
         val pageable = Pageable.ofSize(size)
         val tasks = taskRepository.findByDailyPlannerIdWithSlice(dailyPlanner.id, lastId, pageable)
-        return SliceResponse(tasks.content.map { task -> TaskResponse(task) }, tasks.hasNext())
+        return SliceResponse(
+            tasks.content.map { task ->
+                val assignmentList =
+                    assignmentRepository.findAllByTask(task).map {
+                        AssignmentResponse(
+                            it.id,
+                            it.originalFileName,
+                            objectStorageRepository.getDownloadUrl(it.fileKey),
+                        )
+                    }
+                TaskAndAssignmentResponse(task, assignmentList)
+            },
+            tasks.hasNext(),
+        )
     }
 
     @Transactional(readOnly = true)
@@ -314,20 +328,21 @@ class TaskService(
         title: String,
         content: String?,
         subject: Subject,
-        files: List<MultipartFile>?
+        files: List<MultipartFile>?,
     ): TaskResponse {
         val planner = dailyPlannerService.getOrCreateDailyPlannerByDate(targetMentee, date)
 
-        val task = taskRepository.save(
-            Task(
-                dailyPlanner = planner,
-                subject = subject,
-                title = title,
-                content = content,
-                writer = writer,
-                isCompleted = false,
+        val task =
+            taskRepository.save(
+                Task(
+                    dailyPlanner = planner,
+                    subject = subject,
+                    title = title,
+                    content = content,
+                    writer = writer,
+                    isCompleted = false,
+                ),
             )
-        )
 
         if (!files.isNullOrEmpty()) {
             manageAssignmentFiles(task, files)
@@ -336,7 +351,10 @@ class TaskService(
         return TaskResponse.from(task)
     }
 
-    private fun manageAssignmentFiles(task: Task, files: List<MultipartFile>) {
+    private fun manageAssignmentFiles(
+        task: Task,
+        files: List<MultipartFile>,
+    ) {
         val existingAssignments = assignmentRepository.findAllByTask(task)
 
         if (existingAssignments.isNotEmpty()) {
@@ -353,8 +371,8 @@ class TaskService(
                 Assignment(
                     task = task,
                     fileKey = uploadedKey,
-                    originalFileName = file.originalFilename ?: "unknown.pdf"
-                )
+                    originalFileName = file.originalFilename ?: "unknown.pdf",
+                ),
             )
         }
     }
