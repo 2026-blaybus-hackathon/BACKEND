@@ -61,7 +61,7 @@ data class UserProfileResponse(
     val grade: String?,
     @Schema(description = "목표 학교")
     val targetSchool: String?,
-    @Schema(description = "목표일")
+    @Schema(description = "목표일로부터 디데이")
     val targetDate: Int?,
 ) {
     constructor(user: User, profileUrl: String?) : this(

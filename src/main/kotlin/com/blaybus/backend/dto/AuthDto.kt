@@ -92,7 +92,7 @@ data class LoginResponse(
     val grade: String?,
     @Schema(description = "사용자 목표 학교")
     val targetSchool: String?,
-    @Schema(description = "사용자 목표일")
+    @Schema(description = "사용자 목표일로부터 디데이")
     val targetDate: Int?,
 ) {
     constructor(tokenResponse: TokenResponse) : this(
