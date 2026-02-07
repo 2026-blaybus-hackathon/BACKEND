@@ -100,7 +100,7 @@ class MenteeFeedbackController(
 
     @Operation(
         summary = "안 읽은 피드백 리스트 조회",
-        description = "멘티는 자신이 아직 읽지 않은 피드백의 상세 내용을 조회합니다.",
+        description = "멘티는 자신이 아직 읽지 않은 피드백 리스트를 조회합니다.",
     )
     @GetMapping("/unread-feedbacks")
     fun getUnreadFeedbacks(
