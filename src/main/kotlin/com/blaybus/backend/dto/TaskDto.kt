@@ -1,6 +1,7 @@
 package com.blaybus.backend.dto
 
 import com.blaybus.backend.entity.Subject
+import com.blaybus.backend.entity.Task
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
@@ -71,12 +72,24 @@ data class MenteeTaskCompletionUpdateRequest(
 data class TaskResponse(
     @Schema(description = "할 일 ID")
     val id: Long,
+    @Schema(description = "할일 제목")
+    val title: String?,
     @Schema(description = "할 일의 내용")
-    val content: String,
-    @Schema(description = "할 일의 과목", allowableValues = ["KOREAN, MATH, ENGLISH"])
+    val content: String?,
+    @Schema(description = "할 일의 과목", allowableValues = ["KOREAN", "MATH", "ENGLISH"])
     val subject: Subject,
-    @Schema(description = "할 일의 우선순위, 만일 멘토가 준 과제라면 null")
-    val priority: Int?,
     @Schema(description = "할 일에 할당된 공부 시간(분 단위)")
-    val studyTime: Int = 0,
-)
+    val studyDurationInMinutes: Int = 0,
+) {
+    companion object {
+        fun from(task: Task): TaskResponse {
+            return TaskResponse(
+                id = task.id,
+                title = task.title,
+                content = task.content,
+                subject = task.subject,
+                studyDurationInMinutes = task.studyDurationInMinutes ?: 0
+            )
+        }
+    }
+}

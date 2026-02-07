@@ -55,28 +55,6 @@ data class GetDailyPlannerResponse(
     val tasks: List<TaskResponse>,
 )
 
-data class TaskResponse(
-    @Schema(description = "할 일 ID")
-    val id: Long,
-    @Schema(description = "할 일의 내용")
-    val content: String?,
-    @Schema(description = "할 일의 과목", allowableValues = ["KOREAN, MATH, ENGLISH, OTHERS"])
-    val subject: Subject,
-    @Schema(description = "할 일에 할당된 공부 시간(분 단위)")
-    val studyDurationInMinutes: Int? = 0,
-){
-    companion object {
-        fun from(task: Task): TaskResponse {
-            return TaskResponse(
-                id = task.id,
-                content = task.title,
-                subject = task.subject,
-                studyDurationInMinutes = task.studyDurationInMinutes ?: 0
-            )
-        }
-    }
-}
-
 data class UpdateDailyPlannerResponse(
     @Schema(description = "업데이트가 적용된 할 일 ID")
     val id: Long,
