@@ -60,8 +60,9 @@ data class TokenResponse(
     val grade: String?,
     @Schema(description = "사용자 목표 학교")
     val targetSchool: String?,
-    @Schema(description = "사용자 목표일")
-    val targetDate: LocalDate?,
+    @Schema(description = "목표일로부터 디데이")
+    val targetDate: Int?,
+    // TODO: 디데이 계산하기
 ) {
     constructor(accessToken: String, refreshToken: String, user: User) : this(
         accessToken = accessToken,
@@ -72,7 +73,7 @@ data class TokenResponse(
         schoolName = user.schoolName,
         grade = user.grade?.description,
         targetSchool = user.targetSchool,
-        targetDate = user.targetDate,
+        targetDate = -1,
     )
 }
 
@@ -92,7 +93,7 @@ data class LoginResponse(
     @Schema(description = "사용자 목표 학교")
     val targetSchool: String?,
     @Schema(description = "사용자 목표일")
-    val targetDate: LocalDate?,
+    val targetDate: Int?,
 ) {
     constructor(tokenResponse: TokenResponse) : this(
         accessToken = tokenResponse.accessToken,
