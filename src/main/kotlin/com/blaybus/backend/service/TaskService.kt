@@ -30,7 +30,6 @@ import com.blaybus.backend.repository.UserRepository
 import com.blaybus.backend.repository.getByTaskId
 import com.blaybus.backend.repository.getByUserId
 import com.blaybus.backend.util.getWeekRange
-import mu.KotlinLogging
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -261,45 +260,6 @@ class TaskService(
     ): List<Task> {
         val dailyPlanner = dailyPlannerService.getDailyPlannerOrNullByUserAndDate(user, date)
         return dailyPlanner?.tasks ?: emptyList()
-    }
-    // ================== 멘토 기능 (과제 할당 및 조회) ==================
-
-    @Transactional
-    fun assignTask(
-        mentorId: Long,
-        request: MentorTaskAssignRequest,
-        file: MultipartFile?,
-    ): TaskResponse {
-        val mentor = userRepository.getByUserId(mentorId)
-        val mentee = userRepository.getByUserId(request.menteeId)
-
-        mentor.validateMentee(mentee)
-
-        val planner = dailyPlannerService.getOrCreateDailyPlannerByDate(mentee, request.date)
-        val task =
-            taskRepository.save(
-                Task(
-                    dailyPlanner = planner,
-                    subject = request.subject,
-                    title = request.title,
-                    content = request.content,
-                    writer = mentor,
-                    isCompleted = false,
-                ),
-            )
-
-        file?.let {
-            val filePath = "tasks/${task.id}/assignments/"
-            val uploadedKey = objectStorageRepository.upload(filePath, it)
-            assignmentRepository.save(Assignment(task = task, pdfFileName = uploadedKey))
-        }
-        return TaskResponse(
-            id = task.id,
-            content = task.title,
-            subject = task.subject,
-            priority = null,
-            studyTime = task.studyDurationInMinutes ?: 0,
-        )
     }
 
     fun getMenteeTasksWithFeedback(
