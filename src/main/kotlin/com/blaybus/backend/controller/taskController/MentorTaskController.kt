@@ -2,6 +2,7 @@ package com.blaybus.backend.controller.taskController
 
 import com.blaybus.backend.dto.MenteeTaskFeedbackResponse
 import com.blaybus.backend.dto.MentorTaskAssignRequest
+import com.blaybus.backend.dto.MentorTaskUpdateRequest
 import com.blaybus.backend.dto.TaskResponse
 import com.blaybus.backend.service.TaskService
 import io.swagger.v3.oas.annotations.Operation
@@ -14,6 +15,7 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -28,6 +30,22 @@ import org.springframework.web.multipart.MultipartFile
 class MentorTaskController(
     private val taskService: TaskService,
 ) {
+    @Operation(
+        summary = "특정 멘티의 과제 및 피드백 목록 조회",
+        description = "멘토가 특정 멘티의 과제 수행 내역과 피드백을 조회합니다.",
+    )
+    @GetMapping("/mentee/{menteeId}")
+    fun getMenteeTasksWithFeedback(
+        @AuthenticationPrincipal userId: Long,
+        @PathVariable menteeId: Long,
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "20") size: Int,
+    ): ResponseEntity<MenteeTaskFeedbackResponse> {
+        val pageable = PageRequest.of(page, size)
+        val response = taskService.getMenteeTasksWithFeedback(userId, menteeId, pageable)
+        return ResponseEntity.ok(response)
+    }
+
     @Operation(
         summary = "멘티에게 과제 할당 (PDF 포함)",
         description = "멘토가 특정 멘티의 플래너에 과제(Task)를 생성합니다.",
@@ -44,25 +62,30 @@ class MentorTaskController(
         @Parameter(description = "학습 자료 PDF (선택 사항)") @RequestPart(
             "file",
             required = false,
-        ) file: MultipartFile?,
+        ) files: List<MultipartFile>?,
     ): ResponseEntity<TaskResponse> {
-        val response = taskService.assignTask(userId, request, file)
+        val response = taskService.assignTask(userId, request, files)
         return ResponseEntity.ok(response)
     }
 
     @Operation(
-        summary = "특정 멘티의 과제 및 피드백 목록 조회",
-        description = "멘토가 특정 멘티의 과제 수행 내역과 피드백을 조회합니다.",
+        summary = "과제 수정 (멘토용)",
+        description = "멘토가 할당한 과제의 내용, 날짜, 첨부파일을 수정합니다. (보내지 않은 값은 유지)",
     )
-    @GetMapping("/mentee/{menteeId}")
-    fun getMenteeTasksWithFeedback(
+    @PatchMapping(
+        value = ["/assignment/{taskId}"],
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
+    )
+    fun updateAssignedTask(
         @AuthenticationPrincipal userId: Long,
-        @PathVariable menteeId: Long,
-        @RequestParam(defaultValue = "0") page: Int,
-        @RequestParam(defaultValue = "20") size: Int,
-    ): ResponseEntity<MenteeTaskFeedbackResponse> {
-        val pageable = PageRequest.of(page, size)
-        val response = taskService.getMenteeTasksWithFeedback(userId, menteeId, pageable)
+        @PathVariable taskId: Long,
+        @Parameter(description = "수정할 과제 정보 (JSON)", content = [Content(mediaType = MediaType.APPLICATION_JSON_VALUE)])
+        @Valid
+        @RequestPart("request") request: MentorTaskUpdateRequest,
+        @Parameter(description = "수정할 학습 자료 PDF (선택 사항 - 보내면 교체됨)")
+        @RequestPart("file", required = false) files: List<MultipartFile>?,
+    ): ResponseEntity<TaskResponse> {
+        val response = taskService.updateAssignedTask(userId, taskId, request, files)
         return ResponseEntity.ok(response)
     }
 }
