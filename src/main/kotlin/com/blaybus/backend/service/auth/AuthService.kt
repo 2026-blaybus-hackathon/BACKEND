@@ -44,15 +44,11 @@ class AuthService(
         if (existingUser != null) {
             throw CustomException(ErrorCode.REGISTERED_ALREADY)
         }
-        if (userRepository.existsByNickname(request.nickname)) {
-            throw CustomException(ErrorCode.CONFLICT_NICKNAME)
-        }
         val user =
             User(
                 email = request.email,
                 password = passwordEncoder.encode(request.password)!!,
                 name = request.name,
-                nickname = request.nickname,
                 role = request.role,
                 originFileName = profile?.originalFilename,
                 profileName =
@@ -62,6 +58,10 @@ class AuthService(
                             it,
                         )
                     },
+                schoolName = request.schoolName,
+                grade = request.grade,
+                targetSchool = request.targetSchool,
+                targetDate = request.targetDate,
             )
         userRepository.save(user)
     }
@@ -77,7 +77,7 @@ class AuthService(
             return jwtTokenProvider.getTokenResponse(
                 userDetails.userId,
                 userDetails.authorities,
-                userDetails.nickname,
+                userDetails.name,
             )
         } catch (e: Exception) {
             throw CustomException(ErrorCode.INVALID_CREDENTIALS, e.message)
@@ -118,6 +118,6 @@ class AuthService(
 
         val user = userRepository.getByUserId(userId)
 
-        return jwtTokenProvider.getTokenResponse(user.id, jwtTokenProvider.getAuthorities(user.role), user.nickname)
+        return jwtTokenProvider.getTokenResponse(user.id, jwtTokenProvider.getAuthorities(user.role), user.name)
     }
 }

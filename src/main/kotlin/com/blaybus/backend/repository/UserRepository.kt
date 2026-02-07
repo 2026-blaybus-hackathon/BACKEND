@@ -11,6 +11,4 @@ fun UserRepository.getByUserId(userId: Long): User = findById(userId).orElseThro
 @Repository
 interface UserRepository : JpaRepository<User, Long> {
     fun findByEmail(email: String): User?
-
-    fun existsByNickname(nickname: String): Boolean
 }

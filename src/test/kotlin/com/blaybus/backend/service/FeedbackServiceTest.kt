@@ -62,7 +62,6 @@ class FeedbackServiceTest {
                 id = 1L,
                 email = "mentor@test.com",
                 name = "멘토",
-                nickname = "mentor_nick",
                 role = Role.MENTOR,
                 password = "123",
             )
@@ -72,7 +71,6 @@ class FeedbackServiceTest {
                 id = 2L,
                 email = "mentee@test.com",
                 name = "멘티",
-                nickname = "mentee_nick",
                 role = Role.MENTEE,
                 mentor = mentor,
                 password = "123",
@@ -83,7 +81,6 @@ class FeedbackServiceTest {
                 id = 3L,
                 email = "other@test.com",
                 name = "다른 유저",
-                nickname = "other_nick",
                 role = Role.MENTEE,
                 mentor = mentor,
                 password = "123",

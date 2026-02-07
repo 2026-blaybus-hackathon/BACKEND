@@ -64,12 +64,12 @@ class FeedbackService(
         taskId: Long,
     ): FeedbackDto.GetFeedbackOfTaskResponse {
         val mentee = userRepository.getByUserId(menteeId)
-        val task = taskRepository.getByTaskId(taskId)
+        val task = taskRepository.getByTaskId(taskId) // TODO : 피드백이 Lazy 로딩이라서 같이 가져오지 않음
         // API를 요청한 사람과 task의 주인이 동일한지 검증
         task.dailyPlanner.user.validateSameUser(mentee)
         val feedback = task.feedback
 
-        return task.feedback?.toGetFeedbackOfTaskResponse()
+        return feedback?.toGetFeedbackOfTaskResponse()
             ?: task.toEmptyFeedbackResponse()
     }
 

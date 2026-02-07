@@ -1,9 +1,11 @@
 package com.blaybus.backend.dto
 
+import com.blaybus.backend.entity.Grade
 import com.blaybus.backend.entity.Role
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
+import java.time.LocalDate
 
 // Request DTOs
 data class EmailSignupRequest(
@@ -14,13 +16,19 @@ data class EmailSignupRequest(
     @field:NotBlank(message = "이름은 필수 입력값입니다")
     val name: String,
     @field:Schema(requiredMode = Schema.RequiredMode.REQUIRED)
-    @field:NotBlank(message = "닉네임은 필수 입력값입니다")
-    val nickname: String,
-    @field:Schema(requiredMode = Schema.RequiredMode.REQUIRED)
     @field:NotBlank(message = "비밀번호는 필수 입력값입니다")
     val password: String,
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "사용자 역할", allowableValues = ["MENTOR", "MENTEE"])
     val role: Role,
+    @Schema(description = "학교 이름")
+    val schoolName: String?,
+    @Schema(description = "학년")
+    val grade: Grade?,
+    @Schema(description = "목표 학교", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotBlank(message = "목표 학교는 필수 입력값입니다")
+    val targetSchool: String,
+    @Schema(description = "목표일", example = "2024-11-15")
+    val targetDate: LocalDate?,
 )
 
 data class EmailLoginRequest(
@@ -37,10 +45,12 @@ data class EmailLoginRequest(
 data class TokenResponse(
     val accessToken: String,
     val refreshToken: String?,
-    val nickname: String?,
+    val name: String?,
+    // TODO: 학적, 목표, role 등 추가 정보
 )
 
 data class LoginResponse(
     val accessToken: String,
-    val nickname: String?,
+    val name: String?,
+    // TODO: 학적, 목표, role 등 추가 정보
 )

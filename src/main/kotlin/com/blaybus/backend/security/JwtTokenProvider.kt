@@ -127,7 +127,7 @@ class JwtTokenProvider(
     fun getTokenResponse(
         userId: Long,
         authorities: Collection<GrantedAuthority>,
-        nickname: String,
+        name: String,
     ): TokenResponse {
         val accessToken = generateAccessToken(userId, authorities)
         val refreshToken =
@@ -140,7 +140,7 @@ class JwtTokenProvider(
             refreshTokenRepository.delete(existingRefreshToken)
         }
         refreshTokenRepository.save(RefreshToken(userId, refreshToken, refreshTokenExpirationTime))
-        return TokenResponse(accessToken, refreshToken, nickname)
+        return TokenResponse(accessToken, refreshToken, name)
     }
 
     fun getTokenExpirationTime(token: String): Date =

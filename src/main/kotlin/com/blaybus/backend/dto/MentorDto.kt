@@ -9,23 +9,21 @@ import java.time.LocalDate
 data class MenteeProfileResponse(
     @Schema(description = "멘티 ID")
     val menteeId: Long,
-    @Schema(description = "멘티 닉네임")
-    val nickname: String,
     @Schema(description = "멘티 이름")
     val name: String,
     @Schema(description = "멘티 프로필 URL")
     val profileUrl: String?,
+    // TODO: 학적, 목표, role 등 추가 정보
 )
 
 data class UserProfileResponse(
     @Schema(description = "사용자 ID")
     val userId: Long,
-    @Schema(description = "사용자 닉네임")
-    val nickname: String,
     @Schema(description = "사용자 이름")
     val name: String,
     @Schema(description = "사용자 프로필 URL")
     val profileUrl: String?,
+    // TODO: 학적, 목표, role 등 추가 정보
 )
 
 data class MenteeTaskFeedbackResponse(
