@@ -202,8 +202,8 @@ class TaskService(
         taskId: Long,
         image: MultipartFile,
     ): FileUploadResponse {
-        val task = taskRepository.getByTaskId(taskId)
-        if (task.writer.id != userId) throw CustomException(ErrorCode.NOT_YOUR_TASK)
+        val task = taskRepository.findTaskById(taskId) ?: throw CustomException(ErrorCode.TASK_NOT_FOUND)
+        if (task.dailyPlanner.user.id != userId) throw CustomException(ErrorCode.NOT_YOUR_TASK)
 
         val imagePath = "tasks/$taskId/verification/"
         val uploadedKey = objectStorageRepository.upload(imagePath, image)
@@ -218,7 +218,7 @@ class TaskService(
                     originalFileName = image.originalFilename ?: "unknown",
                 ),
             )
-
+        task.isCompleted = true
         return FileUploadResponse(
             fileId = studyImage.id,
             url = downloadUrl,
