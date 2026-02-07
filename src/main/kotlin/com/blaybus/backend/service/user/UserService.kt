@@ -1,19 +1,23 @@
 package com.blaybus.backend.service.user
 
 import com.blaybus.backend.dto.MenteeProfileResponse
-import com.blaybus.backend.dto.UserDto.SimpleUserDto
+import com.blaybus.backend.dto.SimpleUserDto
 import com.blaybus.backend.dto.UserProfileResponse
+import com.blaybus.backend.dto.UserTodayStudyTimeDto
 import com.blaybus.backend.dto.mapper.toMenteeProfileResponse
 import com.blaybus.backend.dto.mapper.toUserProfileResponse
 import com.blaybus.backend.repository.ObjectStorageRepository
 import com.blaybus.backend.repository.UserRepository
 import com.blaybus.backend.repository.getByUserId
+import com.blaybus.backend.service.TaskService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
 
 @Service
 class UserService(
     private val userRepository: UserRepository,
+    private val taskService: TaskService,
     private val objectStorageRepository: ObjectStorageRepository,
 ) {
     fun findAllUser(): List<SimpleUserDto> =
@@ -48,5 +52,15 @@ class UserService(
         return user.toUserProfileResponse(
             user.profileName?.let(objectStorageRepository::getDownloadUrl),
         )
+    }
+
+    @Transactional(readOnly = true)
+    fun getDailyStudyAmount(
+        userId: Long,
+        date: LocalDate,
+    ): UserTodayStudyTimeDto {
+        val user = userRepository.getByUserId(userId)
+        val todayTasks = taskService.getTodayTasksForUser(user, date)
+        return UserTodayStudyTimeDto(todayTasks.mapNotNull { it.studyDurationInMinutes }.sum())
     }
 }
