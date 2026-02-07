@@ -3,7 +3,6 @@ package com.blaybus.backend.dto
 import com.blaybus.backend.entity.Role
 import com.blaybus.backend.entity.User
 import io.swagger.v3.oas.annotations.media.Schema
-import java.time.LocalDate
 
 data class SimpleUserDto(
     val id: Long,
@@ -36,8 +35,9 @@ data class MenteeProfileResponse(
     val grade: String?,
     @Schema(description = "목표 학교")
     val targetSchool: String?,
-    @Schema(description = "목표일")
-    val targetDate: LocalDate?,
+    @Schema(description = "목표일로부터 디데이")
+    val targetDate: Int,
+    // TODO: 디데이 계산하그그러기
 ) {
     constructor(user: User, profileUrl: String?) : this(
         menteeId = user.id,
@@ -46,10 +46,9 @@ data class MenteeProfileResponse(
         schoolName = user.schoolName,
         grade = user.grade?.description,
         targetSchool = user.targetSchool,
-        targetDate = user.targetDate,
+        targetDate = -1,
     )
 }
-
 
 data class UserProfileResponse(
     @Schema(description = "이름")
@@ -63,7 +62,7 @@ data class UserProfileResponse(
     @Schema(description = "목표 학교")
     val targetSchool: String?,
     @Schema(description = "목표일")
-    val targetDate: LocalDate?,
+    val targetDate: Int?,
 ) {
     constructor(user: User, profileUrl: String?) : this(
         name = user.name,
@@ -71,6 +70,6 @@ data class UserProfileResponse(
         schoolName = user.schoolName,
         grade = user.grade?.description,
         targetSchool = user.targetSchool,
-        targetDate = user.targetDate,
+        targetDate = -1,
     )
 }
