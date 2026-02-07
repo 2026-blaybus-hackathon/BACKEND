@@ -62,9 +62,9 @@ class MentorTaskController(
         @Parameter(description = "학습 자료 PDF (선택 사항)") @RequestPart(
             "file",
             required = false,
-        ) file: MultipartFile?,
+        ) files: List<MultipartFile>?,
     ): ResponseEntity<TaskResponse> {
-        val response = taskService.assignTask(userId, request, file)
+        val response = taskService.assignTask(userId, request, files)
         return ResponseEntity.ok(response)
     }
 
@@ -85,9 +85,9 @@ class MentorTaskController(
         @Valid @RequestPart("request") request: MentorTaskUpdateRequest,
 
         @Parameter(description = "수정할 학습 자료 PDF (선택 사항 - 보내면 교체됨)")
-        @RequestPart("file", required = false) file: MultipartFile?,
+        @RequestPart("file", required = false) files: List<MultipartFile>?,
     ): ResponseEntity<TaskResponse> {
-        val response = taskService.updateAssignedTask(userId, taskId, request, file)
+        val response = taskService.updateAssignedTask(userId, taskId, request, files)
         return ResponseEntity.ok(response)
     }
 }

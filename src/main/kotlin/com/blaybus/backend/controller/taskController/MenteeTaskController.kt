@@ -38,12 +38,12 @@ class MenteeTaskController(
     fun createTask(
         @AuthenticationPrincipal userId: Long,
         @Valid @RequestBody request: MenteeTaskCreateRequest,
-        @Parameter(description = "학습 자료 PDF (선택 사항)") @RequestPart(
+        @Parameter(description = "학습 자료 PDF들 (선택 사항)") @RequestPart(
             "file",
             required = false,
-        ) file: MultipartFile?,
+        ) files: List<MultipartFile>?,
     ): ResponseEntity<TaskResponse> {
-        val response = taskService.createTask(userId, request, file)
+        val response = taskService.createTask(userId, request, files)
         return ResponseEntity.ok(response)
     }
 

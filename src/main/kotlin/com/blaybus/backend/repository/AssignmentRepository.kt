@@ -12,5 +12,5 @@ fun AssignmentRepository.getByAssignmentId(assignmentId: Long): Assignment =
 
 @Repository
 interface AssignmentRepository : JpaRepository<Assignment, Long>{
-    fun findByTask(task: Task): Assignment?
+    fun findAllByTask(task: Task): List<Assignment>
 }

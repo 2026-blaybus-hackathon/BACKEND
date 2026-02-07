@@ -60,7 +60,7 @@ class TaskService(
     fun createTask(
         userId: Long,
         request: MenteeTaskCreateRequest,
-        file: MultipartFile?
+        files: List<MultipartFile>?
     ): TaskResponse {
         val mentee = userRepository.getByUserId(userId)
 
@@ -71,7 +71,7 @@ class TaskService(
             title = request.title,
             content = request.content,
             subject = request.subject,
-            file = file
+            files = files
         )
     }
 
@@ -79,7 +79,7 @@ class TaskService(
     fun assignTask(
         mentorId: Long,
         request: MentorTaskAssignRequest,
-        file: MultipartFile?,
+        files: List<MultipartFile>?,
     ): TaskResponse {
         val mentor = userRepository.getByUserId(mentorId)
         val mentee = userRepository.getByUserId(request.menteeId)
@@ -92,7 +92,7 @@ class TaskService(
             title = request.title,
             content = request.content,
             subject = request.subject,
-            file = file
+            files = files
         )
     }
 
@@ -129,7 +129,7 @@ class TaskService(
         userId: Long,
         taskId: Long,
         request: MentorTaskUpdateRequest,
-        file: MultipartFile?
+        files: List<MultipartFile>?
     ): TaskResponse {
         val task = taskRepository.getByTaskId(taskId)
 
@@ -142,8 +142,8 @@ class TaskService(
         task.content = request.content ?: task.content
         task.subject = request.subject ?: task.subject
 
-        if (file != null && !file.isEmpty) {
-            manageAssignmentFile(task, file)
+        if (!files.isNullOrEmpty()) {
+            manageAssignmentFiles(task, files)
         }
 
         return TaskResponse.from(task)
@@ -278,7 +278,7 @@ class TaskService(
         title: String,
         content: String?,
         subject: Subject,
-        file: MultipartFile?
+        files: List<MultipartFile>?
     ): TaskResponse {
         val planner = dailyPlannerService.getOrCreateDailyPlannerByDate(targetMentee, date)
 
@@ -293,29 +293,33 @@ class TaskService(
             )
         )
 
-        if (file != null && !file.isEmpty) {
-            manageAssignmentFile(task, file)
+        if (!files.isNullOrEmpty()) {
+            manageAssignmentFiles(task, files)
         }
 
         return TaskResponse.from(task)
     }
 
-    private fun manageAssignmentFile(task: Task, file: MultipartFile) {
-        val filePath = "tasks/${task.id}/assignments/"
-        val uploadedKey = objectStorageRepository.upload(filePath, file)
-        val existingAssignment = assignmentRepository.findByTask(task)
+    private fun manageAssignmentFiles(task: Task, files: List<MultipartFile>) {
+        val existingAssignments = assignmentRepository.findAllByTask(task)
 
-        if (existingAssignment != null) {
-            assignmentRepository.delete(existingAssignment)
+        if (existingAssignments.isNotEmpty()) {
+            assignmentRepository.deleteAll(existingAssignments)
             assignmentRepository.flush() // 즉시 반영
         }
 
-        assignmentRepository.save(
-            Assignment(
-                task = task,
-                fileKey = uploadedKey,
-                originalFileName = file.originalFilename ?: "unknown.pdf"
+        // 2. 새 파일들 반복 업로드 및 저장
+        files.forEach { file ->
+            val filePath = "tasks/${task.id}/assignments/"
+            val uploadedKey = objectStorageRepository.upload(filePath, file)
+
+            assignmentRepository.save(
+                Assignment(
+                    task = task,
+                    fileKey = uploadedKey,
+                    originalFileName = file.originalFilename ?: "unknown.pdf"
+                )
             )
-        )
+        }
     }
 }
