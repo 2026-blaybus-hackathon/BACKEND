@@ -137,3 +137,12 @@ CREATE INDEX idx_tasks_created_datetime ON tasks (created_datetime);
 
 ALTER TABLE daily_planners
     ADD CONSTRAINT uk_daily_planners_user_id_date UNIQUE (user_id, "DATE");
+
+ALTER TABLE assignments
+    DROP COLUMN PDF_FILE_NAME;
+
+ALTER TABLE assignments
+    ADD (
+        file_key VARCHAR2(500) NOT NULL,
+        original_file_name VARCHAR2(300) NOT NULL
+        );
