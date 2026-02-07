@@ -3,6 +3,7 @@ package com.blaybus.backend.util
 import mu.KotlinLogging
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
 
 private val logger = KotlinLogging.logger {}
@@ -18,6 +19,7 @@ fun getDDay(
     targetDate: LocalDate,
     currentDate: LocalDate = LocalDate.now(),
 ): Int =
-    (targetDate.toEpochDay() - currentDate.toEpochDay()).toInt().let {
-        if (it < 0) 0 else it
-    }
+    ChronoUnit.DAYS
+        .between(currentDate, targetDate)
+        .coerceAtLeast(0L)
+        .toInt()
