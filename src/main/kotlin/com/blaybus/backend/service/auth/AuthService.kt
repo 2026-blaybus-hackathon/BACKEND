@@ -75,9 +75,8 @@ class AuthService(
                 )
             val userDetails = authentication.principal as CustomUserDto
             return jwtTokenProvider.getTokenResponse(
-                userDetails.userId,
                 userDetails.authorities,
-                userDetails.name,
+                userDetails.user,
             )
         } catch (e: Exception) {
             throw CustomException(ErrorCode.INVALID_CREDENTIALS, e.message)
@@ -118,6 +117,6 @@ class AuthService(
 
         val user = userRepository.getByUserId(userId)
 
-        return jwtTokenProvider.getTokenResponse(user.id, jwtTokenProvider.getAuthorities(user.role), user.name)
+        return jwtTokenProvider.getTokenResponse(jwtTokenProvider.getAuthorities(user.role), user)
     }
 }

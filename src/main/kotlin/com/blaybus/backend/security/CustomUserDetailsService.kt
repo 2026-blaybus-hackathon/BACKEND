@@ -22,8 +22,7 @@ class CustomUserDetailsService(
             email = user.email,
             password = user.password,
             authorities = listOf(SimpleGrantedAuthority(user.role.name)),
-            name = user.name,
-            userId = user.id,
+            user = user,
         )
     }
 }
@@ -32,7 +31,5 @@ class CustomUserDto(
     email: String,
     password: String,
     authorities: Collection<SimpleGrantedAuthority>,
-    val name: String,
-    val userId: Long,
-    // TODO: 학적, 목표, role 등 추가 정보
+    val user: com.blaybus.backend.entity.User,
 ) : User(email, password, authorities)
