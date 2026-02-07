@@ -154,6 +154,7 @@ ALTER TABLE USERS
         target_school VARCHAR2(100),
         target_date date
         );
+
 DROP INDEX idx_users_nickname;
 
 ALTER TABLE USERS
