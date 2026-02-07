@@ -68,22 +68,20 @@ class MentorTaskController(
         return ResponseEntity.ok(response)
     }
 
-
     @Operation(
         summary = "과제 수정 (멘토용)",
         description = "멘토가 할당한 과제의 내용, 날짜, 첨부파일을 수정합니다. (보내지 않은 값은 유지)",
     )
     @PatchMapping(
         value = ["/assignment/{taskId}"],
-        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
     )
     fun updateAssignedTask(
         @AuthenticationPrincipal userId: Long,
         @PathVariable taskId: Long,
-
         @Parameter(description = "수정할 과제 정보 (JSON)", content = [Content(mediaType = MediaType.APPLICATION_JSON_VALUE)])
-        @Valid @RequestPart("request") request: MentorTaskUpdateRequest,
-
+        @Valid
+        @RequestPart("request") request: MentorTaskUpdateRequest,
         @Parameter(description = "수정할 학습 자료 PDF (선택 사항 - 보내면 교체됨)")
         @RequestPart("file", required = false) files: List<MultipartFile>?,
     ): ResponseEntity<TaskResponse> {

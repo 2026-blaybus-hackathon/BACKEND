@@ -22,15 +22,15 @@ data class MenteeTaskCreateRequest(
 
 data class MenteeTaskUpdateRequest(
     @field:Schema(description = "수정할 제목")
-    val title: String?=null,
+    val title: String? = null,
     @field:Schema(description = "수정할 상세 내용")
-    val content: String?=null,
+    val content: String? = null,
     @field:Schema(description = "수정할 과목", allowableValues = ["KOREAN", "MATH", "ENGLISH", "OTHERS"])
-    val subject: Subject?=null,
+    val subject: Subject? = null,
     @field:Schema(description = "공부 시간 (분 단위)", example = "60")
-    val studyTime: Int?=null,
+    val studyTime: Int? = null,
     @field:Schema(description = "완료 여부 (체크박스)", example = "true")
-    val isCompleted: Boolean?=null,
+    val isCompleted: Boolean? = null,
 )
 
 data class FileUploadResponse(
@@ -60,13 +60,13 @@ data class MenteeStudyTimeUpdateRequest(
     @field:Schema(description = "공부한 시간 (분 단위)", example = "60")
     @field:NotNull(message = "공부 시간은 필수입니다.")
     @field:Min(value = 0, message = "공부 시간은 0분 이상이어야 합니다.")
-    val studyTime: Int
+    val studyTime: Int,
 )
 
 data class MenteeTaskCompletionUpdateRequest(
     @field:Schema(description = "완료 여부 (true: 완료, false: 미완료)", example = "true")
     @field:NotNull(message = "완료 여부는 필수입니다.")
-    val isCompleted: Boolean
+    val isCompleted: Boolean,
 )
 
 data class TaskResponse(
@@ -82,14 +82,13 @@ data class TaskResponse(
     val studyDurationInMinutes: Int = 0,
 ) {
     companion object {
-        fun from(task: Task): TaskResponse {
-            return TaskResponse(
+        fun from(task: Task): TaskResponse =
+            TaskResponse(
                 id = task.id,
                 title = task.title,
                 content = task.content,
                 subject = task.subject,
-                studyDurationInMinutes = task.studyDurationInMinutes ?: 0
+                studyDurationInMinutes = task.studyDurationInMinutes ?: 0,
             )
-        }
     }
 }

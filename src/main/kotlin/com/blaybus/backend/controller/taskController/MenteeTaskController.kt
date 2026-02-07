@@ -6,7 +6,6 @@ import com.blaybus.backend.dto.MenteeStudyTimeUpdateRequest
 import com.blaybus.backend.dto.MenteeTaskCompletionUpdateRequest
 import com.blaybus.backend.dto.MenteeTaskCreateRequest
 import com.blaybus.backend.dto.MenteeTaskUpdateRequest
-import com.blaybus.backend.dto.MentorTaskAssignRequest
 import com.blaybus.backend.dto.TaskResponse
 import com.blaybus.backend.service.TaskService
 import io.swagger.v3.oas.annotations.Operation
@@ -20,7 +19,6 @@ import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestPart
@@ -99,13 +97,13 @@ class MenteeTaskController(
 
     @Operation(
         summary = "공부시간 수정",
-        description = "멘티는 공부시간(분 단위)을 기록하고 수정할 수 있다."
+        description = "멘티는 공부시간(분 단위)을 기록하고 수정할 수 있다.",
     )
     @PatchMapping("/{taskId}/studyTime")
     fun updateStudyTime(
         @AuthenticationPrincipal userId: Long,
         @Parameter(description = "Task ID") @PathVariable taskId: Long,
-        @Valid @RequestBody request: MenteeStudyTimeUpdateRequest
+        @Valid @RequestBody request: MenteeStudyTimeUpdateRequest,
     ): ResponseEntity<TaskResponse> {
         val response = taskService.updateStudyTime(userId, taskId, request)
         return ResponseEntity.ok(response)
@@ -113,13 +111,13 @@ class MenteeTaskController(
 
     @Operation(
         summary = "완료여부 수정",
-        description = "멘티는 자신이 생성한 Task의 완료 여부를 체크할 수 있다."
+        description = "멘티는 자신이 생성한 Task의 완료 여부를 체크할 수 있다.",
     )
     @PatchMapping("/{taskId}/isCompleted")
     fun updateIsCompleted(
         @AuthenticationPrincipal userId: Long,
         @Parameter(description = "Task ID") @PathVariable taskId: Long,
-        @Valid @RequestBody request: MenteeTaskCompletionUpdateRequest
+        @Valid @RequestBody request: MenteeTaskCompletionUpdateRequest,
     ): ResponseEntity<TaskResponse> {
         val response = taskService.updateTaskCompletion(userId, taskId, request)
         return ResponseEntity.ok(response)

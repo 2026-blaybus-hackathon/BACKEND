@@ -59,9 +59,11 @@ class Task(
     fun updateComment(comment: String) {
         this.comment = comment
     }
-    fun updateStudyDurationInMinutes(minutes : Int){
-        this.studyDurationInMinutes = minutes;
+
+    fun updateStudyDurationInMinutes(minutes: Int) {
+        this.studyDurationInMinutes = minutes
     }
+
     fun updateCompletionStatus(isCompleted: Boolean) {
         this.isCompleted = isCompleted
     }
