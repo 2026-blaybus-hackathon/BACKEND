@@ -40,4 +40,7 @@ interface TaskRepository : JpaRepository<Task, Long> {
         user: User,
         pageable: Pageable,
     ): Page<Task>
+
+    @EntityGraph(attributePaths = ["dailyPlanner", "studyImages", "dailyPlanner.user"])
+    fun findTaskById(taskId: Long): Task?
 }

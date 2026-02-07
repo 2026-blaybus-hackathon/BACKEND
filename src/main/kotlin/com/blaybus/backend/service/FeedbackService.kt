@@ -1,14 +1,17 @@
 package com.blaybus.backend.service
 
 import com.blaybus.backend.dto.FeedbackDto
+import com.blaybus.backend.dto.StudyImagetDto
 import com.blaybus.backend.dto.mapper.toEmptyFeedbackResponse
 import com.blaybus.backend.dto.mapper.toGetFeedbackOfTaskResponse
 import com.blaybus.backend.entity.Feedback
 import com.blaybus.backend.repository.FeedbackRepository
+import com.blaybus.backend.repository.ObjectStorageRepository
 import com.blaybus.backend.repository.TaskRepository
 import com.blaybus.backend.repository.UserRepository
 import com.blaybus.backend.repository.getByTaskId
 import com.blaybus.backend.repository.getByUserId
+import com.blaybus.backend.repository.getFeedbackWithTaskAndMentorById
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
@@ -19,6 +22,7 @@ class FeedbackService(
     private val feedbackRepository: FeedbackRepository,
     private val taskRepository: TaskRepository,
     private val dailyPlannerService: DailyPlannerService,
+    private val objectStorageRepository: ObjectStorageRepository,
 ) {
     @Transactional
     fun provideFeedbackForMenteesTask(
@@ -120,6 +124,44 @@ class FeedbackService(
 
         return FeedbackDto.GetTotalFeedbackResponse(
             dailyPlanner.totalFeedback,
+        )
+    }
+
+    @Transactional(readOnly = true)
+    fun unreadFeedbackCount(userId: Long): FeedbackDto.GetUnreadFeedbackCountResponse {
+        userRepository.getByUserId(userId)
+        return FeedbackDto.GetUnreadFeedbackCountResponse(
+            feedbackRepository.countByTaskDailyPlannerUserIdAndIsReadFalse(
+                userId,
+            ),
+        )
+    }
+
+    @Transactional(readOnly = true)
+    fun getUnreadFeedbacks(userId: Long): List<FeedbackDto.GetUnReadFeedbackResponse> {
+        userRepository.getByUserId(userId)
+        return feedbackRepository
+            .findByTaskDailyPlannerUserIdAndIsReadFalse(userId)
+            .map { FeedbackDto.GetUnReadFeedbackResponse(it) }
+    }
+
+    @Transactional
+    fun getByFeedbackId(
+        userId: Long,
+        feedbackId: Long,
+    ): FeedbackDto.GetFeedbackByIdResponse {
+        val feedback = feedbackRepository.getFeedbackWithTaskAndMentorById(feedbackId)
+        feedback.task.dailyPlanner.user
+            .validateSameUser(userRepository.getByUserId(userId))
+        val task = feedback.task
+        val studyImageList =
+            task.studyImages.map {
+                StudyImagetDto.StudyImageResponse(it, objectStorageRepository.getDownloadUrl(it.originalFileName))
+            }
+        feedback.isRead = true
+        return FeedbackDto.GetFeedbackByIdResponse(
+            feedback,
+            StudyImagetDto.StudyCertificationResponse(task, studyImageList),
         )
     }
 }

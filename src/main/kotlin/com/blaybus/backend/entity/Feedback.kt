@@ -41,6 +41,8 @@ class Feedback(
     var tryContent: String?,
     @Column(nullable = true, columnDefinition = "CLOB")
     var detail: String? = null,
+    @Column(nullable = true, columnDefinition = "NUMBER(1)")
+    var isRead: Boolean = false,
 ) : BaseModifiableEntity() {
     constructor(
         task: Task,

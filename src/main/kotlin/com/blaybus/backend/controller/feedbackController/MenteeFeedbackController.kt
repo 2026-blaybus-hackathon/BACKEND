@@ -85,4 +85,44 @@ class MenteeFeedbackController(
             .body(
                 feedbackService.findMyFeedbacks(userId, date),
             )
+
+    @Operation(
+        summary = "안 읽은 피드백 개수 조회",
+        description = "멘티는 자신이 아직 읽지 않은 피드백의 개수를 조회합니다.",
+    )
+    @GetMapping("/unread-count")
+    fun getUnreadFeedbackCount(
+        @AuthenticationPrincipal userId: Long,
+    ): ResponseEntity<FeedbackDto.GetUnreadFeedbackCountResponse> =
+        ResponseEntity.ok(
+            feedbackService.unreadFeedbackCount(userId),
+        )
+
+    @Operation(
+        summary = "안 읽은 피드백 리스트 조회",
+        description = "멘티는 자신이 아직 읽지 않은 피드백의 상세 내용을 조회합니다.",
+    )
+    @GetMapping("/unread-feedbacks")
+    fun getUnreadFeedbacks(
+        @AuthenticationPrincipal userId: Long,
+    ): ResponseEntity<List<FeedbackDto.GetUnReadFeedbackResponse>> =
+        ResponseEntity.ok(
+            feedbackService.getUnreadFeedbacks(userId),
+        )
+
+    @Operation(
+        summary = "피드백 상세 조회",
+        description = "멘티는 피드백 ID로 특정 피드백을 조회합니다.",
+    )
+    @GetMapping("/{feedbackId}")
+    fun getFeedbackById(
+        @AuthenticationPrincipal userId: Long,
+        @Parameter(
+            name = "feedbackId",
+            description = "조회할 피드백 ID",
+            example = "1",
+            required = true,
+        )
+        @PathVariable feedbackId: Long,
+    ): ResponseEntity<FeedbackDto.GetFeedbackByIdResponse> = ResponseEntity.ok(feedbackService.getByFeedbackId(userId, feedbackId))
 }

@@ -1,8 +1,10 @@
 package com.blaybus.backend.dto
 
+import com.blaybus.backend.entity.Feedback
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
+import java.time.LocalDate
 
 class FeedbackDto {
     data class Summary(
@@ -115,4 +117,58 @@ class FeedbackDto {
         )
         val totalFeedback: String?,
     )
+
+    data class GetUnreadFeedbackCountResponse(
+        @Schema(
+            type = "number",
+            description = "읽지 않은 피드백 수",
+        )
+        val unreadFeedbackCount: Long,
+    )
+
+    data class GetUnReadFeedbackResponse(
+        @Schema(description = "피드백 id")
+        val feedbackId: Long,
+        @Schema(description = "할 일 id")
+        val taskId: Long,
+        @Schema(description = "할 일 제목")
+        val taskTitle: String,
+        @Schema(description = "과목")
+        val subject: String,
+        @Schema(description = "피드백 준 시간")
+        val createdDateTime: LocalDate,
+    ) {
+        constructor(feedback: Feedback) : this(
+            feedbackId = feedback.id,
+            taskId = feedback.task.id,
+            taskTitle = feedback.task.title,
+            subject = feedback.task.subject.name,
+            createdDateTime = feedback.createdDateTime.toLocalDate(),
+        )
+    }
+
+    data class GetFeedbackByIdResponse(
+        @Schema(
+            type = "number",
+            description = "피드백",
+        )
+        val unreadFeedback: GetFeedbackOfTaskResponse,
+        @Schema(description = "멘티가 과제 인증 정보")
+        val studyCertificationResponse: StudyImagetDto.StudyCertificationResponse,
+        @Schema(description = "피드백 준 시간")
+        val createdDateTime: LocalDate,
+    ) {
+        constructor(feedback: Feedback, studyCertificationResponse: StudyImagetDto.StudyCertificationResponse) : this(
+            unreadFeedback =
+                GetFeedbackOfTaskResponse(
+                    taskId = feedback.task.id,
+                    keepContent = feedback.keepContent,
+                    problemContent = feedback.problemContent,
+                    tryContent = feedback.tryContent,
+                    detail = feedback.detail,
+                ),
+            studyCertificationResponse = studyCertificationResponse,
+            createdDateTime = feedback.createdDateTime.toLocalDate(),
+        )
+    }
 }
