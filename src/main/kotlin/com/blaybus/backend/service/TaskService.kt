@@ -218,7 +218,7 @@ class TaskService(
                     originalFileName = image.originalFilename ?: "unknown",
                 ),
             )
-        task.isCompleted = true
+        task.updateCompletionStatus(true)
         return FileUploadResponse(
             fileId = studyImage.id,
             url = downloadUrl,
