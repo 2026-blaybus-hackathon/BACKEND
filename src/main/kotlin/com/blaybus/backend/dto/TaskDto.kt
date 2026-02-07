@@ -72,6 +72,8 @@ data class MenteeTaskCompletionUpdateRequest(
 data class TaskResponse(
     @Schema(description = "할 일 ID")
     val id: Long,
+    @Schema(description = "과제 유형")
+    val taskType: TaskType,
     @Schema(description = "할일 제목")
     val title: String?,
     @Schema(description = "할 일의 내용")
@@ -85,6 +87,7 @@ data class TaskResponse(
         fun from(task: Task): TaskResponse =
             TaskResponse(
                 id = task.id,
+                taskType = task.taskType,
                 title = task.title,
                 content = task.content,
                 subject = task.subject,

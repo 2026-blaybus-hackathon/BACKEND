@@ -19,6 +19,7 @@ import com.blaybus.backend.entity.Assignment
 import com.blaybus.backend.entity.StudyImage
 import com.blaybus.backend.entity.Subject
 import com.blaybus.backend.entity.Task
+import com.blaybus.backend.entity.TaskType
 import com.blaybus.backend.entity.User
 import com.blaybus.backend.exception.CustomException
 import com.blaybus.backend.exception.ErrorCode
@@ -72,6 +73,7 @@ class TaskService(
             writer = mentee,
             targetMentee = mentee,
             date = request.date,
+            taskType = TaskType.GENERAL_ASSIGNMENT,
             title = request.title,
             content = request.content,
             subject = request.subject,
@@ -93,6 +95,7 @@ class TaskService(
             writer = mentor,
             targetMentee = mentee,
             date = request.date,
+            taskType = request.taskType,
             title = request.title,
             content = request.content,
             subject = request.subject,
@@ -314,6 +317,7 @@ class TaskService(
         writer: User,
         targetMentee: User,
         date: LocalDate,
+        taskType: TaskType,
         title: String,
         content: String?,
         subject: Subject,
@@ -326,6 +330,7 @@ class TaskService(
                 Task(
                     dailyPlanner = planner,
                     subject = subject,
+                    taskType = taskType,
                     title = title,
                     content = content,
                     writer = writer,
