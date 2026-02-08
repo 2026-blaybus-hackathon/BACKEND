@@ -4,6 +4,7 @@ import com.blaybus.backend.entity.Period
 import com.blaybus.backend.entity.Report
 import com.blaybus.backend.entity.ReportSubject
 import com.blaybus.backend.entity.Subject
+import com.blaybus.backend.util.getFormattedPeriod
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
@@ -49,6 +50,8 @@ data class ReportMenteeResponse(
     val period: Period,
     val startDate: LocalDate,
     val endDate: LocalDate,
+    @Schema(description = "포맷팅된 기간 (예: 2월 4주차 / 2월)")
+    val formattedPeriod: String,
     val overallReview: String,
     val keepContent: String?,
     val problemContent: String?,
@@ -62,6 +65,7 @@ data class ReportMenteeResponse(
         period = report.period,
         startDate = report.startDate,
         endDate = report.endDate,
+        formattedPeriod = getFormattedPeriod(report.period, report.startDate),
         overallReview = report.overallReview,
         keepContent = report.keepContent,
         problemContent = report.problemContent,

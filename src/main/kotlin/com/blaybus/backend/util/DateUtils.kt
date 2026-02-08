@@ -1,10 +1,13 @@
 package com.blaybus.backend.util
 
+import com.blaybus.backend.entity.Period
 import mu.KotlinLogging
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
+import java.time.temporal.WeekFields
+import java.util.Locale
 
 private val logger = KotlinLogging.logger {}
 
@@ -30,3 +33,19 @@ fun getDDay(
         .between(currentDate, targetDate)
         .coerceAtLeast(0L)
         .toInt()
+
+fun getFormattedPeriod(
+    period: Period,
+    startDate: LocalDate,
+): String =
+    when (period) {
+        Period.WEEKLY -> {
+            val weekFields = WeekFields.of(Locale.KOREA)
+            val weekOfMonth = startDate.get(weekFields.weekOfMonth())
+            "${startDate.monthValue}월 ${weekOfMonth}주차"
+        }
+
+        Period.MONTHLY -> {
+            "${startDate.monthValue}월"
+        }
+    }
