@@ -11,4 +11,9 @@ fun UserRepository.getByUserId(userId: Long): User = findById(userId).orElseThro
 @Repository
 interface UserRepository : JpaRepository<User, Long> {
     fun findByEmail(email: String): User?
+
+    fun findByMentorIdAndNameContainingIgnoreCase(
+        mentorId: Long,
+        name: String,
+    ): List<User>
 }

@@ -1,7 +1,6 @@
 package com.blaybus.backend.service
 
 import com.blaybus.backend.dto.CommentOnTaskRequest
-import com.blaybus.backend.dto.DailyAchievementRate
 import com.blaybus.backend.dto.FeedbackDetail
 import com.blaybus.backend.dto.FileUploadResponse
 import com.blaybus.backend.dto.MenteeStudyTimeUpdateRequest
@@ -29,7 +28,6 @@ import com.blaybus.backend.repository.TaskRepository
 import com.blaybus.backend.repository.UserRepository
 import com.blaybus.backend.repository.getByTaskId
 import com.blaybus.backend.repository.getByUserId
-import com.blaybus.backend.util.getWeekRange
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
