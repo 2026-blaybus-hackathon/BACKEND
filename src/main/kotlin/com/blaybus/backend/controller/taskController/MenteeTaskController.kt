@@ -1,7 +1,6 @@
 package com.blaybus.backend.controller.taskController
 
 import com.blaybus.backend.dto.CommentOnTaskRequest
-import com.blaybus.backend.dto.DailyAchievementRate
 import com.blaybus.backend.dto.FileUploadResponse
 import com.blaybus.backend.dto.MenteeStudyTimeUpdateRequest
 import com.blaybus.backend.dto.MenteeTaskCompletionUpdateRequest
@@ -17,17 +16,14 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
-import java.time.LocalDate
 
 @Tag(name = "mentee-task-controller", description = "멘티의 할 일(Task) 관리, CRUD")
 @RequestMapping("/api/v1/tasks/mentee")
@@ -126,19 +122,4 @@ class MenteeTaskController(
         val response = taskService.updateTaskCompletion(userId, taskId, request)
         return ResponseEntity.ok(response)
     }
-
-    @Operation(
-        summary = "주간 유저 달성 정보 조회",
-        description = "멘티는 자신의 주간 달성 정보를 조회할 수 있습니다.(유저 주간 히트맵)",
-    )
-    @GetMapping("/weekly-achievement-rate")
-    fun getWeeklyAchievement(
-        @AuthenticationPrincipal userId: Long,
-        @Parameter(
-            name = "date",
-            description = "조회할 날짜 (해당 날짜가 속한 주의 달성 정보가 조회됩니다)",
-            required = true,
-        )
-        @RequestParam date: LocalDate,
-    ): ResponseEntity<List<DailyAchievementRate>> = ResponseEntity.ok(taskService.getWeeklyAchievement(userId, date))
 }
