@@ -1,6 +1,9 @@
 package com.blaybus.backend.controller.user
 
+import com.blaybus.backend.dto.AchievementRateAndTotalStudyTimeResponse
+import com.blaybus.backend.dto.AchievementRateResponse
 import com.blaybus.backend.dto.MenteeProfileResponse
+import com.blaybus.backend.entity.Period
 import com.blaybus.backend.service.user.UserService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -9,9 +12,11 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDate
 
 @Tag(name = "mentor-user-controller", description = "멘토 관련 조회")
 @RequestMapping("/api/v1/users/mentor")
@@ -53,4 +58,74 @@ class MentorUserController(
             .body(
                 userService.searchMenteesByName(userId, name),
             )
+
+    @Operation(
+        summary = "멘티 주간 과제 달성률 조회",
+        description = "멘토가 특정 멘티의 과제 달성률을 조회합니다.",
+    )
+    @GetMapping("/mentees/{menteeId}/achievement-rate")
+    fun getMenteeAchievementRate(
+        @AuthenticationPrincipal userId: Long,
+        @Parameter(
+            name = "menteeId",
+            description = "달성률을 조회할 멘티 ID",
+            example = "1",
+            required = true,
+        )
+        @PathVariable menteeId: Long,
+        @Parameter(
+            name = "date",
+            description = "조회할 기준 날짜 (YYYY-MM-DD 형식)",
+            example = "2026-02-02",
+            required = true,
+        )
+        @RequestParam date: LocalDate,
+    ): ResponseEntity<AchievementRateResponse> =
+        ResponseEntity
+            .status(HttpStatus.OK)
+            .body(
+                userService.getMenteeAchievementRate(userId, menteeId, date),
+            )
+
+    @Operation(
+        summary = "주/월간 멘티 과제 달성률과 총 공부시간 조회",
+        description = "멘토가 특정 멘티의 과제 달성률과 총 공부시간을 조회합니다.",
+    )
+    @GetMapping("/mentees/{menteeId}/stats")
+    fun getMenteeStats(
+        @AuthenticationPrincipal userId: Long,
+        @Parameter(
+            name = "menteeId",
+            description = "통계를 조회할 멘티 ID",
+            example = "1",
+            required = true,
+        )
+        @PathVariable menteeId: Long,
+        @Parameter(
+            name = "date",
+            description = "조회할 기준 날짜 (YYYY-MM-DD 형식)",
+            example = "2026-02-02",
+            required = true,
+        )
+        @RequestParam date: LocalDate,
+        @Parameter(
+            name = "period",
+            description = "조회할 기간 (WEEK 또는 MONTH)",
+            example = "WEEK",
+            required = true,
+        )
+        @RequestParam period: String,
+    ): ResponseEntity<AchievementRateAndTotalStudyTimeResponse> {
+        val mappedPeriod =
+            when (period.uppercase()) {
+                "WEEK", "WEEKLY" -> Period.WEEKLY
+                "MONTH", "MONTHLY" -> Period.MONTHLY
+                else -> throw IllegalArgumentException("Invalid period: $period")
+            }
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(
+                userService.getMenteeAchievementRateAndTotalStudyTime(userId, menteeId, date, mappedPeriod),
+            )
+    }
 }

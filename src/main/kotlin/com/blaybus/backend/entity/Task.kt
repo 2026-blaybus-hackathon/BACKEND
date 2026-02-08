@@ -91,7 +91,9 @@ enum class Subject(
     STUDY_METHOD("공부법 시리즈"),
 }
 
-enum class TaskType(val displayName: String) {
+enum class TaskType(
+    val displayName: String,
+) {
     COLUMN("칼럼"),
     WEAKNESS_SOLUTION("약점 보완 솔루션"),
 }

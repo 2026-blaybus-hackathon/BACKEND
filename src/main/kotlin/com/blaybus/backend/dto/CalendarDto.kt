@@ -1,5 +1,6 @@
 package com.blaybus.backend.dto
 
+import com.blaybus.backend.entity.Period
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 
@@ -31,8 +32,3 @@ data class CalendarTaskResponse(
     @Schema(description = "할 일 내용")
     val content: String,
 )
-
-enum class Period {
-    WEEK,
-    MONTH,
-}

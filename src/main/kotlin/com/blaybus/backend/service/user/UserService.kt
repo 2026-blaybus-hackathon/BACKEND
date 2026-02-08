@@ -1,5 +1,7 @@
 package com.blaybus.backend.service.user
 
+import com.blaybus.backend.dto.AchievementRateAndTotalStudyTimeResponse
+import com.blaybus.backend.dto.AchievementRateResponse
 import com.blaybus.backend.dto.DailyAchievementRate
 import com.blaybus.backend.dto.MenteeProfileResponse
 import com.blaybus.backend.dto.SimpleUserResponse
@@ -8,12 +10,14 @@ import com.blaybus.backend.dto.UserProfileResponse
 import com.blaybus.backend.dto.UserTodayStudyTimeResponse
 import com.blaybus.backend.dto.mapper.toMenteeProfileResponse
 import com.blaybus.backend.dto.mapper.toUserProfileResponse
+import com.blaybus.backend.entity.Period
 import com.blaybus.backend.repository.ObjectStorageRepository
 import com.blaybus.backend.repository.ObjectStorageRepository.Companion.PROFILE_IMAGE_PATH
 import com.blaybus.backend.repository.UserRepository
 import com.blaybus.backend.repository.getByUserId
 import com.blaybus.backend.service.DailyPlannerService
 import com.blaybus.backend.service.TaskService
+import com.blaybus.backend.util.getMonthRange
 import com.blaybus.backend.util.getWeekRange
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -140,4 +144,52 @@ class UserService(
                 },
             )
         }
+
+    @Transactional(readOnly = true)
+    fun getMenteeAchievementRateAndTotalStudyTime(
+        mentorId: Long,
+        menteeId: Long,
+        date: LocalDate,
+        period: Period,
+    ): AchievementRateAndTotalStudyTimeResponse {
+        val mentor = userRepository.getByUserId(mentorId)
+        val mentee = userRepository.getByUserId(menteeId)
+        mentor.validateMentee(mentee)
+        val (startDay, endDay) =
+            when (period) {
+                Period.WEEKLY -> {
+                    getWeekRange(date)
+                }
+
+                Period.MONTHLY -> {
+                    getMonthRange(date)
+                }
+            }
+        val dailyPlannerList = dailyPlannerService.getDailyPlannerByPeriod(menteeId, startDay, endDay)
+        val taskList = dailyPlannerList.flatMap { it.tasks }
+        val studyTimeMinutes = taskList.mapNotNull { it.studyDurationInMinutes }.sum()
+        val completeTaskSize = taskList.filter { it.isCompleted }.size
+        val achievementRateAndTotalStudyTimeResponse =
+            AchievementRateAndTotalStudyTimeResponse(
+                AchievementRateResponse(completeTaskSize, taskList.size),
+                weeklyStudyTimeMinutes = studyTimeMinutes,
+            )
+        return achievementRateAndTotalStudyTimeResponse
+    }
+
+    fun getMenteeAchievementRate(
+        mentorId: Long,
+        menteeId: Long,
+        date: LocalDate,
+    ): AchievementRateResponse {
+        val mentor = userRepository.getByUserId(mentorId)
+        val mentee = userRepository.getByUserId(menteeId)
+        val (startOfWeek, endOfWeek) = getWeekRange(date)
+        mentor.validateMentee(mentee)
+        val dailyPlannerList = dailyPlannerService.getDailyPlannerByPeriod(menteeId, startOfWeek, endOfWeek)
+        val taskList = dailyPlannerList.flatMap { it.tasks }
+        val completeTaskSize = taskList.filter { it.isCompleted }.size
+        val achievementRateResponse = AchievementRateResponse(completeTaskSize, taskList.size)
+        return achievementRateResponse
+    }
 }
