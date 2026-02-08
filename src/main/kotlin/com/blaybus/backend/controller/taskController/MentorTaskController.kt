@@ -1,6 +1,7 @@
 package com.blaybus.backend.controller.taskController
 
 import com.blaybus.backend.dto.MenteeTaskFeedbackResponse
+import com.blaybus.backend.dto.MentorDashboardResponse
 import com.blaybus.backend.dto.MentorTaskAssignRequest
 import com.blaybus.backend.dto.MentorTaskUpdateRequest
 import com.blaybus.backend.dto.TaskResponse
@@ -86,6 +87,18 @@ class MentorTaskController(
         @RequestPart("file", required = false) files: List<MultipartFile>?,
     ): ResponseEntity<TaskResponse> {
         val response = taskService.updateAssignedTask(userId, taskId, request, files)
+        return ResponseEntity.ok(response)
+    }
+
+    @Operation(
+        summary = "멘토 대시보드 조회",
+        description = "담당 멘티 목록, 주간 학습 진행률(지난주 대비), 최근 과제 등을 조회합니다."
+    )
+    @GetMapping("/dashboard")
+    fun getDashboard(
+        @AuthenticationPrincipal userId: Long
+    ): ResponseEntity<MentorDashboardResponse> { // [수정] 반환 타입 DTO 변경
+        val response = taskService.getDashboardData(userId)
         return ResponseEntity.ok(response)
     }
 }

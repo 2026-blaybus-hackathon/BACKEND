@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.EntityGraph
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 fun TaskRepository.getByTaskId(taskId: Long): Task = findById(taskId).orElseThrow { CustomException(ErrorCode.TASK_NOT_FOUND) }
@@ -34,10 +35,45 @@ interface TaskRepository : JpaRepository<Task, Long> {
         end: LocalDateTime,
     ): List<Feedback>
 
-    // 특정 작성자(멘티)가 쓴 Task 목록 페이징 조회
     @EntityGraph(attributePaths = ["studyImages", "feedback"])
     fun findByDailyPlannerUser(
         user: User,
         pageable: Pageable,
     ): Page<Task>
+
+
+    @Query("""
+        SELECT count(t), sum(CASE WHEN t.isCompleted = true THEN 1 ELSE 0 END)
+        FROM Task t
+        JOIN t.dailyPlanner dp
+        JOIN dp.user u
+        WHERE u.mentor.id = :mentorId 
+          AND dp.date BETWEEN :startDate AND :endDate
+    """)
+    fun getTaskStatisticsByPeriod(
+        mentorId: Long,
+        startDate: LocalDate,
+        endDate: LocalDate
+    ): List<Array<Any>>
+
+
+    @Query("""
+        SELECT COUNT(t) FROM Task t 
+        JOIN t.dailyPlanner dp 
+        JOIN dp.user u 
+        WHERE u.mentor.id = :mentorId 
+          AND t.isCompleted = true 
+          AND t.feedback IS NULL
+    """)
+    fun countPendingFeedbackByMentorId(mentorId: Long): Int
+
+    @Query("""
+        SELECT t FROM Task t 
+        JOIN FETCH t.dailyPlanner dp 
+        JOIN FETCH dp.user u 
+        WHERE u.mentor.id = :mentorId 
+          AND t.isCompleted = true 
+        ORDER BY t.createdDateTime DESC
+    """)
+    fun findRecentSubmittedTasks(mentorId: Long, pageable: Pageable): List<Task>
 }
