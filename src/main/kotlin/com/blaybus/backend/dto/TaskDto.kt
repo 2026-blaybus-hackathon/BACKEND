@@ -100,7 +100,7 @@ data class TaskResponse(
 }
 
 data class AssignmentResponse(
-    @Schema(description = "과제 ID")
+    @Schema(description = "과제 파일 ID")
     val id: Long,
     @Schema(description = "원본 파일명")
     val originalFileName: String,
@@ -241,8 +241,6 @@ data class TaskHistoryResponse(
     val title: String,
     @Schema(description = "공부시간 (분)")
     val studyDurationInMinutes: Int,
-    @Schema(description = "파일명")
-    val fileName: String?,
-    @Schema(description = "파일 URL")
-    val fileUrl: String?,
+    @Schema(description = "과제 파일 목록")
+    val assignments: List<AssignmentResponse>,
 )

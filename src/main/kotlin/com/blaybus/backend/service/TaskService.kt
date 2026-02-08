@@ -485,14 +485,20 @@ class TaskService(
     fun getTaskHistory(menteeId: Long): List<TaskHistoryResponse> {
         val tasks = taskRepository.findTasksWithReadFeedbackByMenteeId(menteeId)
         return tasks.map { task ->
-            val assignment = task.assignments.firstOrNull()
+            val assignmentList =
+                task.assignments.map {
+                    AssignmentResponse(
+                        it.id,
+                        it.originalFileName,
+                        objectStorageRepository.getDownloadUrl(it.fileKey),
+                    )
+                }
             TaskHistoryResponse(
                 taskId = task.id,
                 subject = task.subject.displayName,
                 title = task.title,
                 studyDurationInMinutes = task.studyDurationInMinutes ?: 0,
-                fileName = assignment?.originalFileName,
-                fileUrl = assignment?.fileKey?.let { objectStorageRepository.getDownloadUrl(it) },
+                assignments = assignmentList,
             )
         }
     }
