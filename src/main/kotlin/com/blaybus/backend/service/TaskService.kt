@@ -73,7 +73,7 @@ class TaskService(
             writer = mentee,
             targetMentee = mentee,
             date = request.date,
-            taskType = TaskType.GENERAL_ASSIGNMENT,
+            taskType = request.taskType,
             title = request.title,
             content = request.content,
             subject = request.subject,

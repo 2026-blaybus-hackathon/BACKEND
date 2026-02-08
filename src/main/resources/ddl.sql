@@ -68,7 +68,7 @@ CREATE INDEX idx_tasks_daily_planner_id ON tasks (daily_planner_id);
 ALTER TABLE tasks
     ADD CONSTRAINT FK_TASKS_ON_USER FOREIGN KEY (user_id) REFERENCES users (id);
 
-ALTER TABLE tasks ADD task_type VARCHAR2(30) DEFAULT 'GENERAL_ASSIGNMENT' NOT NULL;
+ALTER TABLE tasks ADD task_type VARCHAR2(30) DEFAULT 'WEAKNESS_SOLUTION' NOT NULL;
 
 CREATE TABLE assignments
 (
