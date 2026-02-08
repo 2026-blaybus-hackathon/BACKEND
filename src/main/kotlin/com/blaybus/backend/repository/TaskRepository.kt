@@ -1,6 +1,7 @@
 package com.blaybus.backend.repository
 
 import com.blaybus.backend.entity.Feedback
+import com.blaybus.backend.entity.Role
 import com.blaybus.backend.entity.Task
 import com.blaybus.backend.entity.User
 import com.blaybus.backend.exception.CustomException
@@ -96,4 +97,38 @@ interface TaskRepository : JpaRepository<Task, Long> {
         lastId: Long?,
         pageable: Pageable,
     ): Slice<Task>
+
+    @Query(
+        """
+        SELECT DISTINCT dp.date 
+        FROM Task t 
+        JOIN t.dailyPlanner dp 
+        WHERE dp.user.id = :userId 
+          AND t.writer.role = :role 
+          AND t.isCompleted = true 
+        ORDER BY dp.date DESC
+    """,
+    )
+    fun findCompletedMentorTaskDates(
+        userId: Long,
+        role: Role,
+    ): List<LocalDate>
+
+    @Query("SELECT SUM(t.studyDurationInMinutes) FROM Task t JOIN t.dailyPlanner dp WHERE dp.user.id = :userId")
+    fun sumTotalStudyTimeByUserId(userId: Long): Int?
+
+    @Query(
+        """
+        SELECT COUNT(t) 
+        FROM Task t 
+        JOIN t.dailyPlanner dp 
+        WHERE dp.user.id = :userId 
+          AND t.writer.role = :role 
+          AND t.isCompleted = true
+    """,
+    )
+    fun countCompletedMentorTasksByUserId(
+        userId: Long,
+        role: Role,
+    ): Int
 }
