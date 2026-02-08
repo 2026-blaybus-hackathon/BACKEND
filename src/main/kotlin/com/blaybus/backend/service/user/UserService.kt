@@ -133,10 +133,6 @@ class UserService(
                 Period.MONTHLY -> {
                     getMonthRange(date)
                 }
-
-                else -> {
-                    throw IllegalArgumentException("Invalid period: $period")
-                }
             }
         val dailyPlannerList = dailyPlannerService.getDailyPlannerByPeriod(menteeId, startDay, endDay)
         val taskList = dailyPlannerList.flatMap { it.tasks }
