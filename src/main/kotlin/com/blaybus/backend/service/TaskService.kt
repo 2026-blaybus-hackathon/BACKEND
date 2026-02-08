@@ -24,6 +24,7 @@ import com.blaybus.backend.dto.TaskHistoryResponse
 import com.blaybus.backend.dto.TaskImageResponse
 import com.blaybus.backend.dto.TaskResponse
 import com.blaybus.backend.entity.Assignment
+import com.blaybus.backend.entity.Role
 import com.blaybus.backend.entity.StudyImage
 import com.blaybus.backend.entity.Subject
 import com.blaybus.backend.entity.Task
@@ -483,7 +484,8 @@ class TaskService(
 
     @Transactional(readOnly = true)
     fun getTaskHistory(menteeId: Long): List<TaskHistoryResponse> {
-        val tasks = taskRepository.findTasksWithReadFeedbackByMenteeId(menteeId)
+        userRepository.getByUserId(menteeId)
+        val tasks = taskRepository.findTasksWithReadFeedbackByMenteeId(menteeId, writerRole = Role.MENTOR)
         return tasks.map { task ->
             val assignmentList =
                 task.assignments.map {

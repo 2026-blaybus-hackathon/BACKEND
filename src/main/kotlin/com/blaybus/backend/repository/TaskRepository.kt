@@ -106,10 +106,13 @@ interface TaskRepository : JpaRepository<Task, Long> {
         JOIN t.dailyPlanner dp 
         JOIN t.feedback f 
         WHERE dp.user.id = :menteeId 
-          AND t.writer.role = 'MENTOR' 
+          AND t.writer.role = :writerRole
           AND f.isRead = true 
         ORDER BY t.createdDateTime DESC
     """,
     )
-    fun findTasksWithReadFeedbackByMenteeId(menteeId: Long): List<Task>
+    fun findTasksWithReadFeedbackByMenteeId(
+        menteeId: Long,
+        writerRole: Role,
+    ): List<Task>
 }
