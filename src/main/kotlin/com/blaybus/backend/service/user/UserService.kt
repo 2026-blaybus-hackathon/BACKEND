@@ -1,17 +1,27 @@
 package com.blaybus.backend.service.user
 
+import com.blaybus.backend.dto.AchievementRateAndTotalStudyTimeResponse
+import com.blaybus.backend.dto.AchievementRateResponse
+import com.blaybus.backend.dto.DailyAchievementRate
 import com.blaybus.backend.dto.MenteeProfileResponse
-import com.blaybus.backend.dto.SimpleUserDto
+import com.blaybus.backend.dto.SimpleUserResponse
+import com.blaybus.backend.dto.UpdateProfileRequest
 import com.blaybus.backend.dto.UserProfileResponse
-import com.blaybus.backend.dto.UserTodayStudyTimeDto
+import com.blaybus.backend.dto.UserTodayStudyTimeResponse
 import com.blaybus.backend.dto.mapper.toMenteeProfileResponse
 import com.blaybus.backend.dto.mapper.toUserProfileResponse
+import com.blaybus.backend.entity.Period
 import com.blaybus.backend.repository.ObjectStorageRepository
+import com.blaybus.backend.repository.ObjectStorageRepository.Companion.PROFILE_IMAGE_PATH
 import com.blaybus.backend.repository.UserRepository
 import com.blaybus.backend.repository.getByUserId
+import com.blaybus.backend.service.DailyPlannerService
 import com.blaybus.backend.service.TaskService
+import com.blaybus.backend.util.getMonthRange
+import com.blaybus.backend.util.getWeekRange
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.multipart.MultipartFile
 import java.time.LocalDate
 
 @Service
@@ -19,10 +29,11 @@ class UserService(
     private val userRepository: UserRepository,
     private val taskService: TaskService,
     private val objectStorageRepository: ObjectStorageRepository,
+    private val dailyPlannerService: DailyPlannerService,
 ) {
-    fun findAllUser(): List<SimpleUserDto> =
+    fun findAllUser(): List<SimpleUserResponse> =
         userRepository.findAll().map {
-            SimpleUserDto(it)
+            SimpleUserResponse(it)
         }
 
     @Transactional
@@ -58,9 +69,127 @@ class UserService(
     fun getDailyStudyAmount(
         userId: Long,
         date: LocalDate,
-    ): UserTodayStudyTimeDto {
+    ): UserTodayStudyTimeResponse {
         val user = userRepository.getByUserId(userId)
         val todayTasks = taskService.getTodayTasksForUser(user, date)
-        return UserTodayStudyTimeDto(todayTasks.mapNotNull { it.studyDurationInMinutes }.sum())
+        return UserTodayStudyTimeResponse(todayTasks.mapNotNull { it.studyDurationInMinutes }.sum())
+    }
+
+    @Transactional
+    fun updateProfile(
+        userId: Long,
+        request: UpdateProfileRequest,
+    ) {
+        val user = userRepository.getByUserId(userId)
+        user.name = request.name
+        user.schoolName = request.schoolName
+        user.grade = request.grade
+        user.targetSchool = request.targetSchool
+        user.targetDate = request.targetDate
+    }
+
+    @Transactional
+    fun updateProfileImage(
+        userId: Long,
+        profileImage: MultipartFile?,
+    ) {
+        val user = userRepository.getByUserId(userId)
+        user.profileName?.let { objectStorageRepository.delete(it) }
+        if (profileImage != null && !profileImage.isEmpty) {
+            val storedFileName = objectStorageRepository.upload(PROFILE_IMAGE_PATH, profileImage)
+            user.profileName = storedFileName
+        } else {
+            user.profileName = null
+        }
+    }
+
+    @Transactional(readOnly = true)
+    fun getWeeklyAchievement(
+        userId: Long,
+        date: LocalDate,
+    ): List<DailyAchievementRate> {
+        userRepository.getByUserId(userId)
+        val (startOfWeek, endOfWeek) = getWeekRange(date)
+        val dailyPlannerList = dailyPlannerService.getDailyPlannerByPeriod(userId, startOfWeek, endOfWeek)
+        var day = startOfWeek
+        val weeklyAchievementList: MutableList<DailyAchievementRate> = mutableListOf()
+        for (dailyPlanner in dailyPlannerList) {
+            val tasks = dailyPlanner.tasks
+            while (day.isBefore(dailyPlanner.date)) {
+                weeklyAchievementList.add(DailyAchievementRate(day, 0, 0))
+                day = day.plusDays(1)
+            }
+            weeklyAchievementList.add(
+                DailyAchievementRate(
+                    day,
+                    completedTasks = tasks.count { it.isCompleted },
+                    totalTasks = tasks.size,
+                ),
+            )
+            day = day.plusDays(1)
+        }
+        return weeklyAchievementList
+    }
+
+    @Transactional(readOnly = true)
+    fun searchMenteesByName(
+        mentorId: Long,
+        name: String,
+    ): List<MenteeProfileResponse> =
+        userRepository.findByMentorIdAndNameContainingIgnoreCase(mentorId, name).map { mentee ->
+            MenteeProfileResponse(
+                mentee,
+                mentee.profileName?.let {
+                    objectStorageRepository.getDownloadUrl(it)
+                },
+            )
+        }
+
+    @Transactional(readOnly = true)
+    fun getMenteeAchievementRateAndTotalStudyTime(
+        mentorId: Long,
+        menteeId: Long,
+        date: LocalDate,
+        period: Period,
+    ): AchievementRateAndTotalStudyTimeResponse {
+        val mentor = userRepository.getByUserId(mentorId)
+        val mentee = userRepository.getByUserId(menteeId)
+        mentor.validateMentee(mentee)
+        val (startDay, endDay) =
+            when (period) {
+                Period.WEEKLY -> {
+                    getWeekRange(date)
+                }
+
+                Period.MONTHLY -> {
+                    getMonthRange(date)
+                }
+            }
+        val dailyPlannerList = dailyPlannerService.getDailyPlannerByPeriod(menteeId, startDay, endDay)
+        val taskList = dailyPlannerList.flatMap { it.tasks }
+        val studyTimeMinutes = taskList.mapNotNull { it.studyDurationInMinutes }.sum()
+        val completeTaskSize = taskList.filter { it.isCompleted }.size
+        val achievementRateAndTotalStudyTimeResponse =
+            AchievementRateAndTotalStudyTimeResponse(
+                AchievementRateResponse(completeTaskSize, taskList.size),
+                weeklyStudyTimeMinutes = studyTimeMinutes,
+            )
+        return achievementRateAndTotalStudyTimeResponse
+    }
+
+    fun getMenteeAchievementRate(
+        mentorId: Long,
+        menteeId: Long,
+        date: LocalDate,
+    ): AchievementRateResponse {
+        val mentor = userRepository.getByUserId(mentorId)
+        val mentee = userRepository.getByUserId(menteeId)
+        val (startOfWeek, endOfWeek) = getWeekRange(date)
+        mentor.validateMentee(mentee)
+        val dailyPlannerList = dailyPlannerService.getDailyPlannerByPeriod(menteeId, startOfWeek, endOfWeek)
+        val taskList = dailyPlannerList.flatMap { it.tasks }
+        val completeTaskSize = taskList.filter { it.isCompleted }.size
+        val achievementRateResponse = AchievementRateResponse(completeTaskSize, taskList.size)
+        return achievementRateResponse
     }
 }

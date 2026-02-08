@@ -1,11 +1,34 @@
 package com.blaybus.backend.dto
 
+import com.blaybus.backend.entity.Grade
 import com.blaybus.backend.entity.Role
 import com.blaybus.backend.entity.User
 import com.blaybus.backend.util.getDDay
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.validation.constraints.NotBlank
+import java.time.LocalDate
+import kotlin.math.floor
 
-data class SimpleUserDto(
+data class UpdateProfileRequest(
+    @field:NotBlank(message = "이름은 필수 입력값입니다.")
+    @field:Schema(description = "이름", example = "홍길동")
+    val name: String,
+    @field:Schema(description = "출신 학교 (null일 경우 기존 값 없어짐)")
+    val schoolName: String?,
+    @field:Schema(
+        description = "학년(null일 경우 기존 값 없어짐)",
+        example = "FIRST",
+        allowableValues = ["FIRST", "SECOND", "THIRD", "DROPOUT", "GRADUATED"],
+    )
+    val grade: Grade?,
+    @NotBlank(message = "목표 학교는 필수 입력값입니다.")
+    @field:Schema(description = "목표 학교", example = "서울대학교")
+    val targetSchool: String,
+    @field:Schema(description = "목표일(null일 경우 기존 값 없어짐)")
+    val targetDate: LocalDate,
+)
+
+data class SimpleUserResponse(
     val id: Long,
     val name: String,
     val email: String,
@@ -19,7 +42,7 @@ data class SimpleUserDto(
     )
 }
 
-data class UserTodayStudyTimeDto(
+data class UserTodayStudyTimeResponse(
     val todayStudyTime: Int,
 )
 
@@ -53,6 +76,8 @@ data class MenteeProfileResponse(
 data class UserProfileResponse(
     @Schema(description = "이름")
     val name: String,
+    @Schema(description = "프로필 사진명")
+    val profileName: String?,
     @Schema(description = "프로필 URL")
     val profileUrl: String?,
     @Schema(description = "출신 학교")
@@ -66,6 +91,7 @@ data class UserProfileResponse(
 ) {
     constructor(user: User, profileUrl: String?) : this(
         name = user.name,
+        profileName = user.originFileName,
         profileUrl = profileUrl,
         schoolName = user.schoolName,
         grade = user.grade?.description,
@@ -73,3 +99,19 @@ data class UserProfileResponse(
         targetDate = user.targetDate?.let { getDDay(it) },
     )
 }
+
+data class AchievementRateResponse(
+    @Schema(description = "달성률 (%)")
+    val achievementRate: Int,
+) {
+    constructor(completedTasks: Int, totalTasks: Int) : this(
+        achievementRate = if (totalTasks == 0) 0 else floor((completedTasks.toDouble() / totalTasks) * 100).toInt(), // 소수점 버림
+    )
+}
+
+data class AchievementRateAndTotalStudyTimeResponse(
+    @Schema(description = "달성률 정보")
+    val achievementRate: AchievementRateResponse,
+    @Schema(description = "총 공부 시간 (분)")
+    val weeklyStudyTimeMinutes: Int,
+)
