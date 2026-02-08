@@ -52,10 +52,17 @@ class SecurityConfig(
                         "/ready",
                         "/api/v1/test/**",
                     ).permitAll()
-                it.requestMatchers("/api/v1/mentor/**", "/api/v1/users/mentor/**").hasAuthority(Role.MENTOR.name)
+                it
+                    .requestMatchers("/api/v1/mentor/**", "/api/v1/users/mentor/**", "/api/v1/reports/mentor")
+                    .hasAuthority(Role.MENTOR.name)
                 it.requestMatchers("/api/v1/mentees/**").hasAuthority(Role.MENTOR.name)
                 it.requestMatchers("/api/v1/tasks/mentor/**").hasAuthority(Role.MENTOR.name)
-                it.requestMatchers("/api/v1/tasks/mentee/**", "/api/v1/users/mentee/**").hasAuthority(Role.MENTEE.name)
+                it
+                    .requestMatchers(
+                        "/api/v1/tasks/mentee/**",
+                        "/api/v1/users/mentee/**",
+                        "/api/v1/reports/mentee",
+                    ).hasAuthority(Role.MENTEE.name)
                 it.requestMatchers("/api/v1/feedback/mentor/**").hasAuthority(Role.MENTOR.name)
                 it.requestMatchers("/api/v1/feedback/mentee/**").hasAuthority(Role.MENTEE.name)
                 it.requestMatchers("/api/v1/dashboard/mentor/**").hasAuthority(Role.MENTOR.name)
