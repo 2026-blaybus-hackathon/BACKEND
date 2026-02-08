@@ -201,7 +201,7 @@ class UserService(
     fun getMentorTaskStatistics(userId: Long): UserMentorTaskStatisticsResponse {
         userRepository.getByUserId(userId)
         val completedDates = taskRepository.findCompletedMentorTaskDates(userId, Role.MENTOR)
-        val totalStudyTimeMinutes = taskRepository.sumTotalStudyTimeByUserId(userId) ?: 0
+        val totalStudyTimeMinutes = taskRepository.sumTotalMentorTaskStudyTimeByUserId(userId) ?: 0
         val totalCompletedMentorTasks = taskRepository.countCompletedMentorTasksByUserId(userId, Role.MENTOR)
 
         val consecutiveDays = calculateConsecutiveDays(completedDates)

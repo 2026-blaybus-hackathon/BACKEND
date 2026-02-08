@@ -115,7 +115,7 @@ interface TaskRepository : JpaRepository<Task, Long> {
     ): List<LocalDate>
 
     @Query("SELECT SUM(t.studyDurationInMinutes) FROM Task t JOIN t.dailyPlanner dp WHERE dp.user.id = :userId")
-    fun sumTotalStudyTimeByUserId(userId: Long): Int?
+    fun sumTotalMentorTaskStudyTimeByUserId(userId: Long): Int?
 
     @Query(
         """
