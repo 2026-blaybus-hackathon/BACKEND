@@ -37,7 +37,7 @@ class Task(
     var subject: Subject,
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
-    var taskType: TaskType = TaskType.GENERAL_ASSIGNMENT,
+    var taskType: TaskType = TaskType.WEAKNESS_SOLUTION,
     @Column(nullable = false, length = 255)
     var title: String,
     @Lob
@@ -85,5 +85,4 @@ enum class Subject(
 enum class TaskType(val displayName: String) {
     COLUMN("칼럼"),
     WEAKNESS_SOLUTION("약점 보완 솔루션"),
-    GENERAL_ASSIGNMENT("일반 과제")
 }
