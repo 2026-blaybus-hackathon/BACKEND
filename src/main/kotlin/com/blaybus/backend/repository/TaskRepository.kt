@@ -100,13 +100,13 @@ interface TaskRepository : JpaRepository<Task, Long> {
 
     @Query(
         """
-        SELECT DISTINCT dp.date 
+        SELECT DISTINCT CAST(t.completedTime AS date)
         FROM Task t 
         JOIN t.dailyPlanner dp 
         WHERE dp.user.id = :userId 
           AND t.writer.role = :role 
           AND t.isCompleted = true 
-        ORDER BY dp.date DESC
+        ORDER BY CAST(t.completedTime AS date) DESC
     """,
     )
     fun findCompletedMentorTaskDates(
@@ -131,4 +131,34 @@ interface TaskRepository : JpaRepository<Task, Long> {
         userId: Long,
         role: Role,
     ): Int
+
+    @EntityGraph(attributePaths = ["dailyPlanner", "assignments"])
+    @Query(
+        """
+        SELECT t 
+        FROM Task t 
+        JOIN t.dailyPlanner dp 
+        JOIN t.feedback f 
+        WHERE dp.user.id = :menteeId 
+          AND t.writer.role = 'MENTOR' 
+          AND f.isRead = true 
+        ORDER BY t.createdDateTime DESC
+    """,
+    )
+    fun findTasksWithReadFeedbackByMenteeId(menteeId: Long): List<Task>
+
+    @Query(
+        """
+    SELECT COUNT(t) > 0 
+    FROM Task t 
+    WHERE t.dailyPlanner.user.id = :menteeId 
+      AND t.writer.id = :mentorId 
+      AND t.isCompleted = true 
+      AND t.feedback IS NULL
+""",
+    )
+    fun existsCompletedMentorTaskWithoutFeedback(
+        menteeId: Long,
+        mentorId: Long,
+    ): Boolean
 }
