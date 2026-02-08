@@ -3,6 +3,7 @@ package com.blaybus.backend.dto
 import com.blaybus.backend.entity.Grade
 import com.blaybus.backend.entity.Role
 import com.blaybus.backend.entity.User
+import com.blaybus.backend.util.getDDay
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
@@ -62,7 +63,6 @@ data class TokenResponse(
     val targetSchool: String?,
     @Schema(description = "목표일로부터 디데이")
     val targetDate: Int?,
-    // TODO: 디데이 계산하기
 ) {
     constructor(accessToken: String, refreshToken: String, user: User) : this(
         accessToken = accessToken,
@@ -73,7 +73,7 @@ data class TokenResponse(
         schoolName = user.schoolName,
         grade = user.grade?.description,
         targetSchool = user.targetSchool,
-        targetDate = -1,
+        targetDate = user.targetDate?.let { getDDay(it) },
     )
 }
 
