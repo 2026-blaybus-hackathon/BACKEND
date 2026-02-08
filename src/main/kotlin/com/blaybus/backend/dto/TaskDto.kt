@@ -231,3 +231,18 @@ data class RecentTaskSummaryDto(
     @Schema(description = "피드백 완료 여부")
     val isFeedbackCompleted: Boolean,
 )
+
+data class TaskHistoryResponse(
+    @Schema(description = "과제 ID")
+    val taskId: Long,
+    @Schema(description = "과목")
+    val subject: String,
+    @Schema(description = "과제 제목")
+    val title: String,
+    @Schema(description = "공부시간 (분)")
+    val studyDurationInMinutes: Int,
+    @Schema(description = "파일명")
+    val fileName: String?,
+    @Schema(description = "파일 URL")
+    val fileUrl: String?,
+)

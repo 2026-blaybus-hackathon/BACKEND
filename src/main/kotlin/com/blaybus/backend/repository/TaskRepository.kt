@@ -1,6 +1,7 @@
 package com.blaybus.backend.repository
 
 import com.blaybus.backend.entity.Feedback
+import com.blaybus.backend.entity.Role
 import com.blaybus.backend.entity.Task
 import com.blaybus.backend.entity.User
 import com.blaybus.backend.exception.CustomException
@@ -96,4 +97,19 @@ interface TaskRepository : JpaRepository<Task, Long> {
         lastId: Long?,
         pageable: Pageable,
     ): Slice<Task>
+
+    @EntityGraph(attributePaths = ["dailyPlanner", "assignments"])
+    @Query(
+        """
+        SELECT t 
+        FROM Task t 
+        JOIN t.dailyPlanner dp 
+        JOIN t.feedback f 
+        WHERE dp.user.id = :menteeId 
+          AND t.writer.role = 'MENTOR' 
+          AND f.isRead = true 
+        ORDER BY t.createdDateTime DESC
+    """,
+    )
+    fun findTasksWithReadFeedbackByMenteeId(menteeId: Long): List<Task>
 }

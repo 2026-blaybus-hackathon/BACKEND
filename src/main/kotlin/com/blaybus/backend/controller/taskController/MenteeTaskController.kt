@@ -10,6 +10,7 @@ import com.blaybus.backend.dto.MenteeTaskUpdateRequest
 import com.blaybus.backend.dto.SliceResponse
 import com.blaybus.backend.dto.TaskAndAssignmentResponse
 import com.blaybus.backend.dto.TaskDetailResponse
+import com.blaybus.backend.dto.TaskHistoryResponse
 import com.blaybus.backend.dto.TaskResponse
 import com.blaybus.backend.exception.ErrorCode
 import com.blaybus.backend.service.TaskService
@@ -180,4 +181,10 @@ class MenteeTaskController(
         val task = taskService.getTaskByTaskId(userId, taskId)
         return ResponseEntity.ok(task)
     }
+
+    @Operation(summary = "과제 히스토리 조회", description = "피드백을 모두 읽은 과제 목록을 조회합니다.")
+    @GetMapping("/history")
+    fun getTaskHistory(
+        @AuthenticationPrincipal userId: Long,
+    ): ResponseEntity<List<TaskHistoryResponse>> = ResponseEntity.ok(taskService.getTaskHistory(userId))
 }

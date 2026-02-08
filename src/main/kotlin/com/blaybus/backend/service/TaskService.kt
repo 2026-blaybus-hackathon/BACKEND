@@ -20,6 +20,7 @@ import com.blaybus.backend.dto.SliceResponse
 import com.blaybus.backend.dto.TaskAndAssignmentResponse
 import com.blaybus.backend.dto.TaskDetail
 import com.blaybus.backend.dto.TaskDetailResponse
+import com.blaybus.backend.dto.TaskHistoryResponse
 import com.blaybus.backend.dto.TaskImageResponse
 import com.blaybus.backend.dto.TaskResponse
 import com.blaybus.backend.entity.Assignment
@@ -477,6 +478,22 @@ class TaskService(
             0
         } else {
             ((completedTasks.toDouble() / totalTasks.toDouble()) * 100).toInt()
+        }
+    }
+
+    @Transactional(readOnly = true)
+    fun getTaskHistory(menteeId: Long): List<TaskHistoryResponse> {
+        val tasks = taskRepository.findTasksWithReadFeedbackByMenteeId(menteeId)
+        return tasks.map { task ->
+            val assignment = task.assignments.firstOrNull()
+            TaskHistoryResponse(
+                taskId = task.id,
+                subject = task.subject.displayName,
+                title = task.title,
+                studyDurationInMinutes = task.studyDurationInMinutes ?: 0,
+                fileName = assignment?.originalFileName,
+                fileUrl = assignment?.fileKey?.let { objectStorageRepository.getDownloadUrl(it) },
+            )
         }
     }
 }
