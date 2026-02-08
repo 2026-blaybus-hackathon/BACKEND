@@ -281,7 +281,7 @@ class TaskService(
                 false,
             )
         val pageable = Pageable.ofSize(size)
-        val tasks = taskRepository.findByDailyPlannerIdWithSlice(dailyPlanner.id, lastId, pageable)
+        val tasks = taskRepository.sliceByDailyPlannerId(dailyPlanner.id, lastId, pageable)
         return SliceResponse(
             tasks.content.map { task ->
                 val assignmentList =

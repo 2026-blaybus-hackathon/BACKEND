@@ -45,12 +45,12 @@ interface TaskRepository : JpaRepository<Task, Long> {
     ): Page<Task>
 
     @Query("""select t from Task t where t.dailyPlanner.id = :plannerId and (:lastId is null or t.id < :lastId) order by t.id desc""")
-    fun findByDailyPlannerIdWithSlice(
+    fun sliceByDailyPlannerId(
         plannerId: Long,
         lastId: Long?,
         pageable: Pageable,
     ): Slice<Task>
 
-    @EntityGraph(attributePaths = ["dailyPlanner", "assignment"])
+    @EntityGraph(attributePaths = ["dailyPlanner"])
     fun findTaskById(id: Long): Task?
 }
