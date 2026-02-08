@@ -109,11 +109,14 @@ data class TaskAndAssignmentResponse(
     val assignment: List<AssignmentResponse>,
     @Schema(description = "완료했는지 여부")
     val isCompleted: Boolean,
+    @Schema(description = "멘토가 준 과제 여부")
+    val isMentorAssigned: Boolean,
 ) {
     constructor(
         task: Task,
         assignment: List<AssignmentResponse>,
-    ) : this(task = TaskResponse.from(task = task), assignment = assignment, task.isCompleted)
+        isMentorAssigned: Boolean,
+    ) : this(task = TaskResponse.from(task = task), assignment = assignment, task.isCompleted, !isMentorAssigned)
 }
 
 data class TaskDetailResponse(
@@ -121,6 +124,8 @@ data class TaskDetailResponse(
     val id: Long,
     @Schema(description = "할 일의 제목")
     val title: String,
+    @Schema(description = "컬럼 내용")
+    val content: String?,
     @Schema(description = "할 일의 과목", allowableValues = ["KOREAN", "MATH", "ENGLISH"])
     val subject: Subject,
     @Schema(description = "할 일에 할당된 공부 시간(분 단위)")
@@ -134,6 +139,7 @@ data class TaskDetailResponse(
     constructor(task: Task) : this(
         id = task.id,
         title = task.title,
+        content = task.content,
         subject = task.subject,
         studyDurationInMinutes = task.studyDurationInMinutes ?: 0,
         isCompleted = task.isCompleted,

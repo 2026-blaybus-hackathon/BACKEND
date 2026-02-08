@@ -292,7 +292,7 @@ class TaskService(
                             objectStorageRepository.getDownloadUrl(it.fileKey),
                         )
                     }
-                TaskAndAssignmentResponse(task, assignmentList)
+                TaskAndAssignmentResponse(task, assignmentList, task.writer.id == user.id)
             },
             tasks.hasNext(),
         )
