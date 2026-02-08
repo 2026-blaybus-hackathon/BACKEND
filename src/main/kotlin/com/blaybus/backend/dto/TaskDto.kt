@@ -2,6 +2,7 @@ package com.blaybus.backend.dto
 
 import com.blaybus.backend.entity.Subject
 import com.blaybus.backend.entity.Task
+import com.blaybus.backend.entity.TaskType
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
@@ -14,6 +15,8 @@ data class MenteeTaskCreateRequest(
     val title: String,
     @field:Schema(description = "상세 내용 (선택)", example = "틀린 문제 오답노트까지 작성")
     val content: String? = null,
+    @field:Schema(description = "과제 유형", example = "약점 보완 솔루션")
+    val taskType: TaskType,
     @field:Schema(description = "과목", allowableValues = ["KOREAN", "MATH", "ENGLISH"])
     val subject: Subject,
     @field:Schema(description = "플래너 날짜 (어느 날짜에 등록할지)", example = "2026-02-05")
@@ -72,6 +75,8 @@ data class MenteeTaskCompletionUpdateRequest(
 data class TaskResponse(
     @Schema(description = "할 일 ID")
     val id: Long,
+    @Schema(description = "과제 유형")
+    val taskType: TaskType,
     @Schema(description = "할일 제목")
     val title: String?,
     @Schema(description = "할 일의 내용")
@@ -85,6 +90,7 @@ data class TaskResponse(
         fun from(task: Task): TaskResponse =
             TaskResponse(
                 id = task.id,
+                taskType = task.taskType,
                 title = task.title,
                 content = task.content,
                 subject = task.subject,

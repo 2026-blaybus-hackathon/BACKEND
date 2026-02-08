@@ -36,6 +36,9 @@ class Task(
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     var subject: Subject,
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    var taskType: TaskType = TaskType.WEAKNESS_SOLUTION,
     @Column(nullable = false, length = 255)
     var title: String,
     @Lob
@@ -84,4 +87,11 @@ enum class Subject(
     KOREAN("국어"),
     ENGLISH("영어"),
     MATH("수학"),
+    HABIT_MOTIVATION("생활 습관&동기부여"),
+    STUDY_METHOD("공부법 시리즈"),
+}
+
+enum class TaskType(val displayName: String) {
+    COLUMN("칼럼"),
+    WEAKNESS_SOLUTION("약점 보완 솔루션"),
 }
