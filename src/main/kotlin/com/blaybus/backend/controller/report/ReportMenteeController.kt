@@ -18,16 +18,16 @@ class ReportMenteeController(
     private val reportService: ReportService,
 ) {
     @Operation(
-        summary = "멘티 주/월간 리포트 조회",
-        description = "멘티의 주간 및 월간 리포트를 조회합니다. 존재하지 않는 경우 null을 반환합니다.",
+        summary = "멘티 주/월간 리포트 조회, 존재하지 않으면 404 반환",
+        description = "멘티의 주간 및 월간 리포트를 조회합니다.",
     )
     @GetMapping
     fun getMenteeReports(
         @AuthenticationPrincipal userId: Long,
         @RequestParam period: Period,
         @RequestParam reportDate: LocalDate,
-    ): ResponseEntity<ReportMenteeResponse>? {
+    ): ResponseEntity<ReportMenteeResponse> {
         val response = reportService.getMenteeReport(userId, period, reportDate)
-        return ResponseEntity.ok(response)
+        return response?.let { ResponseEntity.ok(it) } ?: ResponseEntity.notFound().build()
     }
 }

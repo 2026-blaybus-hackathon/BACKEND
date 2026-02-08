@@ -53,7 +53,7 @@ data class ReportMenteeResponse(
     val keepContent: String?,
     val problemContent: String?,
     val tryContent: String?,
-    val totalStudyHours: Int,
+    val totalStudyMinutes: Int,
     val totalAchievementRate: Int,
     val subjectReports: List<ReportSubjectResponse>,
 ) {
@@ -66,7 +66,7 @@ data class ReportMenteeResponse(
         keepContent = report.keepContent,
         problemContent = report.problemContent,
         tryContent = report.tryContent,
-        totalStudyHours = report.totalStudyHours,
+        totalStudyMinutes = report.totalStudyMinutes,
         totalAchievementRate = report.totalAchievementRate,
         subjectReports = report.subjectReports.map { ReportSubjectResponse(it) },
     )
@@ -74,12 +74,12 @@ data class ReportMenteeResponse(
 
 data class ReportSubjectResponse(
     val subject: Subject,
-    val studyHours: Int,
+    val studyMinutes: Int,
     val achievementRate: Int,
 ) {
     constructor(reportSubject: ReportSubject) : this(
         subject = reportSubject.subject,
-        studyHours = reportSubject.studyHours,
+        studyMinutes = reportSubject.totalStudyMinutes,
         achievementRate = reportSubject.achievementRate,
     )
 }

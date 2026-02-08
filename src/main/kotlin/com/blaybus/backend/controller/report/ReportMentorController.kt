@@ -1,6 +1,8 @@
 package com.blaybus.backend.controller.report
 
+import com.blaybus.backend.annotation.ApiErrorCodes
 import com.blaybus.backend.dto.CreateMenteeReportRequest
+import com.blaybus.backend.exception.ErrorCode
 import com.blaybus.backend.service.ReportService
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
@@ -15,20 +17,23 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/reports/mentor")
 @RestController
 class ReportMentorController(
-    private val reportMentorService: ReportService,
+    private val reportService: ReportService,
 ) {
+    @ApiErrorCodes(
+        ErrorCode.CONFLICT_REPORT,
+    )
     @Operation(
         summary = "멘토 주/월간 리포트 생성",
         description = "멘토의 주간 및 월간 리포트를 생성합니다.",
     )
     @PostMapping
-    fun createMentorReport(
+    fun createMenteeReport(
         @AuthenticationPrincipal userId: Long,
         @RequestBody
         @Valid
         request: CreateMenteeReportRequest,
     ): ResponseEntity<Unit> {
-        reportMentorService.createMenteeReport(userId, request)
+        reportService.createMenteeReport(userId, request)
         return ResponseEntity.status(HttpStatus.CREATED).build()
     }
 }

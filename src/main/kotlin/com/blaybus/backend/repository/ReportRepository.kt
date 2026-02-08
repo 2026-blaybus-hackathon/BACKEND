@@ -8,13 +8,13 @@ import java.time.LocalDate
 
 @Repository
 interface ReportRepository : JpaRepository<Report, Long> {
-    fun existsReportByMenteeIdAndStartDateAndEndDate(
+    fun existsByMenteeIdAndStartDateAndEndDate(
         menteeId: Long,
         startDate: LocalDate,
         endDate: LocalDate,
     ): Boolean
 
-    @EntityGraph(attributePaths = ["subjectReports", "subjectReports.subject"])
+    @EntityGraph(attributePaths = ["subjectReports"])
     fun findByMenteeIdAndStartDateAndEndDate(
         menteeId: Long,
         startDate: LocalDate,

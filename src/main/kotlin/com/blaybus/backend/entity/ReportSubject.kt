@@ -23,6 +23,6 @@ class ReportSubject(
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     val subject: Subject,
-    var studyHours: Int,
-    var achievementRate: Int,
+    val totalStudyMinutes: Int,
+    val achievementRate: Int,
 )

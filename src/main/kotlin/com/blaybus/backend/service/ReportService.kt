@@ -6,12 +6,15 @@ import com.blaybus.backend.entity.Period
 import com.blaybus.backend.entity.Report
 import com.blaybus.backend.entity.ReportSubject
 import com.blaybus.backend.entity.Task
+import com.blaybus.backend.exception.CustomException
+import com.blaybus.backend.exception.ErrorCode
 import com.blaybus.backend.repository.ReportRepository
 import com.blaybus.backend.repository.TaskRepository
 import com.blaybus.backend.repository.UserRepository
 import com.blaybus.backend.repository.getByUserId
 import com.blaybus.backend.util.getMonthRange
 import com.blaybus.backend.util.getWeekRange
+import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import kotlin.collections.map
@@ -22,6 +25,7 @@ class ReportService(
     private val reportRepository: ReportRepository,
     private val taskReportRepository: TaskRepository,
 ) {
+    @Transactional
     fun createMenteeReport(
         userId: Long,
         request: CreateMenteeReportRequest,
@@ -35,9 +39,9 @@ class ReportService(
                 Period.MONTHLY -> getMonthRange(request.reportDate)
             }
         reportRepository
-            .existsReportByMenteeIdAndStartDateAndEndDate(mentee.id, startDayAndEndDay.first, startDayAndEndDay.second)
-            .let {
-                require(!it) { "이미 리포트가 존재합니다." }
+            .existsByMenteeIdAndStartDateAndEndDate(mentee.id, startDayAndEndDay.first, startDayAndEndDay.second)
+            .also {
+                if (it) throw CustomException(ErrorCode.CONFLICT_REPORT)
             }
 
         val subjectList: List<Task> =
@@ -74,7 +78,7 @@ class ReportService(
                     ReportSubject(
                         report = report,
                         subject = subject,
-                        studyHours = studyDurationInMinutes,
+                        totalStudyMinutes = studyDurationInMinutes,
                         achievementRate = achievementRate,
                     )
                 }.toMutableList()
@@ -87,7 +91,7 @@ class ReportService(
 
         report.subjectReports.clear()
         report.subjectReports.addAll(subjectReports)
-        report.totalStudyHours = totalMinutes
+        report.totalStudyMinutes = totalMinutes
         report.totalAchievementRate = totalAchievementRate
 
         reportRepository.save(report)
