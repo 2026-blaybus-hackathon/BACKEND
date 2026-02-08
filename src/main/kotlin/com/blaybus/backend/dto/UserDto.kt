@@ -3,6 +3,7 @@ package com.blaybus.backend.dto
 import com.blaybus.backend.entity.Grade
 import com.blaybus.backend.entity.Role
 import com.blaybus.backend.entity.User
+import com.blaybus.backend.util.getDDay
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 import java.time.LocalDate
@@ -58,8 +59,7 @@ data class MenteeProfileResponse(
     @Schema(description = "목표 학교")
     val targetSchool: String?,
     @Schema(description = "목표일로부터 디데이")
-    val targetDate: Int,
-    // TODO: 디데이 계산하그그러기
+    val targetDate: Int?,
 ) {
     constructor(user: User, profileUrl: String?) : this(
         menteeId = user.id,
@@ -68,7 +68,7 @@ data class MenteeProfileResponse(
         schoolName = user.schoolName,
         grade = user.grade?.description,
         targetSchool = user.targetSchool,
-        targetDate = -1,
+        targetDate = user.targetDate?.let { getDDay(it) },
     )
 }
 
@@ -95,6 +95,6 @@ data class UserProfileResponse(
         schoolName = user.schoolName,
         grade = user.grade?.description,
         targetSchool = user.targetSchool,
-        targetDate = -1,
+        targetDate = user.targetDate?.let { getDDay(it) },
     )
 }
