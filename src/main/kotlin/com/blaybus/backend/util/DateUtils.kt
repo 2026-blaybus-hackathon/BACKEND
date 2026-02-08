@@ -3,6 +3,7 @@ package com.blaybus.backend.util
 import mu.KotlinLogging
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
 
 private val logger = KotlinLogging.logger {}
@@ -13,3 +14,12 @@ fun getWeekRange(date: LocalDate): Pair<LocalDate, LocalDate> {
     logger.info("월요일 : $startOfWeek, 일요일 : $endOfWeek")
     return Pair(startOfWeek, endOfWeek)
 }
+
+fun getDDay(
+    targetDate: LocalDate,
+    currentDate: LocalDate = LocalDate.now(),
+): Int =
+    ChronoUnit.DAYS
+        .between(currentDate, targetDate)
+        .coerceAtLeast(0L)
+        .toInt()

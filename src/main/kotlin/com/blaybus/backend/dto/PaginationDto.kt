@@ -7,3 +7,8 @@ data class PagedResponse<T>(
     val totalPages: Int,
     val totalElements: Long,
 )
+
+data class SliceResponse<T>(
+    val content: List<T>,
+    val hasNext: Boolean,
+)

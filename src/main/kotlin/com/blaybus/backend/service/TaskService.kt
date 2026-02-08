@@ -1,5 +1,6 @@
 package com.blaybus.backend.service
 
+import com.blaybus.backend.dto.AssignmentResponse
 import com.blaybus.backend.dto.CommentOnTaskRequest
 import com.blaybus.backend.dto.DailyAchievementRate
 import com.blaybus.backend.dto.FeedbackDetail
@@ -12,7 +13,10 @@ import com.blaybus.backend.dto.MenteeTaskUpdateRequest
 import com.blaybus.backend.dto.MentorTaskAssignRequest
 import com.blaybus.backend.dto.MentorTaskUpdateRequest
 import com.blaybus.backend.dto.PagedResponse
+import com.blaybus.backend.dto.SliceResponse
+import com.blaybus.backend.dto.TaskAndAssignmentResponse
 import com.blaybus.backend.dto.TaskDetail
+import com.blaybus.backend.dto.TaskDetailResponse
 import com.blaybus.backend.dto.TaskImageResponse
 import com.blaybus.backend.dto.TaskResponse
 import com.blaybus.backend.entity.Assignment
@@ -29,6 +33,7 @@ import com.blaybus.backend.repository.TaskRepository
 import com.blaybus.backend.repository.UserRepository
 import com.blaybus.backend.repository.getByTaskId
 import com.blaybus.backend.repository.getByUserId
+import com.blaybus.backend.repository.getTaskAndDailyPlannerById
 import com.blaybus.backend.util.getWeekRange
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -202,7 +207,7 @@ class TaskService(
         taskId: Long,
         image: MultipartFile,
     ): FileUploadResponse {
-        val task = taskRepository.findTaskById(taskId) ?: throw CustomException(ErrorCode.TASK_NOT_FOUND)
+        val task = taskRepository.getTaskAndDailyPlannerById(taskId)
         if (task.dailyPlanner.user.id != userId) throw CustomException(ErrorCode.NOT_YOUR_TASK)
 
         val imagePath = "tasks/$taskId/verification/"
@@ -260,6 +265,50 @@ class TaskService(
     ): List<Task> {
         val dailyPlanner = dailyPlannerService.getDailyPlannerOrNullByUserAndDate(user, date)
         return dailyPlanner?.tasks ?: emptyList()
+    }
+
+    @Transactional(readOnly = true)
+    fun getTasksByDateList(
+        userId: Long,
+        date: LocalDate,
+        lastId: Long?,
+        size: Int,
+    ): SliceResponse<TaskAndAssignmentResponse> {
+        val user = userRepository.getByUserId(userId)
+        val dailyPlanner =
+            dailyPlannerService.getDailyPlannerOrNullByUserAndDate(user, date) ?: return SliceResponse(
+                emptyList(),
+                false,
+            )
+        val pageable = Pageable.ofSize(size)
+        val tasks = taskRepository.sliceByDailyPlannerId(dailyPlanner.id, lastId, pageable)
+        return SliceResponse(
+            tasks.content.map { task ->
+                val assignmentList =
+                    assignmentRepository.findAllByTask(task).map {
+                        AssignmentResponse(
+                            it.id,
+                            it.originalFileName,
+                            objectStorageRepository.getDownloadUrl(it.fileKey),
+                        )
+                    }
+                TaskAndAssignmentResponse(task, assignmentList, task.writer.id == user.id)
+            },
+            tasks.hasNext(),
+        )
+    }
+
+    @Transactional(readOnly = true)
+    fun getTaskByTaskId(
+        userId: Long,
+        taskId: Long,
+    ): TaskDetailResponse {
+        val task = taskRepository.getTaskAndDailyPlannerById(taskId)
+        if (task.dailyPlanner.user.id != userId) {
+            throw CustomException(ErrorCode.NOT_YOUR_TASK)
+        }
+
+        return TaskDetailResponse(task)
     }
 
     fun getMenteeTasksWithFeedback(
