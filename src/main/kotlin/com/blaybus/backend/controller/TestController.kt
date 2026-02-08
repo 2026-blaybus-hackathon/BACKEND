@@ -1,6 +1,6 @@
 package com.blaybus.backend.controller
 
-import com.blaybus.backend.dto.SimpleUserDto
+import com.blaybus.backend.dto.SimpleUserResponse
 import com.blaybus.backend.service.TestService
 import com.blaybus.backend.service.auth.AuthService
 import com.blaybus.backend.service.user.UserService
@@ -24,7 +24,7 @@ class TestController(
 ) {
     @Operation(summary = "모든 유저 조회")
     @GetMapping("/user/list")
-    fun getUserList(): List<SimpleUserDto> = userService.findAllUser()
+    fun getUserList(): List<SimpleUserResponse> = userService.findAllUser()
 
     @Operation(summary = "유저 액세스 토큰 발급")
     @GetMapping("/user/{userId}")
