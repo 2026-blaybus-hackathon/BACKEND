@@ -1,9 +1,11 @@
 package com.blaybus.backend.controller.user
 
+import com.blaybus.backend.dto.DailyAchievementRate
 import com.blaybus.backend.dto.UserProfileResponse
 import com.blaybus.backend.dto.UserTodayStudyTimeDto
 import com.blaybus.backend.service.user.UserService
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -20,7 +22,6 @@ import java.time.LocalDate
 class MenteeUserController(
     private val userService: UserService,
 ) {
-    // TODO : 멘토, 멘티 공통 프로필 조회 API로 변경될 수도 있음
     @Operation(
         summary = "내 프로필 조회",
         description = "멘티는 자신의 프로필을 조회할 수 있습니다.",
@@ -47,4 +48,19 @@ class MenteeUserController(
         ResponseEntity
             .status(HttpStatus.OK)
             .body(userService.getDailyStudyAmount(userId, date))
+
+    @Operation(
+        summary = "주간 달성 정보 조회",
+        description = "멘티는 자신의 주간 달성 정보를 조회할 수 있습니다.(유저 주간 히트맵)",
+    )
+    @GetMapping("/weekly-achievement-rate")
+    fun getWeeklyAchievement(
+        @AuthenticationPrincipal userId: Long,
+        @Parameter(
+            name = "date",
+            description = "조회할 날짜 (해당 날짜가 속한 주의 달성 정보가 조회됩니다)",
+            required = true,
+        )
+        @RequestParam date: LocalDate,
+    ): ResponseEntity<List<DailyAchievementRate>> = ResponseEntity.ok(userService.getWeeklyAchievement(userId, date))
 }
