@@ -414,7 +414,9 @@ class TaskService(
                 menteeName = u.name,
                 schoolAndGrade = "${u.schoolName ?: ""} ${u.grade?.description ?: ""}",
                 date = task.dailyPlanner.date,
-                isFeedbackCompleted = task.feedback != null
+                isFeedbackCompleted = task.feedback != null,
+                targetSchool = u.targetSchool ?:"",
+                targetDate = u.targetDate
             )
         }
 

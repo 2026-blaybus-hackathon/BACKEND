@@ -167,6 +167,10 @@ data class RecentTaskSummaryDto(
     val menteeName: String,
     @Schema(description = "학교/학년 정보", example = "홍길동 / 고2")
     val schoolAndGrade: String,
+    @Schema(description = "목표 학교", example = "한국대학교")
+    val targetSchool: String,
+    @Schema(description = "디데이", example = "30")
+    val targetDate: LocalDate?,
     @Schema(description = "제출 날짜", example = "2026-02-05")
     val date: LocalDate,
     @Schema(description = "피드백 완료 여부")
