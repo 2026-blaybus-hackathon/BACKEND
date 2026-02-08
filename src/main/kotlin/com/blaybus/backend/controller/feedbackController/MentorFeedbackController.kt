@@ -110,4 +110,10 @@ class MentorFeedbackController(
             .body(
                 feedbackService.findFeedbacksByMenteeId(menteeId, userId, date),
             )
+
+    @Operation(summary = "피드백 상태를 포함한 멘티 목록 조회", description = "멘토가 자신의 멘티 목록과 피드백 상태(PENDING/COMPLETED)를 조회합니다.")
+    @GetMapping("/mentees")
+    fun getMenteesWithFeedbackStatus(
+        @AuthenticationPrincipal userId: Long,
+    ): ResponseEntity<List<FeedbackDto.MentorMenteeListResponse>> = ResponseEntity.ok(feedbackService.getMenteesWithFeedbackStatus(userId))
 }

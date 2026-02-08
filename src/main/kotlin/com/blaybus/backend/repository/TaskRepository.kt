@@ -1,6 +1,7 @@
 package com.blaybus.backend.repository
 
 import com.blaybus.backend.entity.Feedback
+import com.blaybus.backend.entity.Role
 import com.blaybus.backend.entity.Task
 import com.blaybus.backend.entity.User
 import com.blaybus.backend.exception.CustomException
@@ -50,7 +51,7 @@ interface TaskRepository : JpaRepository<Task, Long> {
         FROM Task t
         JOIN t.dailyPlanner dp
         JOIN dp.user u
-        WHERE u.mentor.id = :mentorId 
+        WHERE u.mentor.id = :mentorId
           AND dp.date BETWEEN :startDate AND :endDate
     """,
     )
@@ -62,11 +63,11 @@ interface TaskRepository : JpaRepository<Task, Long> {
 
     @Query(
         """
-        SELECT COUNT(t) FROM Task t 
-        JOIN t.dailyPlanner dp 
-        JOIN dp.user u 
-        WHERE u.mentor.id = :mentorId 
-          AND t.isCompleted = true 
+        SELECT COUNT(t) FROM Task t
+        JOIN t.dailyPlanner dp
+        JOIN dp.user u
+        WHERE u.mentor.id = :mentorId
+          AND t.isCompleted = true
           AND t.feedback IS NULL
     """,
     )
@@ -74,10 +75,10 @@ interface TaskRepository : JpaRepository<Task, Long> {
 
     @Query(
         """
-        SELECT t FROM Task t 
-        JOIN FETCH t.dailyPlanner dp 
-        JOIN FETCH dp.user u 
-        WHERE u.mentor.id = :mentorId 
+        SELECT t FROM Task t
+        JOIN FETCH t.dailyPlanner dp
+        JOIN FETCH dp.user u
+        WHERE u.mentor.id = :mentorId
           AND t.isCompleted = true 
         ORDER BY t.createdDateTime DESC
     """,
@@ -96,4 +97,19 @@ interface TaskRepository : JpaRepository<Task, Long> {
         lastId: Long?,
         pageable: Pageable,
     ): Slice<Task>
+
+    @Query(
+        """
+    SELECT COUNT(t) > 0 
+    FROM Task t 
+    WHERE t.dailyPlanner.user.id = :menteeId 
+      AND t.writer.id = :mentorId 
+      AND t.isCompleted = true 
+      AND t.feedback IS NULL
+""",
+    )
+    fun existsCompletedMentorTaskWithoutFeedback(
+        menteeId: Long,
+        mentorId: Long,
+    ): Boolean
 }
