@@ -177,26 +177,21 @@ data class DailyAchievementRate(
 data class MentorDashboardResponse(
     @Schema(description = "대쉬보드 상단 통계 데이터")
     val stats: DashboardStatsDto,
-
     @Schema(description = "담당 멘티 목록")
     val mentees: List<MenteeSummaryDto>,
-
     @Schema(description = "최근 제출된 과제 목록 (우측 하단)")
-    val recentTasks: List<RecentTaskSummaryDto>
+    val recentTasks: List<RecentTaskSummaryDto>,
 )
 
 data class DashboardStatsDto(
     @Schema(description = "담당 멘티 수", example = "3")
     val totalMenteeCount: Int,
-
     @Schema(description = "이번 주 평균 진행률 (%)", example = "80")
     val averageProgress: Int,
-
     @Schema(description = "지난주 대비 증감율 (%p)", example = "5")
     val progressChange: Int, // +5%면 5, -3%면 -3
-
     @Schema(description = "팬딩된(확인 필요한) 피드백 수", example = "1")
-    val pendingFeedbackCount: Int
+    val pendingFeedbackCount: Int,
 )
 
 data class MenteeSummaryDto(
@@ -209,7 +204,7 @@ data class MenteeSummaryDto(
     @Schema(description = "학년", example = "1학년")
     val grade: String,
     @Schema(description = "프로필 이미지 URL")
-    val profileImageUrl: String?
+    val profileImageUrl: String?,
 )
 
 data class RecentTaskSummaryDto(
@@ -228,5 +223,5 @@ data class RecentTaskSummaryDto(
     @Schema(description = "제출 날짜", example = "2026-02-05")
     val date: LocalDate,
     @Schema(description = "피드백 완료 여부")
-    val isFeedbackCompleted: Boolean
+    val isFeedbackCompleted: Boolean,
 )
