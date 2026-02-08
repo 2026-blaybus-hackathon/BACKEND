@@ -1,17 +1,26 @@
 package com.blaybus.backend.service
 
+import com.blaybus.backend.dto.AssignmentResponse
 import com.blaybus.backend.dto.CommentOnTaskRequest
+import com.blaybus.backend.dto.DailyAchievementRate
+import com.blaybus.backend.dto.DashboardStatsDto
 import com.blaybus.backend.dto.FeedbackDetail
 import com.blaybus.backend.dto.FileUploadResponse
 import com.blaybus.backend.dto.MenteeStudyTimeUpdateRequest
+import com.blaybus.backend.dto.MenteeSummaryDto
 import com.blaybus.backend.dto.MenteeTaskCompletionUpdateRequest
 import com.blaybus.backend.dto.MenteeTaskCreateRequest
 import com.blaybus.backend.dto.MenteeTaskFeedbackResponse
 import com.blaybus.backend.dto.MenteeTaskUpdateRequest
+import com.blaybus.backend.dto.MentorDashboardResponse
 import com.blaybus.backend.dto.MentorTaskAssignRequest
 import com.blaybus.backend.dto.MentorTaskUpdateRequest
 import com.blaybus.backend.dto.PagedResponse
+import com.blaybus.backend.dto.RecentTaskSummaryDto
+import com.blaybus.backend.dto.SliceResponse
+import com.blaybus.backend.dto.TaskAndAssignmentResponse
 import com.blaybus.backend.dto.TaskDetail
+import com.blaybus.backend.dto.TaskDetailResponse
 import com.blaybus.backend.dto.TaskImageResponse
 import com.blaybus.backend.dto.TaskResponse
 import com.blaybus.backend.entity.Assignment
@@ -28,11 +37,16 @@ import com.blaybus.backend.repository.TaskRepository
 import com.blaybus.backend.repository.UserRepository
 import com.blaybus.backend.repository.getByTaskId
 import com.blaybus.backend.repository.getByUserId
+import com.blaybus.backend.repository.getTaskAndDailyPlannerById
+import com.blaybus.backend.util.getWeekRange
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
+import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.temporal.TemporalAdjusters
 
 @Service
 @Transactional(readOnly = true)
@@ -200,8 +214,8 @@ class TaskService(
         taskId: Long,
         image: MultipartFile,
     ): FileUploadResponse {
-        val task = taskRepository.getByTaskId(taskId)
-        if (task.writer.id != userId) throw CustomException(ErrorCode.NOT_YOUR_TASK)
+        val task = taskRepository.getTaskAndDailyPlannerById(taskId)
+        if (task.dailyPlanner.user.id != userId) throw CustomException(ErrorCode.NOT_YOUR_TASK)
 
         val imagePath = "tasks/$taskId/verification/"
         val uploadedKey = objectStorageRepository.upload(imagePath, image)
@@ -216,7 +230,7 @@ class TaskService(
                     originalFileName = image.originalFilename ?: "unknown",
                 ),
             )
-
+        task.updateCompletionStatus(true)
         return FileUploadResponse(
             fileId = studyImage.id,
             url = downloadUrl,
@@ -230,6 +244,50 @@ class TaskService(
     ): List<Task> {
         val dailyPlanner = dailyPlannerService.getDailyPlannerOrNullByUserAndDate(user, date)
         return dailyPlanner?.tasks ?: emptyList()
+    }
+
+    @Transactional(readOnly = true)
+    fun getTasksByDateList(
+        userId: Long,
+        date: LocalDate,
+        lastId: Long?,
+        size: Int,
+    ): SliceResponse<TaskAndAssignmentResponse> {
+        val user = userRepository.getByUserId(userId)
+        val dailyPlanner =
+            dailyPlannerService.getDailyPlannerOrNullByUserAndDate(user, date) ?: return SliceResponse(
+                emptyList(),
+                false,
+            )
+        val pageable = Pageable.ofSize(size)
+        val tasks = taskRepository.sliceByDailyPlannerId(dailyPlanner.id, lastId, pageable)
+        return SliceResponse(
+            tasks.content.map { task ->
+                val assignmentList =
+                    assignmentRepository.findAllByTask(task).map {
+                        AssignmentResponse(
+                            it.id,
+                            it.originalFileName,
+                            objectStorageRepository.getDownloadUrl(it.fileKey),
+                        )
+                    }
+                TaskAndAssignmentResponse(task, assignmentList, task.writer.id == user.id)
+            },
+            tasks.hasNext(),
+        )
+    }
+
+    @Transactional(readOnly = true)
+    fun getTaskByTaskId(
+        userId: Long,
+        taskId: Long,
+    ): TaskDetailResponse {
+        val task = taskRepository.getTaskAndDailyPlannerById(taskId)
+        if (task.dailyPlanner.user.id != userId) {
+            throw CustomException(ErrorCode.NOT_YOUR_TASK)
+        }
+
+        return TaskDetailResponse(task)
     }
 
     fun getMenteeTasksWithFeedback(
@@ -334,5 +392,76 @@ class TaskService(
                 ),
             )
         }
+    }
+
+    fun getDashboardData(mentorId: Long): MentorDashboardResponse {
+        // 1. 멘티 목록 조회
+        val mentees = userRepository.findAllByMentorId(mentorId)
+        val menteeDtos = mentees.map { mentee ->
+            MenteeSummaryDto(
+                menteeId = mentee.id,
+                name = mentee.name,
+                school = mentee.schoolName ?: "-",
+                grade = mentee.grade?.description ?: "-",
+                profileImageUrl = mentee.profileName?.let {
+                    objectStorageRepository.getDownloadUrl(it)
+                }
+            )
+        }
+
+        // 2. 주간 진행률 통계 (지난주 대비 이번주 상승률)
+        val today = LocalDate.now()
+        val startThisWeek = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+        val endThisWeek = today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY))
+        val startLastWeek = startThisWeek.minusWeeks(1)
+        val endLastWeek = endThisWeek.minusWeeks(1)
+
+        val thisWeekRate = calculateProgressRate(mentorId, startThisWeek, endThisWeek)
+        val lastWeekRate = calculateProgressRate(mentorId, startLastWeek, endLastWeek)
+        val progressChange = thisWeekRate - lastWeekRate
+
+        // 3. 팬딩 피드백 수
+        val pendingCount = taskRepository.countPendingFeedbackByMentorId(mentorId)
+
+        // 4. 최근 제출 과제 (상위 5건)
+        val recentTasks = taskRepository.findRecentSubmittedTasks(
+            mentorId,
+            PageRequest.of(0, 5)
+        ).map { task ->
+            val u = task.dailyPlanner.user
+            RecentTaskSummaryDto(
+                taskId = task.id,
+                title = task.title,
+                menteeName = u.name,
+                schoolAndGrade = "${u.schoolName ?: ""} ${u.grade?.description ?: ""}",
+                date = task.dailyPlanner.date,
+                isFeedbackCompleted = task.feedback != null,
+                targetSchool = u.targetSchool ?:"",
+                targetDate = u.targetDate
+            )
+        }
+
+        return MentorDashboardResponse(
+            stats = DashboardStatsDto(
+                totalMenteeCount = mentees.size,
+                averageProgress = thisWeekRate,
+                progressChange = progressChange,
+                pendingFeedbackCount = pendingCount
+            ),
+            mentees = menteeDtos,
+            recentTasks = recentTasks
+        )
+    }
+
+    private fun calculateProgressRate(mentorId: Long, start: LocalDate, end: LocalDate): Int {
+        val stats = taskRepository.getTaskStatisticsByPeriod(mentorId, start, end)
+        if (stats.isEmpty()) return 0
+
+        val row = stats[0]
+        val totalTasks = (row[0] as Number).toLong()
+        val completedTasks = (row[1] as? Number)?.toLong() ?: 0L
+
+        return if (totalTasks == 0L) 0
+        else ((completedTasks.toDouble() / totalTasks.toDouble()) * 100).toInt()
     }
 }
