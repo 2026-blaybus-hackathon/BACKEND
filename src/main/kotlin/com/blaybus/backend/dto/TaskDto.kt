@@ -72,8 +72,10 @@ data class MenteeTaskCompletionUpdateRequest(
 data class TaskResponse(
     @Schema(description = "할 일 ID")
     val id: Long,
-    @Schema(description = "할 일의 제목")
-    val title: String,
+    @Schema(description = "할일 제목")
+    val title: String?,
+    @Schema(description = "할 일의 내용")
+    val content: String?,
     @Schema(description = "할 일의 과목", allowableValues = ["KOREAN", "MATH", "ENGLISH"])
     val subject: Subject,
     @Schema(description = "할 일에 할당된 공부 시간(분 단위)")
@@ -84,6 +86,7 @@ data class TaskResponse(
             TaskResponse(
                 id = task.id,
                 title = task.title,
+                content = task.content,
                 subject = task.subject,
                 studyDurationInMinutes = task.studyDurationInMinutes ?: 0,
             )
@@ -135,5 +138,32 @@ data class TaskDetailResponse(
         studyDurationInMinutes = task.studyDurationInMinutes ?: 0,
         isCompleted = task.isCompleted,
         comment = task.comment,
+    )
+}
+
+data class DailyAchievementRate(
+    @Schema(description = "해당 날짜")
+    val date: LocalDate,
+    @Schema(description = "완료한 할 일 수")
+    val completedTaskCount: Int,
+    @Schema(description = "전체 할 일 수")
+    val totalTaskCount: Int,
+    @Schema(description = "달성률 (0~10 사이의 짝수 값)")
+    val achievementRate: Int,
+) {
+    constructor(date: LocalDate, completedTasks: Int, totalTasks: Int) : this(
+        date,
+        completedTasks,
+        totalTasks,
+        if (totalTasks == 0 || completedTasks == 0) {
+            0
+        } else {
+            val achievementRate = ((completedTasks.toDouble() / totalTasks) * 10).toInt()
+            if (achievementRate % 2 != 0) {
+                achievementRate - 1
+            } else {
+                achievementRate
+            }
+        },
     )
 }

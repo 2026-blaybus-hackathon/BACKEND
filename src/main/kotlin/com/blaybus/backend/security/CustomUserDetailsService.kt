@@ -22,8 +22,7 @@ class CustomUserDetailsService(
             email = user.email,
             password = user.password,
             authorities = listOf(SimpleGrantedAuthority(user.role.name)),
-            nickname = user.nickname,
-            userId = user.id,
+            user = user,
         )
     }
 }
@@ -32,6 +31,5 @@ class CustomUserDto(
     email: String,
     password: String,
     authorities: Collection<SimpleGrantedAuthority>,
-    val nickname: String,
-    val userId: Long,
+    val user: com.blaybus.backend.entity.User,
 ) : User(email, password, authorities)

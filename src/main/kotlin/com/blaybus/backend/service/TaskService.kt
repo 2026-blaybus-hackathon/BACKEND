@@ -2,6 +2,7 @@ package com.blaybus.backend.service
 
 import com.blaybus.backend.dto.AssignmentResponse
 import com.blaybus.backend.dto.CommentOnTaskRequest
+import com.blaybus.backend.dto.DailyAchievementRate
 import com.blaybus.backend.dto.FeedbackDetail
 import com.blaybus.backend.dto.FileUploadResponse
 import com.blaybus.backend.dto.MenteeStudyTimeUpdateRequest
@@ -33,6 +34,7 @@ import com.blaybus.backend.repository.UserRepository
 import com.blaybus.backend.repository.getByTaskId
 import com.blaybus.backend.repository.getByUserId
 import com.blaybus.backend.repository.getTaskAndDailyPlannerById
+import com.blaybus.backend.util.getWeekRange
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -227,6 +229,42 @@ class TaskService(
             url = downloadUrl,
             originalFilename = studyImage.originalFileName,
         )
+    }
+
+    @Transactional(readOnly = true)
+    fun getWeeklyAchievement(
+        userId: Long,
+        date: LocalDate,
+    ): List<DailyAchievementRate> {
+        userRepository.getByUserId(userId)
+        val (startOfWeek, endOfWeek) = getWeekRange(date)
+        val dailyPlannerList = dailyPlannerService.getDailyPlannerByPeriod(userId, startOfWeek, endOfWeek)
+        var day = startOfWeek
+        val weeklyAchievementList: MutableList<DailyAchievementRate> = mutableListOf()
+        for (dailyPlanner in dailyPlannerList) {
+            val tasks = dailyPlanner.tasks
+            while (day.isBefore(dailyPlanner.date)) {
+                weeklyAchievementList.add(DailyAchievementRate(day, 0, 0))
+                day = day.plusDays(1)
+            }
+            weeklyAchievementList.add(
+                DailyAchievementRate(
+                    day,
+                    completedTasks = tasks.count { it.isCompleted },
+                    totalTasks = tasks.size,
+                ),
+            )
+            day = day.plusDays(1)
+        }
+        return weeklyAchievementList
+    }
+
+    fun getTodayTasksForUser(
+        user: User,
+        date: LocalDate,
+    ): List<Task> {
+        val dailyPlanner = dailyPlannerService.getDailyPlannerOrNullByUserAndDate(user, date)
+        return dailyPlanner?.tasks ?: emptyList()
     }
 
     @Transactional(readOnly = true)

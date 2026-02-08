@@ -146,3 +146,18 @@ ALTER TABLE assignments
         file_key VARCHAR2(500) NOT NULL,
         original_file_name VARCHAR2(300) NOT NULL
         );
+
+ALTER TABLE USERS
+    ADD (
+        school_name VARCHAR2(100),
+        grade VARCHAR2(20),
+        target_school VARCHAR2(100),
+        target_date date
+        );
+
+DROP INDEX idx_users_nickname;
+
+ALTER TABLE USERS
+    DROP (nickname);
+
+CREATE INDEX idx_users_mentor_id_name ON users (mentor_id, name);

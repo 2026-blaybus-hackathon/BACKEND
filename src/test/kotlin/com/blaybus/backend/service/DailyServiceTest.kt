@@ -36,7 +36,6 @@ class DailyServiceTest {
                 id = 1L,
                 email = "mentor@test.com",
                 name = "멘토",
-                nickname = "mentor_nick",
                 role = Role.MENTOR,
                 password = "123",
             )
