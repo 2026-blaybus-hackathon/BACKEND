@@ -53,7 +53,4 @@ interface TaskRepository : JpaRepository<Task, Long> {
         lastId: Long?,
         pageable: Pageable,
     ): Slice<Task>
-
-    @EntityGraph(attributePaths = ["dailyPlanner"])
-    fun findTaskById(id: Long): Task?
 }
