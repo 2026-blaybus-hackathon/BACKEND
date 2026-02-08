@@ -7,6 +7,7 @@ import com.blaybus.backend.exception.CustomException
 import com.blaybus.backend.exception.ErrorCode
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Slice
 import org.springframework.data.jpa.repository.EntityGraph
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
@@ -15,6 +16,8 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 fun TaskRepository.getByTaskId(taskId: Long): Task = findById(taskId).orElseThrow { CustomException(ErrorCode.TASK_NOT_FOUND) }
+
+fun TaskRepository.getTaskAndDailyPlannerById(taskId: Long): Task = findTaskById(taskId) ?: throw CustomException(ErrorCode.TASK_NOT_FOUND)
 
 @Repository
 interface TaskRepository : JpaRepository<Task, Long> {
@@ -40,7 +43,6 @@ interface TaskRepository : JpaRepository<Task, Long> {
         user: User,
         pageable: Pageable,
     ): Page<Task>
-
 
     @Query("""
         SELECT count(t), sum(CASE WHEN t.isCompleted = true THEN 1 ELSE 0 END)
@@ -76,4 +78,14 @@ interface TaskRepository : JpaRepository<Task, Long> {
         ORDER BY t.createdDateTime DESC
     """)
     fun findRecentSubmittedTasks(mentorId: Long, pageable: Pageable): List<Task>
+
+    @EntityGraph(attributePaths = ["dailyPlanner", "studyImages", "dailyPlanner.user"])
+    fun findTaskById(taskId: Long): Task?
+
+    @Query("""select t from Task t where t.dailyPlanner.id = :plannerId and (:lastId is null or t.id < :lastId) order by t.id desc""")
+    fun sliceByDailyPlannerId(
+        plannerId: Long,
+        lastId: Long?,
+        pageable: Pageable,
+    ): Slice<Task>
 }

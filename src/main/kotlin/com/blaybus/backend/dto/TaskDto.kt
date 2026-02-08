@@ -60,13 +60,13 @@ data class MenteeStudyTimeUpdateRequest(
     @field:Schema(description = "공부한 시간 (분 단위)", example = "60")
     @field:NotNull(message = "공부 시간은 필수입니다.")
     @field:Min(value = 0, message = "공부 시간은 0분 이상이어야 합니다.")
-    val studyTime: Int,
+    var studyTime: Int,
 )
 
 data class MenteeTaskCompletionUpdateRequest(
     @field:Schema(description = "완료 여부 (true: 완료, false: 미완료)", example = "true")
     @field:NotNull(message = "완료 여부는 필수입니다.")
-    val isCompleted: Boolean,
+    var isCompleted: Boolean,
 )
 
 data class TaskResponse(
@@ -91,6 +91,60 @@ data class TaskResponse(
                 studyDurationInMinutes = task.studyDurationInMinutes ?: 0,
             )
     }
+}
+
+data class AssignmentResponse(
+    @Schema(description = "과제 ID")
+    val id: Long,
+    @Schema(description = "원본 파일명")
+    val originalFileName: String,
+    @Schema(description = "파일 접근 URL")
+    val url: String,
+)
+
+data class TaskAndAssignmentResponse(
+    @Schema(description = "할 일 정보")
+    val task: TaskResponse,
+    @Schema(description = "할 일에 대한 과제 파일 목록")
+    val assignment: List<AssignmentResponse>,
+    @Schema(description = "완료했는지 여부")
+    val isCompleted: Boolean,
+    @Schema(description = "멘토가 준 과제 여부")
+    val isMentorAssigned: Boolean,
+) {
+    constructor(
+        task: Task,
+        assignment: List<AssignmentResponse>,
+        isMentorAssigned: Boolean,
+    ) : this(task = TaskResponse.from(task = task), assignment = assignment, task.isCompleted, !isMentorAssigned)
+}
+
+data class TaskDetailResponse(
+    @Schema(description = "할 일 ID")
+    val id: Long,
+    @Schema(description = "할 일의 제목")
+    val title: String,
+    @Schema(description = "컬럼 내용")
+    val content: String?,
+    @Schema(description = "할 일의 과목", allowableValues = ["KOREAN", "MATH", "ENGLISH"])
+    val subject: Subject,
+    @Schema(description = "할 일에 할당된 공부 시간(분 단위)")
+    val studyDurationInMinutes: Int = 0,
+    @Schema(description = "완료했는지 여부")
+    val isCompleted: Boolean,
+    @Schema(description = "멘토에게 남긴 코멘트 또는 질문")
+    val comment: String?,
+    // TODO: 디자인 나오면 제대로 구현
+) {
+    constructor(task: Task) : this(
+        id = task.id,
+        title = task.title,
+        content = task.content,
+        subject = task.subject,
+        studyDurationInMinutes = task.studyDurationInMinutes ?: 0,
+        isCompleted = task.isCompleted,
+        comment = task.comment,
+    )
 }
 
 data class DailyAchievementRate(
