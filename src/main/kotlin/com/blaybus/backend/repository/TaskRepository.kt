@@ -44,40 +44,48 @@ interface TaskRepository : JpaRepository<Task, Long> {
         pageable: Pageable,
     ): Page<Task>
 
-    @Query("""
+    @Query(
+        """
         SELECT count(t), sum(CASE WHEN t.isCompleted = true THEN 1 ELSE 0 END)
         FROM Task t
         JOIN t.dailyPlanner dp
         JOIN dp.user u
         WHERE u.mentor.id = :mentorId 
           AND dp.date BETWEEN :startDate AND :endDate
-    """)
+    """,
+    )
     fun getTaskStatisticsByPeriod(
         mentorId: Long,
         startDate: LocalDate,
-        endDate: LocalDate
+        endDate: LocalDate,
     ): List<Array<Any>>
 
-
-    @Query("""
+    @Query(
+        """
         SELECT COUNT(t) FROM Task t 
         JOIN t.dailyPlanner dp 
         JOIN dp.user u 
         WHERE u.mentor.id = :mentorId 
           AND t.isCompleted = true 
           AND t.feedback IS NULL
-    """)
+    """,
+    )
     fun countPendingFeedbackByMentorId(mentorId: Long): Int
 
-    @Query("""
+    @Query(
+        """
         SELECT t FROM Task t 
         JOIN FETCH t.dailyPlanner dp 
         JOIN FETCH dp.user u 
         WHERE u.mentor.id = :mentorId 
           AND t.isCompleted = true 
         ORDER BY t.createdDateTime DESC
-    """)
-    fun findRecentSubmittedTasks(mentorId: Long, pageable: Pageable): List<Task>
+    """,
+    )
+    fun findRecentSubmittedTasks(
+        mentorId: Long,
+        pageable: Pageable,
+    ): List<Task>
 
     @EntityGraph(attributePaths = ["dailyPlanner", "studyImages", "dailyPlanner.user"])
     fun findTaskById(taskId: Long): Task?

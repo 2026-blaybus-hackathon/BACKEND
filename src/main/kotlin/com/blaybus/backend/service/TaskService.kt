@@ -2,7 +2,6 @@ package com.blaybus.backend.service
 
 import com.blaybus.backend.dto.AssignmentResponse
 import com.blaybus.backend.dto.CommentOnTaskRequest
-import com.blaybus.backend.dto.DailyAchievementRate
 import com.blaybus.backend.dto.DashboardStatsDto
 import com.blaybus.backend.dto.FeedbackDetail
 import com.blaybus.backend.dto.FileUploadResponse
@@ -39,7 +38,6 @@ import com.blaybus.backend.repository.UserRepository
 import com.blaybus.backend.repository.getByTaskId
 import com.blaybus.backend.repository.getByUserId
 import com.blaybus.backend.repository.getTaskAndDailyPlannerById
-import com.blaybus.backend.util.getWeekRange
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -241,34 +239,6 @@ class TaskService(
         )
     }
 
-    @Transactional(readOnly = true)
-    fun getWeeklyAchievement(
-        userId: Long,
-        date: LocalDate,
-    ): List<DailyAchievementRate> {
-        userRepository.getByUserId(userId)
-        val (startOfWeek, endOfWeek) = getWeekRange(date)
-        val dailyPlannerList = dailyPlannerService.getDailyPlannerByPeriod(userId, startOfWeek, endOfWeek)
-        var day = startOfWeek
-        val weeklyAchievementList: MutableList<DailyAchievementRate> = mutableListOf()
-        for (dailyPlanner in dailyPlannerList) {
-            val tasks = dailyPlanner.tasks
-            while (day.isBefore(dailyPlanner.date)) {
-                weeklyAchievementList.add(DailyAchievementRate(day, 0, 0))
-                day = day.plusDays(1)
-            }
-            weeklyAchievementList.add(
-                DailyAchievementRate(
-                    day,
-                    completedTasks = tasks.count { it.isCompleted },
-                    totalTasks = tasks.size,
-                ),
-            )
-            day = day.plusDays(1)
-        }
-        return weeklyAchievementList
-    }
-
     fun getTodayTasksForUser(
         user: User,
         date: LocalDate,
@@ -430,17 +400,19 @@ class TaskService(
     fun getDashboardData(mentorId: Long): MentorDashboardResponse {
         // 1. 멘티 목록 조회
         val mentees = userRepository.findAllByMentorId(mentorId)
-        val menteeDtos = mentees.map { mentee ->
-            MenteeSummaryDto(
-                menteeId = mentee.id,
-                name = mentee.name,
-                school = mentee.schoolName ?: "-",
-                grade = mentee.grade?.description ?: "-",
-                profileImageUrl = mentee.profileName?.let {
-                    objectStorageRepository.getDownloadUrl(it)
-                }
-            )
-        }
+        val menteeDtos =
+            mentees.map { mentee ->
+                MenteeSummaryDto(
+                    menteeId = mentee.id,
+                    name = mentee.name,
+                    school = mentee.schoolName ?: "-",
+                    grade = mentee.grade?.description ?: "-",
+                    profileImageUrl =
+                        mentee.profileName?.let {
+                            objectStorageRepository.getDownloadUrl(it)
+                        },
+                )
+            }
 
         // 2. 주간 진행률 통계 (지난주 대비 이번주 상승률)
         val today = LocalDate.now()
@@ -457,36 +429,43 @@ class TaskService(
         val pendingCount = taskRepository.countPendingFeedbackByMentorId(mentorId)
 
         // 4. 최근 제출 과제 (상위 5건)
-        val recentTasks = taskRepository.findRecentSubmittedTasks(
-            mentorId,
-            PageRequest.of(0, 5)
-        ).map { task ->
-            val u = task.dailyPlanner.user
-            RecentTaskSummaryDto(
-                taskId = task.id,
-                title = task.title,
-                menteeName = u.name,
-                schoolAndGrade = "${u.schoolName ?: ""} ${u.grade?.description ?: ""}",
-                date = task.dailyPlanner.date,
-                isFeedbackCompleted = task.feedback != null,
-                targetSchool = u.targetSchool ?:"",
-                targetDate = u.targetDate
-            )
-        }
+        val recentTasks =
+            taskRepository
+                .findRecentSubmittedTasks(
+                    mentorId,
+                    PageRequest.of(0, 5),
+                ).map { task ->
+                    val u = task.dailyPlanner.user
+                    RecentTaskSummaryDto(
+                        taskId = task.id,
+                        title = task.title,
+                        menteeName = u.name,
+                        schoolAndGrade = "${u.schoolName ?: ""} ${u.grade?.description ?: ""}",
+                        date = task.dailyPlanner.date,
+                        isFeedbackCompleted = task.feedback != null,
+                        targetSchool = u.targetSchool ?: "",
+                        targetDate = u.targetDate,
+                    )
+                }
 
         return MentorDashboardResponse(
-            stats = DashboardStatsDto(
-                totalMenteeCount = mentees.size,
-                averageProgress = thisWeekRate,
-                progressChange = progressChange,
-                pendingFeedbackCount = pendingCount
-            ),
+            stats =
+                DashboardStatsDto(
+                    totalMenteeCount = mentees.size,
+                    averageProgress = thisWeekRate,
+                    progressChange = progressChange,
+                    pendingFeedbackCount = pendingCount,
+                ),
             mentees = menteeDtos,
-            recentTasks = recentTasks
+            recentTasks = recentTasks,
         )
     }
 
-    private fun calculateProgressRate(mentorId: Long, start: LocalDate, end: LocalDate): Int {
+    private fun calculateProgressRate(
+        mentorId: Long,
+        start: LocalDate,
+        end: LocalDate,
+    ): Int {
         val stats = taskRepository.getTaskStatisticsByPeriod(mentorId, start, end)
         if (stats.isEmpty()) return 0
 
@@ -494,7 +473,10 @@ class TaskService(
         val totalTasks = (row[0] as Number).toLong()
         val completedTasks = (row[1] as? Number)?.toLong() ?: 0L
 
-        return if (totalTasks == 0L) 0
-        else ((completedTasks.toDouble() / totalTasks.toDouble()) * 100).toInt()
+        return if (totalTasks == 0L) {
+            0
+        } else {
+            ((completedTasks.toDouble() / totalTasks.toDouble()) * 100).toInt()
+        }
     }
 }

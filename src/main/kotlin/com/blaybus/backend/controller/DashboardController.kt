@@ -14,15 +14,15 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/dashboard/mentor/")
 @RestController
 class DashboardController(
-    val taskService: TaskService
+    val taskService: TaskService,
 ) {
     @Operation(
         summary = "멘토 대시보드 조회",
-        description = "담당 멘티 목록, 주간 학습 진행률(지난주 대비), 최근 과제 등을 조회합니다."
+        description = "담당 멘티 목록, 주간 학습 진행률(지난주 대비), 최근 과제 등을 조회합니다.",
     )
     @GetMapping("/dashboard")
     fun getDashboard(
-        @AuthenticationPrincipal userId: Long
+        @AuthenticationPrincipal userId: Long,
     ): ResponseEntity<MentorDashboardResponse> { // [수정] 반환 타입 DTO 변경
         val response = taskService.getDashboardData(userId)
         return ResponseEntity.ok(response)
