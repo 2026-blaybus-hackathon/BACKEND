@@ -1,7 +1,7 @@
 package com.blaybus.backend.service
 
 import com.blaybus.backend.dto.FeedbackDto
-import com.blaybus.backend.dto.StudyImagetDto
+import com.blaybus.backend.dto.StudyImageDto
 import com.blaybus.backend.dto.mapper.toEmptyFeedbackResponse
 import com.blaybus.backend.dto.mapper.toGetFeedbackOfTaskResponse
 import com.blaybus.backend.entity.Feedback
@@ -159,12 +159,12 @@ class FeedbackService(
         val task = feedback.task
         val studyImageList =
             task.studyImages.map {
-                StudyImagetDto.StudyImageResponse(it, objectStorageRepository.getDownloadUrl(it.imageFileName))
+                StudyImageDto.StudyImageResponse(it, objectStorageRepository.getDownloadUrl(it.imageFileName))
             }
         feedback.isRead = true
         return FeedbackDto.GetFeedbackByIdResponse(
             feedback,
-            StudyImagetDto.StudyCertificationResponse(task, studyImageList),
+            StudyImageDto.StudyCertificationResponse(task, studyImageList),
         )
     }
 }

@@ -4,7 +4,7 @@ import com.blaybus.backend.entity.StudyImage
 import com.blaybus.backend.entity.Task
 import io.swagger.v3.oas.annotations.media.Schema
 
-class StudyImagetDto {
+class StudyImageDto {
     data class StudyCertificationResponse(
         @Schema(
             type = "number",

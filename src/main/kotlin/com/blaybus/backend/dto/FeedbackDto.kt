@@ -135,7 +135,7 @@ class FeedbackDto {
         val taskTitle: String,
         @Schema(description = "과목")
         val subject: String,
-        @Schema(description = "피드백 준 시간")
+        @Schema(description = "피드백 생성 시간")
         val createdDateTime: LocalDateTime,
     ) {
         constructor(feedback: Feedback) : this(
@@ -154,11 +154,11 @@ class FeedbackDto {
         )
         val feedback: GetFeedbackOfTaskResponse,
         @Schema(description = "멘티가 과제 인증 정보")
-        val studyCertificationResponse: StudyImagetDto.StudyCertificationResponse,
-        @Schema(description = "피드백 준 시간")
+        val studyCertificationResponse: StudyImageDto.StudyCertificationResponse,
+        @Schema(description = "피드백 생성 시간")
         val createdDateTime: LocalDateTime,
     ) {
-        constructor(feedback: Feedback, studyCertificationResponse: StudyImagetDto.StudyCertificationResponse) : this(
+        constructor(feedback: Feedback, studyCertificationResponse: StudyImageDto.StudyCertificationResponse) : this(
             feedback =
                 GetFeedbackOfTaskResponse(
                     taskId = feedback.task.id,
