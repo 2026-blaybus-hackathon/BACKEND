@@ -24,7 +24,8 @@ import java.time.LocalDate
 class MentorUserController(
     private val userService: UserService,
 ) {
-    @Operation(
+    // 프론트분들께서 작업하시다가 헷갈릴 수도 있는 부분이라 일단 주석 처리
+    /*@Operation(
         summary = "나의 멘티 목록 조회",
         description = "멘토가 자신에게 배정된 멘티 목록을 조회합니다.",
     )
@@ -36,7 +37,7 @@ class MentorUserController(
             .status(HttpStatus.OK)
             .body(
                 userService.findAllMentees(userId),
-            )
+            )*/
 
     @Operation(
         summary = "멘티 이름 검색",
