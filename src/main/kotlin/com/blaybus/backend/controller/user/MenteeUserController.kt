@@ -1,7 +1,7 @@
 package com.blaybus.backend.controller.user
 
-import com.blaybus.backend.dto.DailyAchievementRate
 import com.blaybus.backend.annotation.ApiErrorCodes
+import com.blaybus.backend.dto.DailyAchievementRate
 import com.blaybus.backend.dto.UpdateProfileRequest
 import com.blaybus.backend.dto.UserProfileResponse
 import com.blaybus.backend.dto.UserTodayStudyTimeResponse

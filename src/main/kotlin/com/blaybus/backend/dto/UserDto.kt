@@ -5,9 +5,9 @@ import com.blaybus.backend.entity.Role
 import com.blaybus.backend.entity.User
 import com.blaybus.backend.util.getDDay
 import io.swagger.v3.oas.annotations.media.Schema
-import kotlin.math.floor
 import jakarta.validation.constraints.NotBlank
 import java.time.LocalDate
+import kotlin.math.floor
 
 data class UpdateProfileRequest(
     @field:NotBlank(message = "이름은 필수 입력값입니다.")
@@ -110,7 +110,7 @@ data class AchievementRateResponse(
 }
 
 data class AchievementRateAndTotalStudyTimeResponse(
-    @Schema(description = "달성률 (%)")
+    @Schema(description = "달성률 정보")
     val achievementRate: AchievementRateResponse,
     @Schema(description = "총 공부 시간 (분)")
     val weeklyStudyTimeMinutes: Int,

@@ -73,6 +73,12 @@ class MentorUserController(
             required = true,
         )
         @PathVariable menteeId: Long,
+        @Parameter(
+            name = "date",
+            description = "조회할 기준 날짜 (YYYY-MM-DD 형식)",
+            example = "2026-02-02",
+            required = true,
+        )
         @RequestParam date: LocalDate,
     ): ResponseEntity<AchievementRateResponse> =
         ResponseEntity
@@ -95,12 +101,31 @@ class MentorUserController(
             required = true,
         )
         @PathVariable menteeId: Long,
+        @Parameter(
+            name = "date",
+            description = "조회할 기준 날짜 (YYYY-MM-DD 형식)",
+            example = "2026-02-02",
+            required = true,
+        )
         @RequestParam date: LocalDate,
-        @RequestParam period: Period,
-    ): ResponseEntity<AchievementRateAndTotalStudyTimeResponse> =
-        ResponseEntity
+        @Parameter(
+            name = "period",
+            description = "조회할 기간 (WEEK 또는 MONTH)",
+            example = "WEEK",
+            required = true,
+        )
+        @RequestParam period: String,
+    ): ResponseEntity<AchievementRateAndTotalStudyTimeResponse> {
+        val mappedPeriod =
+            when (period.uppercase()) {
+                "WEEK", "WEEKLY" -> Period.WEEKLY
+                "MONTH", "MONTHLY" -> Period.MONTHLY
+                else -> throw IllegalArgumentException("Invalid period: $period")
+            }
+        return ResponseEntity
             .status(HttpStatus.OK)
             .body(
-                userService.getMenteeAchievementRateAndTotalStudyTime(userId, menteeId, date, period),
+                userService.getMenteeAchievementRateAndTotalStudyTime(userId, menteeId, date, mappedPeriod),
             )
+    }
 }

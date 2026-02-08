@@ -169,12 +169,12 @@ class UserService(
         val taskList = dailyPlannerList.flatMap { it.tasks }
         val studyTimeMinutes = taskList.mapNotNull { it.studyDurationInMinutes }.sum()
         val completeTaskSize = taskList.filter { it.isCompleted }.size
-        val achievementRateAndTotalStudyTimeRespons =
+        val achievementRateAndTotalStudyTimeResponse =
             AchievementRateAndTotalStudyTimeResponse(
                 AchievementRateResponse(completeTaskSize, taskList.size),
                 weeklyStudyTimeMinutes = studyTimeMinutes,
             )
-        return achievementRateAndTotalStudyTimeRespons
+        return achievementRateAndTotalStudyTimeResponse
     }
 
     fun getMenteeAchievementRate(
