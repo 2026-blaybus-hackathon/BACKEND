@@ -15,6 +15,13 @@ fun getWeekRange(date: LocalDate): Pair<LocalDate, LocalDate> {
     return Pair(startOfWeek, endOfWeek)
 }
 
+fun getMonthRange(date: LocalDate): Pair<LocalDate, LocalDate> {
+    val startOfMonth = date.with(TemporalAdjusters.firstDayOfMonth())
+    val endOfMonth = date.with(TemporalAdjusters.lastDayOfMonth())
+    logger.info("월의 첫날 : $startOfMonth, 월의 마지막날 : $endOfMonth")
+    return Pair(startOfMonth, endOfMonth)
+}
+
 fun getDDay(
     targetDate: LocalDate,
     currentDate: LocalDate = LocalDate.now(),

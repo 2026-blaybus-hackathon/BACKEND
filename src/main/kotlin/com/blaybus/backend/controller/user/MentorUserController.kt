@@ -1,6 +1,9 @@
 package com.blaybus.backend.controller.user
 
+import com.blaybus.backend.dto.AchievementRateAndTotalStudyTimeResponse
+import com.blaybus.backend.dto.AchievementRateResponse
 import com.blaybus.backend.dto.MenteeProfileResponse
+import com.blaybus.backend.entity.Period
 import com.blaybus.backend.service.user.UserService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -13,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDate
 
 @Tag(name = "mentor-user-controller", description = "멘토 관련 조회")
 @RequestMapping("/api/v1/users/mentor")
@@ -56,7 +60,7 @@ class MentorUserController(
             )
 
     @Operation(
-        summary = "멘티 과제 달성률 조회",
+        summary = "멘티 주간 과제 달성률 조회",
         description = "멘토가 특정 멘티의 과제 달성률을 조회합니다.",
     )
     @GetMapping("/mentees/{menteeId}/achievement-rate")
@@ -69,10 +73,34 @@ class MentorUserController(
             required = true,
         )
         @PathVariable menteeId: Long,
-    ): ResponseEntity<Double> =
+        @RequestParam date: LocalDate,
+    ): ResponseEntity<AchievementRateResponse> =
         ResponseEntity
             .status(HttpStatus.OK)
             .body(
-                userService.getMenteeAchievementRate(userId, menteeId),
+                userService.getMenteeAchievementRate(userId, menteeId, date),
+            )
+
+    @Operation(
+        summary = "주/월간 멘티 과제 달성률과 총 공부시간 조회",
+        description = "멘토가 특정 멘티의 과제 달성률과 총 공부시간을 조회합니다.",
+    )
+    @GetMapping("/mentees/{menteeId}/stats")
+    fun getMenteeStats(
+        @AuthenticationPrincipal userId: Long,
+        @Parameter(
+            name = "menteeId",
+            description = "통계를 조회할 멘티 ID",
+            example = "1",
+            required = true,
+        )
+        @PathVariable menteeId: Long,
+        @RequestParam date: LocalDate,
+        @RequestParam period: Period,
+    ): ResponseEntity<AchievementRateAndTotalStudyTimeResponse> =
+        ResponseEntity
+            .status(HttpStatus.OK)
+            .body(
+                userService.getMenteeAchievementRateAndTotalStudyTime(userId, menteeId, date, period),
             )
 }

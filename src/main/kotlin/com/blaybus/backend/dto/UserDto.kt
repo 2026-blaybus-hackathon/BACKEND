@@ -4,6 +4,7 @@ import com.blaybus.backend.entity.Role
 import com.blaybus.backend.entity.User
 import com.blaybus.backend.util.getDDay
 import io.swagger.v3.oas.annotations.media.Schema
+import kotlin.math.floor
 
 data class SimpleUserDto(
     val id: Long,
@@ -73,3 +74,19 @@ data class UserProfileResponse(
         targetDate = user.targetDate?.let { getDDay(it) },
     )
 }
+
+data class AchievementRateResponse(
+    @Schema(description = "달성률 (%)")
+    val achievementRate: Int,
+) {
+    constructor(completedTasks: Int, totalTasks: Int) : this(
+        achievementRate = if (totalTasks == 0) 0 else floor((completedTasks.toDouble() / totalTasks) * 100).toInt(), // 소수점 버림
+    )
+}
+
+data class AchievementRateAndTotalStudyTimeResponse(
+    @Schema(description = "달성률 (%)")
+    val achievementRate: AchievementRateResponse,
+    @Schema(description = "총 공부 시간 (분)")
+    val weeklyStudyTimeMinutes: Int,
+)
