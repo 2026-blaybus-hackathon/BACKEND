@@ -7,6 +7,17 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import java.time.LocalDate
 
+data class TaskSummaryResponse(
+    @Schema(description = "과제 ID")
+    val taskId: Long,
+    @Schema(description = "과제 과목")
+    val subject: String,
+    @Schema(description = "과제 제목")
+    val title: String,
+    @Schema(description = "생성 날짜", example = "2026-02-06")
+    val date: LocalDate,
+)
+
 data class TaskWithFeedbackResponse(
     @Schema(description = "멘티 ID")
     val menteeId: Long,
