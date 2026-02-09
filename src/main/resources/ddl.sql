@@ -221,3 +221,9 @@ CREATE TABLE learning_materials
 
 ALTER TABLE learning_materials
     ADD CONSTRAINT FK_LEARNING_MATERIALS_ON_MENTOR FOREIGN KEY (mentor_id) REFERENCES users (id);
+
+ALTER TABLE DAILY_PLANNERS
+    ADD (
+        is_total_feedback_read NUMBER(1) DEFAULT 0 NOT NULL,
+        total_feedback_created_date_time date
+        )

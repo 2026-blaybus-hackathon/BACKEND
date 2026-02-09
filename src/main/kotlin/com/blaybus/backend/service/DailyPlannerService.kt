@@ -50,4 +50,10 @@ class DailyPlannerService(
         startDate: LocalDate,
         endDate: LocalDate,
     ): List<DailyPlanner> = dailyPlannerRepository.findAllByUserIdAndDateBetweenOrderByDateAsc(userId, startDate, endDate)
+
+    fun countUnreadTotalFeedbacks(userId: Long): Long =
+        dailyPlannerRepository.countByUserIdAndTotalFeedbackNotNullAndIsTotalFeedbackReadFalse(userId)
+
+    fun getUnreadTotalFeedbacks(userId: Long): List<DailyPlanner> =
+        dailyPlannerRepository.findByUserIdAndTotalFeedbackNotNullAndIsTotalFeedbackReadFalse(userId)
 }

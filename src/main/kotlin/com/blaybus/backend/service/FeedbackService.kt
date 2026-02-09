@@ -120,7 +120,7 @@ class FeedbackService(
             ).map(Feedback::toGetFeedbackOfTaskResponse)
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     fun findTotalFeedbackOfDailyPlanner(
         userId: Long,
         menteeId: Long?,
@@ -131,6 +131,10 @@ class FeedbackService(
 
         val dailyPlanner = dailyPlannerService.getDailyPlannerByDate(targetUser, date)
 
+        if (user.id == targetUser.id && dailyPlanner.totalFeedback != null) {
+            dailyPlanner.readTotalFeedback()
+        }
+
         return FeedbackDto.GetTotalFeedbackResponse(
             dailyPlanner.totalFeedback,
         )
@@ -139,19 +143,34 @@ class FeedbackService(
     @Transactional(readOnly = true)
     fun unreadFeedbackCount(userId: Long): FeedbackDto.GetUnreadFeedbackCountResponse {
         userRepository.getByUserId(userId)
+        val taskFeedbackCount = feedbackRepository.countByTaskDailyPlannerUserIdAndIsReadFalse(userId)
+        val totalFeedbackCount = dailyPlannerService.countUnreadTotalFeedbacks(userId)
+
         return FeedbackDto.GetUnreadFeedbackCountResponse(
-            feedbackRepository.countByTaskDailyPlannerUserIdAndIsReadFalse(
-                userId,
-            ),
+            taskFeedbackCount + totalFeedbackCount,
         )
     }
 
     @Transactional(readOnly = true)
     fun getUnreadFeedbacks(userId: Long): List<FeedbackDto.GetUnreadFeedbackResponse> {
         userRepository.getByUserId(userId)
-        return feedbackRepository
-            .findByTaskDailyPlannerUserIdAndIsReadFalse(userId)
-            .map { FeedbackDto.GetUnreadFeedbackResponse(it) }
+        val taskUnreadList =
+            feedbackRepository
+                .findByTaskDailyPlannerUserIdAndIsReadFalse(userId)
+                .map {
+                    it.readFeedback()
+                    FeedbackDto.GetUnreadFeedbackResponse(it)
+                }
+
+        val totalUnreadList =
+            dailyPlannerService
+                .getUnreadTotalFeedbacks(userId)
+                .map {
+                    it.readTotalFeedback()
+                    FeedbackDto.GetUnreadFeedbackResponse(it)
+                }
+
+        return (taskUnreadList + totalUnreadList).sortedByDescending { it.createdDateTime }
     }
 
     @Transactional
