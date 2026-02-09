@@ -2,6 +2,7 @@ package com.blaybus.backend.repository
 
 import com.blaybus.backend.entity.Feedback
 import com.blaybus.backend.entity.Role
+import com.blaybus.backend.entity.Subject
 import com.blaybus.backend.entity.Task
 import com.blaybus.backend.entity.User
 import com.blaybus.backend.exception.CustomException
@@ -220,4 +221,7 @@ interface TaskRepository : JpaRepository<Task, Long> {
     """,
     )
     fun getCompletionRateStatsByMentorId(mentorId: Long): List<Array<Any>>
+
+    @Query("SELECT t FROM Task t WHERE t.dailyPlanner.id = :plannerId AND t.subject = :subject AND (:lastId IS NULL OR t.id < :lastId) ORDER BY t.id DESC")
+    fun sliceByDailyPlannerIdAndSubject(plannerId: Long, subject: Subject, lastId: Long?, pageable: Pageable): Slice<Task>
 }

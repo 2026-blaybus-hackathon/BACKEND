@@ -291,28 +291,32 @@ class TaskService(
     fun getTasksByDateList(
         userId: Long,
         date: LocalDate,
+        subject: Subject?,
         lastId: Long?,
         size: Int,
     ): SliceResponse<TaskAndAssignmentResponse> {
         val user = userRepository.getByUserId(userId)
-        val dailyPlanner =
-            dailyPlannerService.getDailyPlannerOrNullByUserAndDate(user, date)
-                ?: return SliceResponse(
-                    emptyList(),
-                    false,
-                )
+        val dailyPlanner = dailyPlannerService.getDailyPlannerOrNullByUserAndDate(user, date)
+            ?: return SliceResponse(emptyList(), false)
+
         val pageable = Pageable.ofSize(size)
-        val tasks = taskRepository.sliceByDailyPlannerId(dailyPlanner.id, lastId, pageable)
+
+        // [변경 로직] subject가 있으면 과목별 조회, 없으면 전체 조회
+        val tasks = if (subject != null) {
+            taskRepository.sliceByDailyPlannerIdAndSubject(dailyPlanner.id, subject, lastId, pageable)
+        } else {
+            taskRepository.sliceByDailyPlannerId(dailyPlanner.id, lastId, pageable)
+        }
+
         return SliceResponse(
             tasks.content.map { task ->
-                val assignmentList =
-                    assignmentRepository.findAllByTask(task).map {
-                        AssignmentResponse(
-                            it.id,
-                            it.originalFileName,
-                            objectStorageRepository.getDownloadUrl(it.fileKey),
-                        )
-                    }
+                val assignmentList = assignmentRepository.findAllByTask(task).map {
+                    AssignmentResponse(
+                        it.id,
+                        it.originalFileName,
+                        objectStorageRepository.getDownloadUrl(it.fileKey),
+                    )
+                }
                 TaskAndAssignmentResponse(task, assignmentList, task.writer.id == user.id)
             },
             tasks.hasNext(),
