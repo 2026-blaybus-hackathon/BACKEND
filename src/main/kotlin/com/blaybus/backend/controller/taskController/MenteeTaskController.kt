@@ -1,6 +1,5 @@
 package com.blaybus.backend.controller.taskController
 
-import com.blaybus.backend.annotation.ApiErrorCodes
 import com.blaybus.backend.dto.CommentOnTaskRequest
 import com.blaybus.backend.dto.FileUploadResponse
 import com.blaybus.backend.dto.MenteeStudyTimeUpdateRequest
@@ -9,9 +8,7 @@ import com.blaybus.backend.dto.MenteeTaskCreateRequest
 import com.blaybus.backend.dto.MenteeTaskUpdateRequest
 import com.blaybus.backend.dto.SliceResponse
 import com.blaybus.backend.dto.TaskAndAssignmentResponse
-import com.blaybus.backend.dto.TaskDetailResponse
 import com.blaybus.backend.dto.TaskResponse
-import com.blaybus.backend.exception.ErrorCode
 import com.blaybus.backend.service.TaskService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
