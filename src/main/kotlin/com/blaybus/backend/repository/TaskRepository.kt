@@ -96,14 +96,7 @@ interface TaskRepository : JpaRepository<Task, Long> {
     ): Slice<Task>
 
     @Query(
-        """
-    SELECT COUNT(t) > 0 
-    FROM Task t 
-    WHERE t.dailyPlanner.user.id = :menteeId 
-      AND t.writer.id = :mentorId 
-      AND t.isCompleted = true 
-      AND t.feedback IS NULL
-""",
+        """SELECT COUNT(t) > 0 FROM Task t WHERE t.dailyPlanner.user.id = :menteeId AND t.writer.id = :mentorId AND t.isCompleted = true AND t.feedback IS NULL""",
     )
     fun existsCompletedMentorTaskWithoutFeedback(
         menteeId: Long,
