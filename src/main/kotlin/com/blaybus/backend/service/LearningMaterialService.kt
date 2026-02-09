@@ -19,14 +19,13 @@ import org.springframework.web.multipart.MultipartFile
 class LearningMaterialService(
     private val learningMaterialRepository: LearningMaterialRepository,
     private val objectStorageRepository: ObjectStorageRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
 ) {
-
     @Transactional
     fun createMaterial(
         mentorId: Long,
         request: LearningMaterialRequest,
-        file: MultipartFile?
+        file: MultipartFile?,
     ) {
         val mentor = userRepository.getByUserId(mentorId)
 
@@ -46,12 +45,15 @@ class LearningMaterialService(
                 subject = request.subject,
                 content = request.content,
                 fileKey = fileKey,
-                originalFileName = originalFileName
-            )
+                originalFileName = originalFileName,
+            ),
         )
     }
 
-    fun getMaterials(mentorId: Long, taskType: TaskType?): List<LearningMaterialResponse> {
+    fun getMaterials(
+        mentorId: Long,
+        taskType: TaskType?,
+    ): List<LearningMaterialResponse> {
         val materials = learningMaterialRepository.findAllByMentorIdAndOptionalType(mentorId, taskType)
 
         return materials.map { material ->
@@ -62,9 +64,14 @@ class LearningMaterialService(
     }
 
     @Transactional
-    fun deleteMaterial(userId: Long, materialId: Long) {
-        val material = learningMaterialRepository.findById(materialId)
-            .orElseThrow { CustomException(ErrorCode.RESOURCE_NOT_FOUND) }
+    fun deleteMaterial(
+        userId: Long,
+        materialId: Long,
+    ) {
+        val material =
+            learningMaterialRepository
+                .findById(materialId)
+                .orElseThrow { CustomException(ErrorCode.RESOURCE_NOT_FOUND) }
 
         if (material.mentor.id != userId) {
             throw CustomException(ErrorCode.NOT_YOUR_MATERIAL)

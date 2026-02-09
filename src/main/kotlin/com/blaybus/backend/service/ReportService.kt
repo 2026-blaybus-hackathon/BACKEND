@@ -6,7 +6,6 @@ import com.blaybus.backend.dto.ReportSubjectResponse
 import com.blaybus.backend.entity.Period
 import com.blaybus.backend.entity.Report
 import com.blaybus.backend.entity.ReportSubject
-import com.blaybus.backend.entity.Role
 import com.blaybus.backend.entity.Task
 import com.blaybus.backend.exception.CustomException
 import com.blaybus.backend.exception.ErrorCode

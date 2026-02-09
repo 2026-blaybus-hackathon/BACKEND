@@ -213,7 +213,7 @@ data class MenteeSummaryDto(
     @Schema(description = "프로필 이미지 URL")
     val profileImageUrl: String?,
     @Schema(description = "디데이")
-    val dday: Int?
+    val dday: Int?,
 )
 
 data class RecentTaskSummaryDto(

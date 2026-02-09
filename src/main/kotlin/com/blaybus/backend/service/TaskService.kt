@@ -635,7 +635,7 @@ class TaskService(
         return MentorMyPageStatsDto(
             totalMenteeCount = menteeCount,
             averageStudyTime = averageStudyTime,
-            averageCompletionRate = completionRate
+            averageCompletionRate = completionRate,
         )
     }
 }
