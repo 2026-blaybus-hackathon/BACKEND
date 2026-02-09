@@ -3,6 +3,7 @@ package com.blaybus.backend.controller
 import com.blaybus.backend.dto.MenteeTaskFeedbackResponse
 import com.blaybus.backend.dto.MentorMyPageStatsDto
 import com.blaybus.backend.service.TaskService
+import com.blaybus.backend.dto.TaskWithFeedbackResponse
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -27,6 +28,7 @@ class MentorController(
         @PathVariable menteeId: Long,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int,
+    ): ResponseEntity<List<TaskWithFeedbackResponse>> = ResponseEntity.ok().build()
     ): ResponseEntity<MenteeTaskFeedbackResponse> = ResponseEntity.ok().build()
 
     @Operation(summary = "멘토 마이페이지 통계 조회", description = "나의 멘티 현황(멘티 수, 평균 학습 시간, 평균 완료율)을 조회합니다.")

@@ -7,18 +7,43 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import java.time.LocalDate
 
-data class MenteeTaskFeedbackResponse(
+data class TaskSummaryResponse(
+    @Schema(description = "과제 ID")
+    val taskId: Long,
+    @Schema(description = "과제 과목")
+    val subject: String,
+    @Schema(description = "과제 제목")
+    val title: String,
+    @Schema(description = "생성 날짜", example = "2026-02-06")
+    val date: LocalDate,
+)
+
+data class TaskWithFeedbackResponse(
     @Schema(description = "멘티 ID")
     val menteeId: Long,
     @Schema(description = "과제 및 피드백 목록")
     val tasks: PagedResponse<TaskDetail>,
+    @Schema(description = "종합 피드백")
+    val totalFeedback: String? = null,
 )
 
 data class TaskDetail(
     @Schema(description = "과제 ID")
     val taskId: Long,
+    @Schema(description = "과제 과목")
+    val subject: String,
     @Schema(description = "과제 제목")
     val title: String,
+    @Schema(description = "투입 시간")
+    val time: Int? = null,
+    @Schema(description = "생성 날짜", example = "2026-02-06")
+    val date: LocalDate,
+    @Schema(description = "완료 여부")
+    val status: Boolean,
+    @Schema(description = "멘티 코멘트")
+    val menteeComment: String? = null,
+    @Schema(description = "피드백 여부")
+    val feedbackStatus: String,
     @Schema(description = "과제 이미지 리스트")
     val images: List<TaskImageResponse>,
     val feedback: FeedbackDetail,
@@ -36,16 +61,16 @@ data class TaskImageResponse(
 data class FeedbackDetail(
     @Schema(description = "피드백 ID")
     val feedbackId: Long,
-    @Schema(description = "피드백 요약")
-    val summary: String,
     @Schema(description = "피드백 코멘트")
-    val comment: String,
+    val content: String?,
 )
 
 data class MentorTaskAssignRequest(
     @field:Schema(description = "대상 멘티 ID", example = "101")
     @field:NotNull(message = "멘티 ID는 필수입니다")
     var menteeId: Long,
+    @field:Schema(description = "자료실 ID (선택 사항)", example = "5")
+    val materialId: Long? = null,
     @field:Schema(description = "과제 유형", allowableValues = ["COLUMN", "WEAKNESS_SOLUTION"])
     val taskType: TaskType,
     @field:Schema(description = "과제 제목", example = "수학 기출문제 풀이")

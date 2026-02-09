@@ -1,9 +1,11 @@
 package com.blaybus.backend.controller.taskController
 
-import com.blaybus.backend.dto.MenteeTaskFeedbackResponse
 import com.blaybus.backend.dto.MentorTaskAssignRequest
 import com.blaybus.backend.dto.MentorTaskUpdateRequest
 import com.blaybus.backend.dto.TaskResponse
+import com.blaybus.backend.dto.PagedResponse
+import com.blaybus.backend.dto.TaskSummaryResponse
+import com.blaybus.backend.dto.TaskWithFeedbackResponse
 import com.blaybus.backend.service.TaskService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -31,38 +33,17 @@ class MentorTaskController(
     private val taskService: TaskService,
 ) {
     @Operation(
-        summary = "특정 멘티의 과제 및 피드백 목록 조회",
-        description = "멘토가 특정 멘티의 과제 수행 내역과 피드백을 조회합니다.",
-    )
-    @GetMapping("/mentee/{menteeId}")
-    fun getMenteeTasksWithFeedback(
-        @AuthenticationPrincipal userId: Long,
-        @PathVariable menteeId: Long,
-        @RequestParam(defaultValue = "0") page: Int,
-        @RequestParam(defaultValue = "20") size: Int,
-    ): ResponseEntity<MenteeTaskFeedbackResponse> {
-        val pageable = PageRequest.of(page, size)
-        val response = taskService.getMenteeTasksWithFeedback(userId, menteeId, pageable)
-        return ResponseEntity.ok(response)
-    }
-
-    @Operation(
         summary = "멘티에게 과제 할당 (PDF 포함)",
         description = "멘토가 특정 멘티의 플래너에 과제(Task)를 생성합니다.",
     )
     @PostMapping(value = ["/assignment"], consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun assignTask(
         @AuthenticationPrincipal userId: Long,
-        @Parameter(
-            description = "과제 정보 (JSON)",
-            content = [Content(mediaType = MediaType.APPLICATION_JSON_VALUE)],
-        )
-        @Valid
-        @RequestPart("request") request: MentorTaskAssignRequest,
-        @Parameter(description = "학습 자료 PDF (선택 사항)") @RequestPart(
-            "file",
-            required = false,
-        ) files: List<MultipartFile>?,
+        @Parameter(description = "과제 할당 요청 정보 (JSON)")
+        @Valid @RequestPart("request") request: MentorTaskAssignRequest,
+
+        @Parameter(description = "직접 파일 업로드 (materialId가 없을 때 사용)")
+        @RequestPart("file", required = false) files: List<MultipartFile>?,
     ): ResponseEntity<TaskResponse> {
         val response = taskService.assignTask(userId, request, files)
         return ResponseEntity.ok(response)
@@ -86,6 +67,22 @@ class MentorTaskController(
         @RequestPart("file", required = false) files: List<MultipartFile>?,
     ): ResponseEntity<TaskResponse> {
         val response = taskService.updateAssignedTask(userId, taskId, request, files)
+        return ResponseEntity.ok(response)
+    }
+
+    @Operation(
+        summary = "최근 피드백을 작성한 task 조회",
+        description = "task 목록 최근 피드백을 작성한 순서대로 응답한다.",
+    )
+    @GetMapping("/feedbacks/{menteeId}")
+    fun getTasksOrderByFeedbackRecently(
+        @AuthenticationPrincipal userId: Long,
+        @PathVariable menteeId: Long,
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "20") size: Int,
+    ): ResponseEntity<PagedResponse<TaskSummaryResponse>> {
+        val pageable = PageRequest.of(page, size)
+        val response = taskService.getTaskSummaries(userId, menteeId, pageable)
         return ResponseEntity.ok(response)
     }
 }

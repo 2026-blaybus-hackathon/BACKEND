@@ -5,6 +5,7 @@ import com.blaybus.backend.dto.ReportMenteeResponse
 import com.blaybus.backend.entity.Period
 import com.blaybus.backend.entity.Report
 import com.blaybus.backend.entity.ReportSubject
+import com.blaybus.backend.entity.Role
 import com.blaybus.backend.entity.Task
 import com.blaybus.backend.exception.CustomException
 import com.blaybus.backend.exception.ErrorCode
@@ -99,10 +100,21 @@ class ReportService(
 
     fun getMenteeReport(
         userId: Long,
+        menteeId: Long,
         period: Period,
         reportDate: LocalDate,
     ): ReportMenteeResponse? {
-        userRepository.getByUserId(userId)
+        val user = userRepository.getByUserId(userId)
+        val mentee = userRepository.getByUserId(menteeId)
+        when (user.role) {
+            Role.MENTOR -> {
+                user.validateMentee(mentee)
+            }
+            Role.MENTEE -> {
+                user.validateSameUser(mentee)
+            }
+        }
+
         val (startDate, endDate) =
             when (period) {
                 Period.WEEKLY -> getWeekRange(reportDate)
