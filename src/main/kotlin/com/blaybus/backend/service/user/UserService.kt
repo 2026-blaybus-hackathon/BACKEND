@@ -13,6 +13,8 @@ import com.blaybus.backend.dto.mapper.toMenteeProfileResponse
 import com.blaybus.backend.dto.mapper.toUserProfileResponse
 import com.blaybus.backend.entity.Period
 import com.blaybus.backend.entity.Role
+import com.blaybus.backend.exception.CustomException
+import com.blaybus.backend.exception.ErrorCode
 import com.blaybus.backend.repository.ObjectStorageRepository
 import com.blaybus.backend.repository.ObjectStorageRepository.Companion.PROFILE_IMAGE_PATH
 import com.blaybus.backend.repository.TaskRepository
@@ -88,7 +90,12 @@ class UserService(
         user.name = request.name
         user.schoolName = request.schoolName
         user.grade = request.grade
-        user.targetSchool = request.targetSchool
+        user.targetSchool =
+            if (user.role == Role.MENTEE && request.targetSchool.isNullOrBlank()) {
+                throw CustomException(ErrorCode.REQUIRED_TARGET_SCHOOL)
+            } else {
+                request.targetSchool
+            }
         user.targetDate = request.targetDate
     }
 
