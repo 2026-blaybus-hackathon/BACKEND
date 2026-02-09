@@ -229,8 +229,6 @@ data class RecentTaskSummaryDto(
     val targetSchool: String,
     @Schema(description = "제출날짜", example = "2026-02-06T21:30:45")
     val completedTime: LocalDateTime?,
-    @Schema(description = "제출 일시 (완료 시간)", example = "2026-02-06 21:30:45")
-    val completedAt: LocalDateTime?,
     @Schema(description = "피드백 완료 여부")
     val isFeedbackCompleted: Boolean,
 )

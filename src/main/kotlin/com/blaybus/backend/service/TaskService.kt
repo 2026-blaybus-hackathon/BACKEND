@@ -443,7 +443,6 @@ class TaskService(
                         taskId = task.id,
                         title = task.title,
                         menteeName = u.name,
-                        completedAt = task.completedTime,
                         schoolAndGrade = "${u.schoolName ?: ""} ${u.grade?.description ?: ""}",
                         isFeedbackCompleted = task.feedback != null,
                         targetSchool = u.targetSchool ?: "",
