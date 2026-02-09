@@ -14,6 +14,7 @@ import com.blaybus.backend.repository.UserRepository
 import com.blaybus.backend.repository.getByTaskId
 import com.blaybus.backend.repository.getByUserId
 import com.blaybus.backend.repository.getFeedbackWithTaskAndMentorById
+import com.blaybus.backend.service.auth.AuthService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate

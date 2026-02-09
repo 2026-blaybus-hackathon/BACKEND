@@ -13,6 +13,7 @@ import com.blaybus.backend.repository.ReportRepository
 import com.blaybus.backend.repository.TaskRepository
 import com.blaybus.backend.repository.UserRepository
 import com.blaybus.backend.repository.getByUserId
+import com.blaybus.backend.service.auth.AuthService
 import com.blaybus.backend.util.getMonthRange
 import com.blaybus.backend.util.getWeekRange
 import org.springframework.stereotype.Service

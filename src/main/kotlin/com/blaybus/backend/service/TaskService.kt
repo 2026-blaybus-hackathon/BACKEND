@@ -41,6 +41,7 @@ import com.blaybus.backend.repository.UserRepository
 import com.blaybus.backend.repository.getByTaskId
 import com.blaybus.backend.repository.getByUserId
 import com.blaybus.backend.repository.getTaskAndDailyPlannerById
+import com.blaybus.backend.service.auth.AuthService
 import com.blaybus.backend.util.getDDay
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
