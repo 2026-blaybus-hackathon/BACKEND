@@ -160,24 +160,4 @@ class MenteeTaskController(
         val tasks = taskService.getTasksByDateList(userId, date, lastTaskId, normalizedSize)
         return ResponseEntity.ok(tasks)
     }
-
-    @ApiErrorCodes(ErrorCode.NOT_YOUR_TASK)
-    @Operation(
-        summary = "할 일 ID로 상세 조회",
-        description = "멘티는 할 일 ID로 해당 할 일의 상세 정보를 조회할 수 있습니다.",
-    )
-    @GetMapping("/{taskId}")
-    fun getTaskById(
-        @AuthenticationPrincipal userId: Long,
-        @Parameter(
-            name = "taskId",
-            description = "조회할 할 일 ID",
-            example = "1",
-            required = true,
-        )
-        @PathVariable taskId: Long,
-    ): ResponseEntity<TaskDetailResponse> {
-        val task = taskService.getTaskByTaskId(userId, taskId)
-        return ResponseEntity.ok(task)
-    }
 }

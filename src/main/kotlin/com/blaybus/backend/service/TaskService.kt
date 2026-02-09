@@ -9,7 +9,7 @@ import com.blaybus.backend.dto.MenteeStudyTimeUpdateRequest
 import com.blaybus.backend.dto.MenteeSummaryDto
 import com.blaybus.backend.dto.MenteeTaskCompletionUpdateRequest
 import com.blaybus.backend.dto.MenteeTaskCreateRequest
-import com.blaybus.backend.dto.MenteeTaskFeedbackResponse
+import com.blaybus.backend.dto.TasksWithFeedbackResponse
 import com.blaybus.backend.dto.MenteeTaskUpdateRequest
 import com.blaybus.backend.dto.MentorDashboardResponse
 import com.blaybus.backend.dto.MentorTaskAssignRequest
@@ -23,6 +23,7 @@ import com.blaybus.backend.dto.TaskDetailResponse
 import com.blaybus.backend.dto.TaskImageResponse
 import com.blaybus.backend.dto.TaskResponse
 import com.blaybus.backend.entity.Assignment
+import com.blaybus.backend.entity.Role
 import com.blaybus.backend.entity.StudyImage
 import com.blaybus.backend.entity.Subject
 import com.blaybus.backend.entity.Task
@@ -291,14 +292,17 @@ class TaskService(
         return TaskDetailResponse(task)
     }
 
-    fun getMenteeTasksWithFeedback(
-        mentorId: Long,
+    fun getTasksWithFeedback(
+        userId: Long,
         menteeId: Long,
         pageable: Pageable,
-    ): MenteeTaskFeedbackResponse {
-        val mentor = userRepository.getByUserId(mentorId)
+    ): TasksWithFeedbackResponse {
+        val user = userRepository.getByUserId(userId)
         val mentee = userRepository.getByUserId(menteeId)
-        mentor.validateMentee(mentee)
+
+        if (user.role == Role.MENTOR) {
+            user.validateMentee(mentee)
+        }
 
         val tasksPage = taskRepository.findByDailyPlannerUser(mentee, pageable)
 
@@ -306,7 +310,13 @@ class TaskService(
             tasksPage.content.map { task ->
                 TaskDetail(
                     taskId = task.id,
+                    subject = task.subject.name,
                     title = task.title,
+                    time = task.studyDurationInMinutes,
+                    date = task.createdDateTime.toLocalDate(),
+                    status = task.isCompleted,
+                    menteeComment = task.comment,
+                    feedbackStatus = task.feedbackStatus().name,
                     images =
                         task.studyImages.map { img ->
                             TaskImageResponse(
@@ -326,7 +336,7 @@ class TaskService(
                 )
             }
 
-        return MenteeTaskFeedbackResponse(
+        return TasksWithFeedbackResponse(
             menteeId = mentee.id,
             tasks =
                 PagedResponse(

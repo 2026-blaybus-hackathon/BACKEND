@@ -1,6 +1,6 @@
 package com.blaybus.backend.controller
 
-import com.blaybus.backend.dto.MenteeTaskFeedbackResponse
+import com.blaybus.backend.dto.TasksWithFeedbackResponse
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -23,5 +23,5 @@ class MentorController {
         @PathVariable menteeId: Long,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int,
-    ): ResponseEntity<MenteeTaskFeedbackResponse> = ResponseEntity.ok().build()
+    ): ResponseEntity<TasksWithFeedbackResponse> = ResponseEntity.ok().build()
 }
