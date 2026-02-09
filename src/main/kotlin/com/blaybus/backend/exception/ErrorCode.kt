@@ -57,8 +57,10 @@ enum class ErrorCode(
     // StudyImage API error 19000대
     STUDY_IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, -19000, "학습 이미지를 찾을 수 없습니다."),
 
-    // LearningMaterial API error 20000대
-    RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND,-20000, "학습자료를 찾을 수 없습니다."),
-    NOT_YOUR_MATERIAL(HttpStatus.FORBIDDEN,-20001,"해당 학습자료에 접근 권한이 없습니다.")
-}
+    // Report API error 20000대
+    CONFLICT_REPORT(HttpStatus.CONFLICT, -20000, "이미 생성된 리포트가 존재합니다."),
 
+    // LearningMaterial API error 21000대
+    RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND,-21000, "학습자료를 찾을 수 없습니다."),
+    NOT_YOUR_MATERIAL(HttpStatus.FORBIDDEN,-21001,"해당 학습자료에 접근 권한이 없습니다.")
+}

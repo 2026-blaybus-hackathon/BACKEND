@@ -115,3 +115,12 @@ data class AchievementRateAndTotalStudyTimeResponse(
     @Schema(description = "총 공부 시간 (분)")
     val weeklyStudyTimeMinutes: Int,
 )
+
+data class UserMentorTaskStatisticsResponse(
+    @Schema(description = "연속 멘토 과제 수행 일수")
+    val consecutiveMentorTaskDays: Int,
+    @Schema(description = "총 누적 공부 시간 (분)")
+    val totalStudyTimeMinutes: Int,
+    @Schema(description = "총 누적 완료한 멘토 과제 수")
+    val totalCompletedMentorTasks: Int,
+)
