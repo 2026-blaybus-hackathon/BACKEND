@@ -70,6 +70,7 @@ class SecurityConfig(
                 it.requestMatchers("/api/v1/feedback/mentor/**").hasAuthority(Role.MENTOR.name)
                 it.requestMatchers("/api/v1/feedback/mentee/**").hasAuthority(Role.MENTEE.name)
                 it.requestMatchers("/api/v1/dashboard/mentor/**").hasAuthority(Role.MENTOR.name)
+                it.requestMatchers("/api/v1/materials/**").hasAuthority(Role.MENTOR.name)
             }.addFilterBefore(
                 jwtFilter,
                 UsernamePasswordAuthenticationFilter::class.java,

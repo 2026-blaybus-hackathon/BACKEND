@@ -58,6 +58,8 @@ data class MentorTaskAssignRequest(
     @field:Schema(description = "대상 멘티 ID", example = "101")
     @field:NotNull(message = "멘티 ID는 필수입니다")
     var menteeId: Long,
+    @field:Schema(description = "자료실 ID (선택 사항)", example = "5")
+    val materialId: Long? = null,
     @field:Schema(description = "과제 유형", allowableValues = ["COLUMN", "WEAKNESS_SOLUTION"])
     val taskType: TaskType,
     @field:Schema(description = "과제 제목", example = "수학 기출문제 풀이")

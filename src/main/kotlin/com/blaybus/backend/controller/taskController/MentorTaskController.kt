@@ -33,16 +33,11 @@ class MentorTaskController(
     @PostMapping(value = ["/assignment"], consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun assignTask(
         @AuthenticationPrincipal userId: Long,
-        @Parameter(
-            description = "과제 정보 (JSON)",
-            content = [Content(mediaType = MediaType.APPLICATION_JSON_VALUE)],
-        )
-        @Valid
-        @RequestPart("request") request: MentorTaskAssignRequest,
-        @Parameter(description = "학습 자료 PDF (선택 사항)") @RequestPart(
-            "file",
-            required = false,
-        ) files: List<MultipartFile>?,
+        @Parameter(description = "과제 할당 요청 정보 (JSON)")
+        @Valid @RequestPart("request") request: MentorTaskAssignRequest,
+
+        @Parameter(description = "직접 파일 업로드 (materialId가 없을 때 사용)")
+        @RequestPart("file", required = false) files: List<MultipartFile>?,
     ): ResponseEntity<TaskResponse> {
         val response = taskService.assignTask(userId, request, files)
         return ResponseEntity.ok(response)
