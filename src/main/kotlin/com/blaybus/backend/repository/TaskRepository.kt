@@ -100,7 +100,7 @@ interface TaskRepository : JpaRepository<Task, Long> {
     @Query(
         """
         SELECT t
-FROM Task t
+        FROM Task t
         JOIN t.dailyPlanner dp
         JOIN dp.user u
         WHERE u.id = :menteeId AND t.writer.id != :menteeId

@@ -20,9 +20,6 @@ import java.time.LocalDate
 @Entity
 @Table(
     name = "report",
-    indexes = [
-        Index(name = "idx_report_mentee_id_start_date_end_date", columnList = "mentee_id, start_date, end_date"),
-    ],
     uniqueConstraints = [
         UniqueConstraint(
             name = "uc_report_mentee_id_start_date_end_date",

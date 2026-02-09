@@ -189,8 +189,6 @@ CREATE TABLE report
 ALTER TABLE report
     ADD CONSTRAINT uc_report_mentee_id_start_date_end_date UNIQUE (mentee_id, start_date, end_date);
 
-CREATE INDEX idx_report_mentee_id_start_date_end_date ON report (mentee_id, start_date, end_date);
-
 ALTER TABLE report
     ADD CONSTRAINT FK_REPORT_ON_MENTEE FOREIGN KEY (mentee_id) REFERENCES users (id);
 
