@@ -67,8 +67,9 @@ class SecurityConfig(
                     .requestMatchers(
                         "/api/v1/tasks/mentee/**",
                         "/api/v1/users/mentee/**",
-                        "/api/v1/reports/mentee",
+                        "/api/v1/reports/mentee/**",
                         "/api/v1/feedback/mentee/**",
+                        "/api/v1/notifications/mentee/**",
                     ).hasAuthority(Role.MENTEE.name)
                 it
                     .requestMatchers(

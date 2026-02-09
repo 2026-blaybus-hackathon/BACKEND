@@ -3,6 +3,7 @@ package com.blaybus.backend.service
 import com.blaybus.backend.dto.CreateMenteeReportRequest
 import com.blaybus.backend.dto.ReportMenteeResponse
 import com.blaybus.backend.dto.ReportSubjectResponse
+import com.blaybus.backend.entity.NotificationType
 import com.blaybus.backend.entity.Period
 import com.blaybus.backend.entity.Report
 import com.blaybus.backend.entity.ReportSubject
@@ -27,6 +28,7 @@ class ReportService(
     private val reportRepository: ReportRepository,
     private val taskReportRepository: TaskRepository,
     private val authService: AuthService,
+    private val notificationService: NotificationService,
 ) {
     @Transactional
     fun createMenteeReport(
@@ -98,6 +100,13 @@ class ReportService(
         report.totalAchievementRate = totalAchievementRate
 
         reportRepository.save(report)
+
+        notificationService.createNotification(
+            recipient = mentee,
+            type = NotificationType.REPORT,
+            reportPeriod = request.period,
+            reportStartDate = report.startDate,
+        )
     }
 
     fun getMenteeReport(
