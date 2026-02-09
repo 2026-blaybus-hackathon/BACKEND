@@ -171,4 +171,19 @@ class FeedbackDto {
             createdDateTime = feedback.createdDateTime,
         )
     }
+
+    data class MentorMenteeListResponse(
+        @Schema(description = "멘티 ID")
+        val id: Long,
+        @Schema(description = "멘티 이름")
+        val name: String,
+        @Schema(description = "프로필 이미지 URL")
+        val profileUrl: String?,
+        @Schema(description = "학교명")
+        val schoolName: String?,
+        @Schema(description = "학년")
+        val grade: String?,
+        @Schema(description = "피드백 상태", allowableValues = ["PENDING", "COMPLETED"])
+        val feedbackStatus: String,
+    )
 }
