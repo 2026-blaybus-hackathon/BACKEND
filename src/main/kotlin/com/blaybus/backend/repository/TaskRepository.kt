@@ -265,4 +265,26 @@ interface TaskRepository : JpaRepository<Task, Long> {
         type: String?,
         pageable: Pageable,
     ): Page<Task>
+
+    @Query(
+        value = """
+        SELECT t FROM Task t
+        JOIN t.dailyPlanner dp
+        WHERE dp.user.id = :menteeId
+          AND t.isCompleted = true
+          AND t.feedback IS NOT NULL
+        ORDER BY t.createdDateTime DESC
+        """,
+        countQuery = """
+        SELECT COUNT(t) FROM Task t
+        JOIN t.dailyPlanner dp
+        WHERE dp.user.id = :menteeId
+          AND t.isCompleted = true
+          AND t.feedback IS NOT NULL
+        """,
+    )
+    fun findMyCompletedTasksWithFeedback(
+        menteeId: Long,
+        pageable: Pageable,
+    ): Page<Task>
 }

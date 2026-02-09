@@ -23,7 +23,7 @@ data class AssignmentsResponse(
     val status: Boolean,
 )
 
-data class AssignmentInfoResponse(
+data class TaskInfoResponse(
     @Schema(description = "과제 ID")
     val taskId: Long,
     @Schema(description = "과제 과목")

@@ -1,6 +1,6 @@
 package com.blaybus.backend.controller.taskController
 
-import com.blaybus.backend.dto.AssignmentInfoResponse
+import com.blaybus.backend.dto.TaskInfoResponse
 import com.blaybus.backend.dto.CommentOnTaskRequest
 import com.blaybus.backend.dto.FileUploadResponse
 import com.blaybus.backend.dto.MenteeStudyTimeUpdateRequest
@@ -14,7 +14,6 @@ import com.blaybus.backend.dto.TaskResponse
 import com.blaybus.backend.service.TaskService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
-import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.data.domain.PageRequest
@@ -164,19 +163,16 @@ class MenteeTaskController(
 
     @Operation(
         summary = "학습 히스토리",
-        description = "멘티는 자신의 학습 히스토리를 조회할 수 있다.",
+        description = "멘티는 자신의 학습 히스토리를 조회할 수 있다. 제출 완료 및 피드백이 완료된 모든 과제를 조회한다.",
     )
     @GetMapping("/history")
     fun getAllTasks(
         @AuthenticationPrincipal userId: Long,
-        @PathVariable menteeId: Long,
-        @Parameter(description = "조회 타입 (REMIND: 제출되었으나 피드백 미완료, HISTORY: 제출 및 피드백 완료)", schema = Schema(allowableValues = ["REMIND", "HISTORY"]))
-        @RequestParam type: String,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int,
-    ): ResponseEntity<PagedResponse<AssignmentInfoResponse>> {
+    ): ResponseEntity<PagedResponse<TaskInfoResponse>> {
         val pageable = PageRequest.of(page, size)
-        val response = taskService.getAllAssignmentsInfoByMenteeId(userId, menteeId, type, pageable)
+        val response = taskService.getMyAllAssignments(userId, pageable)
         return ResponseEntity.ok(response)
     }
 }

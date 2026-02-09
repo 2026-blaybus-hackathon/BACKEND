@@ -3,7 +3,7 @@ package com.blaybus.backend.controller.taskController
 import com.blaybus.backend.dto.MentorTaskAssignRequest
 import com.blaybus.backend.dto.MentorTaskUpdateRequest
 import com.blaybus.backend.dto.PagedResponse
-import com.blaybus.backend.dto.AssignmentInfoResponse
+import com.blaybus.backend.dto.TaskInfoResponse
 import com.blaybus.backend.dto.AssignmentSummaryResponse
 import com.blaybus.backend.dto.TaskResponse
 import com.blaybus.backend.service.TaskService
@@ -98,7 +98,7 @@ class MentorTaskController(
         @RequestParam type: String,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int,
-    ): ResponseEntity<PagedResponse<AssignmentInfoResponse>> {
+    ): ResponseEntity<PagedResponse<TaskInfoResponse>> {
         val pageable = PageRequest.of(page, size)
         val response = taskService.getAllAssignmentsInfo(userId, type, pageable)
         return ResponseEntity.ok(response)
@@ -116,7 +116,7 @@ class MentorTaskController(
         @RequestParam type: String,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int,
-    ): ResponseEntity<PagedResponse<AssignmentInfoResponse>> {
+    ): ResponseEntity<PagedResponse<TaskInfoResponse>> {
         val pageable = PageRequest.of(page, size)
         val response = taskService.getAllAssignmentsInfoByMenteeId(userId, menteeId, type, pageable)
         return ResponseEntity.ok(response)
