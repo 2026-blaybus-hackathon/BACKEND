@@ -26,10 +26,11 @@ class TaskController(
         summary = "특정 멘티의 과제 및 피드백 목록 조회",
         description = "특정 멘티의 과제 및 피드백 관련 정보를 조회합니다.",
     )
-    @GetMapping("/mentees/{menteeId}")
+    @ApiErrorCodes(ErrorCode.MENTEE_ID_REQUIRED)
+    @GetMapping("/mentees")
     fun getMenteeTasksWithFeedback(
         @AuthenticationPrincipal userId: Long,
-        @PathVariable menteeId: Long,
+        @RequestParam(required = false) menteeId: Long?,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int,
     ): ResponseEntity<List<TaskWithFeedbackResponse>> {

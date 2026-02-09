@@ -17,7 +17,6 @@ import java.time.LocalDate
 class UserController(
     private val userService: UserService,
 ) {
-
     @Operation(
         summary = "주간 달성 정보 조회",
         description = "멘티는 자신의 주간 달성 정보를 조회할 수 있습니다.(유저 주간 히트맵)",
@@ -31,6 +30,5 @@ class UserController(
             required = true,
         )
         @RequestParam date: LocalDate,
-    ): ResponseEntity<List<DailyAchievementRate>> =
-        ResponseEntity.ok(userService.getWeeklyAchievement(userId, date))
+    ): ResponseEntity<List<DailyAchievementRate>> = ResponseEntity.ok(userService.getWeeklyAchievement(userId, date))
 }

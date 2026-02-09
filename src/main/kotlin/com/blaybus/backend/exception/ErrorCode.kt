@@ -28,6 +28,7 @@ enum class ErrorCode(
     REQUIRED_TARGET_SCHOOL(HttpStatus.BAD_REQUEST, -11010, "목표 학교는 필수 입력값입니다."),
     REQUIRED_EMAIL(HttpStatus.BAD_REQUEST, -11011, "이메일은 필수 입력값입니다."),
     REQUIRED_PASSWORD(HttpStatus.BAD_REQUEST, -11012, "비밀번호는 필수 입력값입니다."),
+    MENTEE_ID_REQUIRED(HttpStatus.BAD_REQUEST, -11013, "멘토는 멘티 ID를 입력해야 합니다."),
 
     // Email-verification API error 12000대
     EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, -12000, "이메일 전송에 실패했습니다."),
@@ -61,6 +62,6 @@ enum class ErrorCode(
     CONFLICT_REPORT(HttpStatus.CONFLICT, -20000, "이미 생성된 리포트가 존재합니다."),
 
     // LearningMaterial API error 21000대
-    RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND,-21000, "학습자료를 찾을 수 없습니다."),
-    NOT_YOUR_MATERIAL(HttpStatus.FORBIDDEN,-21001,"해당 학습자료에 접근 권한이 없습니다.")
+    RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, -21000, "학습자료를 찾을 수 없습니다."),
+    NOT_YOUR_MATERIAL(HttpStatus.FORBIDDEN, -21001, "해당 학습자료에 접근 권한이 없습니다."),
 }

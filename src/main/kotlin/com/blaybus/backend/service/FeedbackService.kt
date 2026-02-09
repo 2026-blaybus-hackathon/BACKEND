@@ -26,6 +26,7 @@ class FeedbackService(
     private val taskRepository: TaskRepository,
     private val dailyPlannerService: DailyPlannerService,
     private val objectStorageRepository: ObjectStorageRepository,
+    private val authService: AuthService,
 ) {
     @Transactional
     fun provideFeedbackForMenteesTask(
@@ -103,26 +104,17 @@ class FeedbackService(
     @Transactional(readOnly = true)
     fun findFeedbacks(
         userId: Long,
-        menteeId: Long,
+        menteeId: Long?,
         date: LocalDate,
     ): List<FeedbackDto.GetFeedbackOfTaskResponse> {
         val user = userRepository.getByUserId(userId)
-        val mentee = userRepository.getByUserId(menteeId)
-
-        when (user.role) {
-            Role.MENTOR -> {
-                user.validateMentee(mentee)
-            }
-            Role.MENTEE -> {
-                user.validateSameUser(mentee)
-            }
-        }
+        val targetUser = authService.validateMentorAccessAndGetTargetUser(user, menteeId)
         val start = date.atStartOfDay()
         val end = date.plusDays(1).atStartOfDay()
 
         return taskRepository
             .findByUserIdAndTaskCreatedBetween(
-                userId,
+                targetUser.id,
                 start,
                 end,
             ).map(Feedback::toGetFeedbackOfTaskResponse)
@@ -130,11 +122,14 @@ class FeedbackService(
 
     @Transactional(readOnly = true)
     fun findTotalFeedbackOfDailyPlanner(
-        menteeId: Long,
+        userId: Long,
+        menteeId: Long?,
         date: LocalDate,
     ): FeedbackDto.GetTotalFeedbackResponse {
-        val mentee = userRepository.getByUserId(menteeId)
-        val dailyPlanner = dailyPlannerService.getDailyPlannerByDate(mentee, date)
+        val user = userRepository.getByUserId(userId)
+        val targetUser = authService.validateMentorAccessAndGetTargetUser(user, menteeId)
+
+        val dailyPlanner = dailyPlannerService.getDailyPlannerByDate(targetUser, date)
 
         return FeedbackDto.GetTotalFeedbackResponse(
             dailyPlanner.totalFeedback,
