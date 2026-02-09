@@ -5,6 +5,7 @@ import com.blaybus.backend.dto.StudyImageDto
 import com.blaybus.backend.dto.mapper.toEmptyFeedbackResponse
 import com.blaybus.backend.dto.mapper.toGetFeedbackOfTaskResponse
 import com.blaybus.backend.entity.Feedback
+import com.blaybus.backend.entity.NotificationType
 import com.blaybus.backend.exception.CustomException
 import com.blaybus.backend.exception.ErrorCode
 import com.blaybus.backend.repository.FeedbackRepository
@@ -27,6 +28,7 @@ class FeedbackService(
     private val dailyPlannerService: DailyPlannerService,
     private val objectStorageRepository: ObjectStorageRepository,
     private val authService: AuthService,
+    private val notificationService: NotificationService,
 ) {
     @Transactional
     fun provideFeedbackForMenteesTask(
@@ -50,6 +52,12 @@ class FeedbackService(
                 ),
             )
 
+        notificationService.createNotification(
+            recipient = task.dailyPlanner.user,
+            type = NotificationType.TASK_FEEDBACK,
+            taskId = task.id,
+        )
+
         return createdFeedback.id
     }
 
@@ -64,6 +72,12 @@ class FeedbackService(
         val dailyPlanner = dailyPlannerService.getOrCreateDailyPlannerByDate(mentee, date)
         mentor.validateMentee(dailyPlanner.user)
         dailyPlanner.updateTotalFeedback(request.content)
+
+        notificationService.createNotification(
+            recipient = mentee,
+            type = NotificationType.PLANNER_FEEDBACK,
+            plannerDate = dailyPlanner.date,
+        )
     }
 
     @Transactional(readOnly = true)

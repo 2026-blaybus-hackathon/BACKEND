@@ -64,4 +64,8 @@ enum class ErrorCode(
     // LearningMaterial API error 21000대
     RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, -21000, "학습자료를 찾을 수 없습니다."),
     NOT_YOUR_MATERIAL(HttpStatus.FORBIDDEN, -21001, "해당 학습자료에 접근 권한이 없습니다."),
+
+    // Notification API error 22000대
+    NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, -22000, "알림을 찾을 수 없습니다."),
+    NOT_YOUR_NOTIFICATION(HttpStatus.FORBIDDEN, -22001, "해당 알림에 접근 권한이 없습니다."),
 }
