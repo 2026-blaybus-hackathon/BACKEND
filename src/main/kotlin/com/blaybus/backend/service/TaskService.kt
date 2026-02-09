@@ -31,6 +31,7 @@ import com.blaybus.backend.entity.User
 import com.blaybus.backend.exception.CustomException
 import com.blaybus.backend.exception.ErrorCode
 import com.blaybus.backend.repository.AssignmentRepository
+import com.blaybus.backend.repository.LearningMaterialRepository
 import com.blaybus.backend.repository.ObjectStorageRepository
 import com.blaybus.backend.repository.StudyImageRepository
 import com.blaybus.backend.repository.TaskRepository
@@ -56,6 +57,7 @@ class TaskService(
     private val assignmentRepository: AssignmentRepository,
     private val studyImageRepository: StudyImageRepository,
     private val objectStorageRepository: ObjectStorageRepository,
+    private val learningMaterialRepository: LearningMaterialRepository,
 ) {
     @Transactional
     fun updateComment(
@@ -101,15 +103,40 @@ class TaskService(
         val mentee = userRepository.getByUserId(request.menteeId)
         mentor.validateMentee(mentee)
 
+        var title = request.title
+        var content = request.content
+        var subject = request.subject
+        var taskType = request.taskType
+
+        var materialFileKey: String? = null
+        var materialFileName: String? = null
+
+        if (request.materialId != null) {
+            val material = learningMaterialRepository.findById(request.materialId)
+                .orElseThrow { CustomException(ErrorCode.RESOURCE_NOT_FOUND) }
+
+            title = material.title
+            content = material.content ?: request.content
+            subject = material.subject
+            taskType = material.taskType
+
+            // 자료실에 파일이 있다면 가져옴 (S3 키만 복사)
+            materialFileKey = material.fileKey
+            materialFileName = material.originalFileName
+        }
+
+        // 3. Task 생성 함수 호출
         return createAndSaveTask(
             writer = mentor,
             targetMentee = mentee,
             date = request.date,
-            taskType = request.taskType,
-            title = request.title,
-            content = request.content,
-            subject = request.subject,
+            taskType = taskType,
+            title = title,
+            content = content,
+            subject = subject,
             files = files,
+            materialFileKey = materialFileKey,
+            materialFileName = materialFileName
         )
     }
 
@@ -348,23 +375,34 @@ class TaskService(
         content: String?,
         subject: Subject,
         files: List<MultipartFile>?,
+        materialFileKey: String? = null,
+        materialFileName: String? = null
     ): TaskResponse {
         val planner = dailyPlannerService.getOrCreateDailyPlannerByDate(targetMentee, date)
 
-        val task =
-            taskRepository.save(
-                Task(
-                    dailyPlanner = planner,
-                    subject = subject,
-                    taskType = taskType,
-                    title = title,
-                    content = content,
-                    writer = writer,
-                    isCompleted = false,
-                ),
-            )
+        val task = taskRepository.save(
+            Task(
+                dailyPlanner = planner,
+                subject = subject,
+                taskType = taskType,
+                title = title,
+                content = content,
+                writer = writer,
+                isCompleted = false,
+            ),
+        )
 
-        if (!files.isNullOrEmpty()) {
+        if (materialFileKey != null && materialFileName != null) {
+            // Case A: 자료실 파일을 사용하는 경우 (S3 업로드 없이 DB만 연결)
+            assignmentRepository.save(
+                Assignment(
+                    task = task,
+                    fileKey = materialFileKey,
+                    originalFileName = materialFileName
+                )
+            )
+        } else if (!files.isNullOrEmpty()) {
+            // Case B: 직접 파일을 업로드한 경우 (기존 로직: S3 업로드 수행)
             manageAssignmentFiles(task, files)
         }
 
