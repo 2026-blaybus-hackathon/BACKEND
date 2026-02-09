@@ -144,4 +144,53 @@ interface TaskRepository : JpaRepository<Task, Long> {
         startDate: LocalDate,
         endDate: LocalDate,
     ): List<Task>
+
+    @Query(
+        """
+        SELECT DISTINCT CAST(t.completedTime AS date)
+        FROM Task t 
+        JOIN t.dailyPlanner dp 
+        WHERE dp.user.id = :userId 
+          AND t.writer.role = :role 
+          AND t.isCompleted = true 
+        ORDER BY CAST(t.completedTime AS date) DESC
+    """,
+    )
+    fun findCompletedMentorTaskDates(
+        userId: Long,
+        role: Role,
+    ): List<LocalDate>
+
+    @Query("SELECT SUM(t.studyDurationInMinutes) FROM Task t JOIN t.dailyPlanner dp WHERE dp.user.id = :userId")
+    fun sumTotalMentorTaskStudyTimeByUserId(userId: Long): Int?
+
+    @Query(
+        """
+        SELECT COUNT(t) 
+        FROM Task t 
+        JOIN t.dailyPlanner dp 
+        WHERE dp.user.id = :userId 
+          AND t.writer.role = :role 
+          AND t.isCompleted = true
+    """,
+    )
+    fun countCompletedMentorTasksByUserId(
+        userId: Long,
+        role: Role,
+    ): Int
+
+    @EntityGraph(attributePaths = ["dailyPlanner", "assignments"])
+    @Query(
+        """
+        SELECT t 
+        FROM Task t 
+        JOIN t.dailyPlanner dp 
+        JOIN t.feedback f 
+        WHERE dp.user.id = :menteeId 
+          AND t.writer.role = 'MENTOR' 
+          AND f.isRead = true 
+        ORDER BY t.createdDateTime DESC
+    """,
+    )
+    fun findTasksWithReadFeedbackByMenteeId(menteeId: Long): List<Task>
 }

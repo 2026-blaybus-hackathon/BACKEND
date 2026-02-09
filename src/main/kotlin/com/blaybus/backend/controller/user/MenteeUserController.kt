@@ -3,6 +3,7 @@ package com.blaybus.backend.controller.user
 import com.blaybus.backend.annotation.ApiErrorCodes
 import com.blaybus.backend.dto.DailyAchievementRate
 import com.blaybus.backend.dto.UpdateProfileRequest
+import com.blaybus.backend.dto.UserMentorTaskStatisticsResponse
 import com.blaybus.backend.dto.UserProfileResponse
 import com.blaybus.backend.dto.UserTodayStudyTimeResponse
 import com.blaybus.backend.exception.ErrorCode
@@ -105,4 +106,13 @@ class MenteeUserController(
         )
         @RequestParam date: LocalDate,
     ): ResponseEntity<List<DailyAchievementRate>> = ResponseEntity.ok(userService.getWeeklyAchievement(userId, date))
+
+    @Operation(
+        summary = "멘토 과제 통계 조회",
+        description = "멘티의 멘토 과제 수행 관련 통계(연속 수행 일수, 누적 공부 시간, 누적 완료 과제 수)를 조회합니다.",
+    )
+    @GetMapping("/statistics")
+    fun getMentorTaskStatistics(
+        @AuthenticationPrincipal userId: Long,
+    ): ResponseEntity<UserMentorTaskStatisticsResponse> = ResponseEntity.ok(userService.getMentorTaskStatistics(userId))
 }
