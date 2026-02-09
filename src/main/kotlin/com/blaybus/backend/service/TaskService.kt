@@ -21,8 +21,8 @@ import com.blaybus.backend.dto.TaskAndAssignmentResponse
 import com.blaybus.backend.dto.TaskDetail
 import com.blaybus.backend.dto.TaskImageResponse
 import com.blaybus.backend.dto.AssignmentInfoResponse
+import com.blaybus.backend.dto.AssignmentSummaryResponse
 import com.blaybus.backend.dto.TaskResponse
-import com.blaybus.backend.dto.TaskSummaryResponse
 import com.blaybus.backend.entity.Assignment
 import com.blaybus.backend.entity.Role
 import com.blaybus.backend.entity.StudyImage
@@ -582,11 +582,11 @@ class TaskService(
         }
     }
 
-    fun getTaskSummariesOfFeedbacksRecently(
+    fun getAssignmentSummaryOfFeedbacksRecently(
         userId: Long,
         menteeId: Long,
         pageable: PageRequest
-    ): PagedResponse<TaskSummaryResponse> {
+    ): PagedResponse<AssignmentSummaryResponse> {
         val mentor = userRepository.getByUserId(userId)
         val mentee = userRepository.getByUserId(menteeId)
         mentor.validateMentee(mentee)
@@ -599,14 +599,12 @@ class TaskService(
 
         return PagedResponse(
             content = page.content.map { task ->
-                TaskSummaryResponse(
+                AssignmentSummaryResponse(
                     taskId = task.id,
                     subject = task.subject.name,
                     title = task.title,
                     date = task.createdDateTime.toLocalDate(),
-                    menteeName = mentee.name,
-                    schoolName = mentee.schoolName,
-                    grade = mentee.grade,
+                    studyMinute = task.studyDurationInMinutes ?: 0,
                 )
             },
             page = page.number,
@@ -629,12 +627,15 @@ class TaskService(
 
         return PagedResponse(
             content = page.content.map { task ->
+                val mentee = task.dailyPlanner.user
                 AssignmentInfoResponse(
                     taskId = task.id,
                     subject = task.subject.name,
                     title = task.title,
                     date = task.createdDateTime.toLocalDate(),
-                    studyMinute = task.studyDurationInMinutes ?: 0,
+                    menteeName = mentee.name,
+                    schoolName = mentee.schoolName,
+                    grade = mentee.grade,
                 )
             },
             page = page.number,
@@ -668,7 +669,9 @@ class TaskService(
                     subject = task.subject.name,
                     title = task.title,
                     date = task.createdDateTime.toLocalDate(),
-                    studyMinute = task.studyDurationInMinutes ?: 0,
+                    menteeName = mentee.name,
+                    schoolName = mentee.schoolName,
+                    grade = mentee.grade,
                 )
             },
             page = page.number,

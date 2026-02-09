@@ -4,8 +4,8 @@ import com.blaybus.backend.dto.MentorTaskAssignRequest
 import com.blaybus.backend.dto.MentorTaskUpdateRequest
 import com.blaybus.backend.dto.PagedResponse
 import com.blaybus.backend.dto.AssignmentInfoResponse
+import com.blaybus.backend.dto.AssignmentSummaryResponse
 import com.blaybus.backend.dto.TaskResponse
-import com.blaybus.backend.dto.TaskSummaryResponse
 import com.blaybus.backend.service.TaskService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -81,9 +81,9 @@ class MentorTaskController(
         @PathVariable menteeId: Long,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int,
-    ): ResponseEntity<PagedResponse<TaskSummaryResponse>> {
+    ): ResponseEntity<PagedResponse<AssignmentSummaryResponse>> {
         val pageable = PageRequest.of(page, size)
-        val response = taskService.getTaskSummariesOfFeedbacksRecently(userId, menteeId, pageable)
+        val response = taskService.getAssignmentSummaryOfFeedbacksRecently(userId, menteeId, pageable)
         return ResponseEntity.ok(response)
     }
 

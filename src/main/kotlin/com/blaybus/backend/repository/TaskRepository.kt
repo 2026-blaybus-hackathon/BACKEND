@@ -208,8 +208,8 @@ interface TaskRepository : JpaRepository<Task, Long> {
     @Query(
         value = """
         SELECT t FROM Task t
-        JOIN t.dailyPlanner dp
-        JOIN dp.user u
+        JOIN FETCH t.dailyPlanner dp
+        JOIN FETCH dp.user u
         WHERE u.mentor.id = :mentorId
           AND t.writer.id = :mentorId
           AND t.isCompleted = true

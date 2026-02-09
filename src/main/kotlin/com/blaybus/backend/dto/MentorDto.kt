@@ -21,10 +21,9 @@ data class AssignmentsResponse(
     val date: LocalDate,
     @Schema(description = "완료 여부")
     val status: Boolean,
-
 )
 
-data class TaskSummaryResponse(
+data class AssignmentInfoResponse(
     @Schema(description = "과제 ID")
     val taskId: Long,
     @Schema(description = "과제 과목")
@@ -46,7 +45,7 @@ data class TaskSummaryResponse(
     val grade: Grade?,
 )
 
-data class AssignmentInfoResponse(
+data class AssignmentSummaryResponse(
     @Schema(description = "과제 ID")
     val taskId: Long,
     @Schema(description = "과제 과목")
@@ -57,7 +56,6 @@ data class AssignmentInfoResponse(
     val date: LocalDate,
     @Schema(description = "공부 시간")
     val studyMinute: Int,
-
 )
 
 data class TaskWithFeedbackResponse(
