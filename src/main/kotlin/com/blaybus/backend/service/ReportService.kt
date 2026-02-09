@@ -2,6 +2,7 @@ package com.blaybus.backend.service
 
 import com.blaybus.backend.dto.CreateMenteeReportRequest
 import com.blaybus.backend.dto.ReportMenteeResponse
+import com.blaybus.backend.dto.ReportSubjectResponse
 import com.blaybus.backend.entity.Period
 import com.blaybus.backend.entity.Report
 import com.blaybus.backend.entity.ReportSubject
@@ -15,8 +16,8 @@ import com.blaybus.backend.repository.UserRepository
 import com.blaybus.backend.repository.getByUserId
 import com.blaybus.backend.util.getMonthRange
 import com.blaybus.backend.util.getWeekRange
-import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 import kotlin.collections.map
 
@@ -110,6 +111,7 @@ class ReportService(
             Role.MENTOR -> {
                 user.validateMentee(mentee)
             }
+
             Role.MENTEE -> {
                 user.validateSameUser(mentee)
             }
@@ -122,5 +124,46 @@ class ReportService(
             }
         val report = reportRepository.findByMenteeIdAndStartDateAndEndDate(userId, startDate, endDate) ?: return null
         return ReportMenteeResponse(report)
+    }
+
+    @Transactional(readOnly = true)
+    fun getMentorSubjectStats(
+        userId: Long,
+        menteeId: Long,
+        period: Period,
+        reportDate: LocalDate,
+    ): List<ReportSubjectResponse> {
+        val mentor = userRepository.getByUserId(userId)
+        val mentee = userRepository.getByUserId(menteeId)
+        mentor.validateMentee(mentee)
+
+        val startDayAndEndDay =
+            when (period) {
+                Period.WEEKLY -> getWeekRange(reportDate)
+                Period.MONTHLY -> getMonthRange(reportDate)
+            }
+
+        val subjectList: List<Task> =
+            taskReportRepository.reportSubjectByMenteeIdAndDateBetween(
+                mentee.id,
+                startDayAndEndDay.first,
+                startDayAndEndDay.second,
+            )
+
+        return subjectList
+            .groupBy { it.subject }
+            .map { (subject, tasks) ->
+                val taskCount = tasks.size
+                val completedTaskCount = tasks.count { it.isCompleted }
+                val studyDurationInMinutes = tasks.mapNotNull { it.studyDurationInMinutes }.sum()
+                val achievementRate =
+                    if (taskCount > 0) (completedTaskCount.toDouble() / taskCount * 100).toInt() else 0
+
+                ReportSubjectResponse(
+                    subject = subject,
+                    studyMinutes = studyDurationInMinutes,
+                    achievementRate = achievementRate,
+                )
+            }
     }
 }
