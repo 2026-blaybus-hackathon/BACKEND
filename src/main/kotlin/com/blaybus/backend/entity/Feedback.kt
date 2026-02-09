@@ -60,4 +60,8 @@ class Feedback(
         tryContent = tryContent,
         detail = detail,
     )
+
+    fun readFeedback() {
+        this.isRead = true
+    }
 }

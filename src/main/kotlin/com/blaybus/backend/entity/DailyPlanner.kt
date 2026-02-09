@@ -40,10 +40,19 @@ class DailyPlanner(
     val date: LocalDate,
     @Column(nullable = true)
     var totalFeedback: String? = null, // 종합 피드백 (멘토가 멘티에게 작성)
+    @Column(nullable = false, columnDefinition = "NUMBER(1) DEFAULT 0")
+    var isTotalFeedbackRead: Boolean = false,
+    var totalFeedbackCreatedDateTime: LocalDate? = null,
     @OneToMany(mappedBy = "dailyPlanner", fetch = FetchType.LAZY)
     val tasks: MutableList<Task> = mutableListOf(),
 ) : BaseModifiableEntity() {
     fun updateTotalFeedback(content: String) {
         this.totalFeedback = content
+        this.isTotalFeedbackRead = false
+        this.totalFeedbackCreatedDateTime = LocalDate.now()
+    }
+
+    fun readTotalFeedback() {
+        this.isTotalFeedbackRead = true
     }
 }
