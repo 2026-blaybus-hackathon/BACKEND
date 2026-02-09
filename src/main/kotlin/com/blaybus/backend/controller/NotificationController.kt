@@ -15,14 +15,14 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @Tag(name = "notification-controller API", description = "알림 관련 조회")
-@RequestMapping("/api/v1/notifications/mentee")
+@RequestMapping("/api/v1/notifications")
 @RestController
 class NotificationController(
     private val notificationService: NotificationService,
 ) {
     @Operation(
         summary = "내 알림 목록 조회",
-        description = "멘티는 자신에게 온 알림 목록을 최신순으로 조회할 수 있습니다.",
+        description = "자신에게 온 알림 목록을 최신순으로 조회할 수 있습니다.",
     )
     @GetMapping
     fun getMyNotifications(

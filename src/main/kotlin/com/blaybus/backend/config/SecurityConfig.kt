@@ -69,7 +69,6 @@ class SecurityConfig(
                         "/api/v1/users/mentee/**",
                         "/api/v1/reports/mentee/**",
                         "/api/v1/feedback/mentee/**",
-                        "/api/v1/notifications/mentee/**",
                     ).hasAuthority(Role.MENTEE.name)
                 it
                     .requestMatchers(
@@ -77,6 +76,7 @@ class SecurityConfig(
                         "/api/v1/reports/**",
                         "/api/v1/tasks/**",
                         "/api/v1/users/**",
+                        "/api/v1/notifications/**",
                     ).hasAnyAuthority(Role.MENTOR.name, Role.MENTEE.name)
             }.addFilterBefore(
                 jwtFilter,
