@@ -43,7 +43,7 @@ class FeedbackController(
         description = "멘티는 자신의 피드백 목록을 날짜별로 조회합니다.",
     )
     @ApiResponse(responseCode = "200", description = "멘티별 피드백 목록 조회 성공")
-    @GetMapping("/feedbacks")
+    @GetMapping
     fun getFeedbacks(
         @AuthenticationPrincipal userId: Long,
         @Parameter(
