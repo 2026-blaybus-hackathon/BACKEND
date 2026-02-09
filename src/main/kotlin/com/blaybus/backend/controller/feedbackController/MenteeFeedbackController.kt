@@ -23,25 +23,7 @@ class MenteeFeedbackController(
 ) {
     private val logger = KotlinLogging.logger {}
 
-    @Operation(summary = "특정 날짜 플래너의 종합 피드백 조회", description = "멘티는 멘토의 특정 날짜에 대한 종합 피드백을 조회합니다.")
-    @ApiResponse(responseCode = "200", description = "종합 피드백 조회 성공")
-    @GetMapping("/daily-planner/total-feedback")
-    fun getTotalFeedbackOfDailyPlanner(
-        @AuthenticationPrincipal userId: Long,
-        @Parameter(
-            name = "date",
-            description = "조회할 날짜 (YYYY-MM-DD 형식)",
-            example = "2026-02-03",
-            required = true,
-        )
-        @RequestParam date: LocalDate,
-    ): ResponseEntity<FeedbackDto.GetTotalFeedbackResponse> =
-        ResponseEntity
-            .status(HttpStatus.OK)
-            .body(
-                feedbackService.findTotalFeedbackOfDailyPlanner(userId, date),
-            )
-
+    @Deprecated("/api/v1/tasks 쪽으로 통합")
     @Operation(summary = "할 일의 피드백 요약, 상세 조회", description = "멘티는 멘토의 피드백 요약, 상세 내용을 조회합니다.")
     @ApiResponse(responseCode = "200", description = "피드백 상세 조회 성공")
     @GetMapping("/tasks/{taskId}")
@@ -59,31 +41,6 @@ class MenteeFeedbackController(
             .status(HttpStatus.OK)
             .body(
                 feedbackService.findFeedbackOfTask(userId, taskId),
-            )
-
-    /**
-     * TODO: 특정 날짜에 대한 피드백 목록 조회
-     */
-    @Operation(
-        summary = "피드백 목록 조회",
-        description = "멘티는 자신의 피드백 목록을 날짜별로 조회합니다.",
-    )
-    @ApiResponse(responseCode = "200", description = "멘티별 피드백 목록 조회 성공")
-    @GetMapping("/feedbacks")
-    fun getFeedbacks(
-        @AuthenticationPrincipal userId: Long,
-        @Parameter(
-            name = "date",
-            description = "조회할 날짜 (YYYY-MM-DD 형식)",
-            example = "2026-02-03",
-            required = true,
-        )
-        @RequestParam date: LocalDate,
-    ): ResponseEntity<List<FeedbackDto.GetFeedbackOfTaskResponse>> =
-        ResponseEntity
-            .status(HttpStatus.OK)
-            .body(
-                feedbackService.findMyFeedbacks(userId, date),
             )
 
     @Operation(

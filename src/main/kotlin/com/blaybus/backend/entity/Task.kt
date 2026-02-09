@@ -1,5 +1,6 @@
 package com.blaybus.backend.entity
 
+import com.blaybus.backend.service.FeedbackStatus
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -79,6 +80,19 @@ class Task(
             this.completedTime = null
         }
     }
+
+    fun feedbackStatus(): FeedbackStatus {
+        if (studyImages.isEmpty()) {
+            return FeedbackStatus.NOTSUBMITTED
+        }
+
+        return if (feedback != null) {
+            FeedbackStatus.COMPLETED
+        } else {
+            FeedbackStatus.PENDING
+        }
+    }
+
 }
 
 enum class Subject(
