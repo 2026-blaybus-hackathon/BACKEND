@@ -1,7 +1,6 @@
 package com.blaybus.backend.controller.user
 
 import com.blaybus.backend.annotation.ApiErrorCodes
-import com.blaybus.backend.dto.DailyAchievementRate
 import com.blaybus.backend.dto.UpdateProfileRequest
 import com.blaybus.backend.dto.UserMentorTaskStatisticsResponse
 import com.blaybus.backend.dto.UserProfileResponse
@@ -9,7 +8,6 @@ import com.blaybus.backend.dto.UserTodayStudyTimeResponse
 import com.blaybus.backend.exception.ErrorCode
 import com.blaybus.backend.service.user.UserService
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus

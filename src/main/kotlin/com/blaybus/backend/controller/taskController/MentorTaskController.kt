@@ -2,10 +2,9 @@ package com.blaybus.backend.controller.taskController
 
 import com.blaybus.backend.dto.MentorTaskAssignRequest
 import com.blaybus.backend.dto.MentorTaskUpdateRequest
-import com.blaybus.backend.dto.TaskResponse
 import com.blaybus.backend.dto.PagedResponse
+import com.blaybus.backend.dto.TaskResponse
 import com.blaybus.backend.dto.TaskSummaryResponse
-import com.blaybus.backend.dto.TaskWithFeedbackResponse
 import com.blaybus.backend.service.TaskService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -40,8 +39,8 @@ class MentorTaskController(
     fun assignTask(
         @AuthenticationPrincipal userId: Long,
         @Parameter(description = "과제 할당 요청 정보 (JSON)")
-        @Valid @RequestPart("request") request: MentorTaskAssignRequest,
-
+        @Valid
+        @RequestPart("request") request: MentorTaskAssignRequest,
         @Parameter(description = "직접 파일 업로드 (materialId가 없을 때 사용)")
         @RequestPart("file", required = false) files: List<MultipartFile>?,
     ): ResponseEntity<TaskResponse> {
