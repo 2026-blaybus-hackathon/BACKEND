@@ -49,9 +49,7 @@ interface TaskRepository : JpaRepository<Task, Long> {
         SELECT count(t), sum(CASE WHEN t.isCompleted = true THEN 1 ELSE 0 END)
         FROM Task t
         JOIN t.dailyPlanner dp
-        JOIN dp.user u
-        WHERE u.mentor.id = :mentorId 
-          AND dp.date BETWEEN :startDate AND :endDate
+        JOIN dp.user u WHERE u.mentor.id = :mentorId AND dp.date BETWEEN :startDate AND :endDate
     """,
     )
     fun getTaskStatisticsByPeriod(
@@ -62,11 +60,11 @@ interface TaskRepository : JpaRepository<Task, Long> {
 
     @Query(
         """
-        SELECT COUNT(t) FROM Task t 
-        JOIN t.dailyPlanner dp 
-        JOIN dp.user u 
-        WHERE u.mentor.id = :mentorId 
-          AND t.isCompleted = true 
+        SELECT COUNT(t) FROM Task t
+        JOIN t.dailyPlanner dp
+        JOIN dp.user u
+        WHERE u.mentor.id = :mentorId
+          AND t.isCompleted = true
           AND t.feedback IS NULL
     """,
     )
@@ -74,10 +72,10 @@ interface TaskRepository : JpaRepository<Task, Long> {
 
     @Query(
         """
-        SELECT t FROM Task t 
-        JOIN FETCH t.dailyPlanner dp 
-        JOIN FETCH dp.user u 
-        WHERE u.mentor.id = :mentorId 
+        SELECT t FROM Task t
+        JOIN FETCH t.dailyPlanner dp
+        JOIN FETCH dp.user u
+        WHERE u.mentor.id = :mentorId
           AND t.isCompleted = true 
         ORDER BY t.createdDateTime DESC
     """,
@@ -96,6 +94,21 @@ interface TaskRepository : JpaRepository<Task, Long> {
         lastId: Long?,
         pageable: Pageable,
     ): Slice<Task>
+
+    @Query(
+        """
+    SELECT COUNT(t) > 0 
+    FROM Task t 
+    WHERE t.dailyPlanner.user.id = :menteeId 
+      AND t.writer.id = :mentorId 
+      AND t.isCompleted = true 
+      AND t.feedback IS NULL
+""",
+    )
+    fun existsCompletedMentorTaskWithoutFeedback(
+        menteeId: Long,
+        mentorId: Long,
+    ): Boolean
 
     @Query(
         """

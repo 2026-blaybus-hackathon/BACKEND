@@ -167,4 +167,20 @@ class FeedbackService(
             StudyImageDto.StudyCertificationResponse(task, studyImageList),
         )
     }
+
+    @Transactional(readOnly = true)
+    fun getMenteesWithFeedbackStatus(mentorId: Long): List<FeedbackDto.MentorMenteeListResponse> {
+        val mentor = userRepository.getByUserId(mentorId)
+        return mentor.mentees.map { mentee ->
+            val isPending = taskRepository.existsCompletedMentorTaskWithoutFeedback(mentee.id, mentorId)
+            FeedbackDto.MentorMenteeListResponse(
+                id = mentee.id,
+                name = mentee.name,
+                profileUrl = mentee.profileName?.let { objectStorageRepository.getDownloadUrl(it) },
+                schoolName = mentee.schoolName,
+                grade = mentee.grade?.description,
+                feedbackStatus = if (isPending) "PENDING" else "COMPLETED",
+            )
+        }
+    }
 }
