@@ -121,6 +121,8 @@ spec:
                   key: GOOGLE_TOKEN_URI
             - name: APP_PHASE
               value: stable
+            - name: SPRING_PROFILES_ACTIVE
+              value: stable
             - name: S3_BUCKET_NAME
               valueFrom:
                 secretKeyRef:
