@@ -1,5 +1,6 @@
 package com.blaybus.backend.dto
 
+import com.blaybus.backend.entity.Grade
 import com.blaybus.backend.entity.Subject
 import com.blaybus.backend.entity.TaskType
 import io.swagger.v3.oas.annotations.media.Schema
@@ -32,6 +33,31 @@ data class TaskSummaryResponse(
     val title: String,
     @Schema(description = "생성 날짜", example = "2026-02-06")
     val date: LocalDate,
+
+    @Schema(description = "이름", example = "홍길동")
+    val menteeName: String,
+    @Schema(description = "출신 학교 (null일 경우 기존 값 없어짐)")
+    val schoolName: String?,
+    @Schema(
+        description = "학년(null일 경우 기존 값 없어짐)",
+        example = "FIRST",
+        allowableValues = ["FIRST", "SECOND", "THIRD", "DROPOUT", "GRADUATED"],
+    )
+    val grade: Grade?,
+)
+
+data class AssignmentInfoResponse(
+    @Schema(description = "과제 ID")
+    val taskId: Long,
+    @Schema(description = "과제 과목")
+    val subject: String,
+    @Schema(description = "과제 제목")
+    val title: String,
+    @Schema(description = "생성 날짜", example = "2026-02-06")
+    val date: LocalDate,
+    @Schema(description = "공부 시간")
+    val studyMinute: Int,
+
 )
 
 data class TaskWithFeedbackResponse(

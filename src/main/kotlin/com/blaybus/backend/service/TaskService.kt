@@ -20,7 +20,9 @@ import com.blaybus.backend.dto.SliceResponse
 import com.blaybus.backend.dto.TaskAndAssignmentResponse
 import com.blaybus.backend.dto.TaskDetail
 import com.blaybus.backend.dto.TaskImageResponse
+import com.blaybus.backend.dto.AssignmentInfoResponse
 import com.blaybus.backend.dto.TaskResponse
+import com.blaybus.backend.dto.TaskSummaryResponse
 import com.blaybus.backend.entity.Assignment
 import com.blaybus.backend.entity.Role
 import com.blaybus.backend.entity.StudyImage
@@ -578,5 +580,101 @@ class TaskService(
         } else {
             ((completedTasks.toDouble() / totalTasks.toDouble()) * 100).toInt()
         }
+    }
+
+    fun getTaskSummariesOfFeedbacksRecently(
+        userId: Long,
+        menteeId: Long,
+        pageable: PageRequest
+    ): PagedResponse<TaskSummaryResponse> {
+        val mentor = userRepository.getByUserId(userId)
+        val mentee = userRepository.getByUserId(menteeId)
+        mentor.validateMentee(mentee)
+
+        val page = taskRepository.findTasksWithFeedbackByMenteeOrderByFeedbackRecent(
+            mentorId = userId,
+            menteeId = menteeId,
+            pageable = pageable,
+        )
+
+        return PagedResponse(
+            content = page.content.map { task ->
+                TaskSummaryResponse(
+                    taskId = task.id,
+                    subject = task.subject.name,
+                    title = task.title,
+                    date = task.createdDateTime.toLocalDate(),
+                    menteeName = mentee.name,
+                    schoolName = mentee.schoolName,
+                    grade = mentee.grade,
+                )
+            },
+            page = page.number,
+            size = page.size,
+            totalPages = page.totalPages,
+            totalElements = page.totalElements,
+        )
+    }
+
+    fun getAllAssignmentsInfo(
+        userId: Long,
+        type: String?,
+        pageable: PageRequest
+    ): PagedResponse<AssignmentInfoResponse> {
+        val page = taskRepository.findSubmittedAssignmentsByMentor(
+            mentorId = userId,
+            type = type,
+            pageable = pageable,
+        )
+
+        return PagedResponse(
+            content = page.content.map { task ->
+                AssignmentInfoResponse(
+                    taskId = task.id,
+                    subject = task.subject.name,
+                    title = task.title,
+                    date = task.createdDateTime.toLocalDate(),
+                    studyMinute = task.studyDurationInMinutes ?: 0,
+                )
+            },
+            page = page.number,
+            size = page.size,
+            totalPages = page.totalPages,
+            totalElements = page.totalElements,
+        )
+    }
+
+    fun getAllAssignmentsInfoByMenteeId(
+        userId: Long,
+        menteeId: Long,
+        type: String?,
+        pageable: PageRequest
+    ): PagedResponse<AssignmentInfoResponse> {
+        val mentor = userRepository.getByUserId(userId)
+        val mentee = userRepository.getByUserId(menteeId)
+        mentor.validateMentee(mentee)
+
+        val page = taskRepository.findSubmittedAssignmentsByMentorAndMentee(
+            mentorId = userId,
+            menteeId = menteeId,
+            type = type,
+            pageable = pageable,
+        )
+
+        return PagedResponse(
+            content = page.content.map { task ->
+                AssignmentInfoResponse(
+                    taskId = task.id,
+                    subject = task.subject.name,
+                    title = task.title,
+                    date = task.createdDateTime.toLocalDate(),
+                    studyMinute = task.studyDurationInMinutes ?: 0,
+                )
+            },
+            page = page.number,
+            size = page.size,
+            totalPages = page.totalPages,
+            totalElements = page.totalElements,
+        )
     }
 }

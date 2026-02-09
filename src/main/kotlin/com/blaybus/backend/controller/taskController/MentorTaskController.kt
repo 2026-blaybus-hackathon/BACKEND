@@ -3,12 +3,14 @@ package com.blaybus.backend.controller.taskController
 import com.blaybus.backend.dto.MentorTaskAssignRequest
 import com.blaybus.backend.dto.MentorTaskUpdateRequest
 import com.blaybus.backend.dto.PagedResponse
+import com.blaybus.backend.dto.AssignmentInfoResponse
 import com.blaybus.backend.dto.TaskResponse
 import com.blaybus.backend.dto.TaskSummaryResponse
 import com.blaybus.backend.service.TaskService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.data.domain.PageRequest
@@ -81,24 +83,42 @@ class MentorTaskController(
         @RequestParam(defaultValue = "20") size: Int,
     ): ResponseEntity<PagedResponse<TaskSummaryResponse>> {
         val pageable = PageRequest.of(page, size)
-        val response = taskService.getTaskSummaries(userId, menteeId, pageable)
+        val response = taskService.getTaskSummariesOfFeedbacksRecently(userId, menteeId, pageable)
         return ResponseEntity.ok(response)
     }
 
     @Operation(
         summary = "제출된 과제 목록 조회",
-        description = "제출된 관제 목록을 응답한다.",
+        description = "제출된 모든 멘티의 과제 목록을 응답한다.",
     )
-    @GetMapping("/assignments/{menteeId}")
+    @GetMapping("/assignments")
     fun getAssignments(
         @AuthenticationPrincipal userId: Long,
-        @PathVariable menteeId: Long,
+        @Parameter(description = "조회 타입 (REMIND: 제출되었으나 피드백 미완료, HISTORY: 제출 및 피드백 완료)", schema = Schema(allowableValues = ["REMIND", "HISTORY"]))
         @RequestParam type: String,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int,
-    ): ResponseEntity<PagedResponse<TaskSummaryResponse>> {
+    ): ResponseEntity<PagedResponse<AssignmentInfoResponse>> {
         val pageable = PageRequest.of(page, size)
-        val response = taskService.getTaskSummaries(userId, menteeId, pageable)
+        val response = taskService.getAllAssignmentsInfo(userId, type, pageable)
+        return ResponseEntity.ok(response)
+    }
+
+    @Operation(
+        summary = "멘티별 제출된 과제 목록 조회",
+        description = "특정 멘티의 제출된 과제 목록을 응답한다. type이 REMIND라면 과제는 제출되었으나 피드백 완료하지 않은 Task, type이 HISTORY라면 과제 제출과 멘토의 피드백 작성이 완료인 Task를 응답한다.",
+    )
+    @GetMapping("/assignments/{menteeId}")
+    fun getAssignmentsByMenteeId(
+        @AuthenticationPrincipal userId: Long,
+        @PathVariable menteeId: Long,
+        @Parameter(description = "조회 타입 (REMIND: 제출되었으나 피드백 미완료, HISTORY: 제출 및 피드백 완료)", schema = Schema(allowableValues = ["REMIND", "HISTORY"]))
+        @RequestParam type: String,
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "20") size: Int,
+    ): ResponseEntity<PagedResponse<AssignmentInfoResponse>> {
+        val pageable = PageRequest.of(page, size)
+        val response = taskService.getAllAssignmentsInfoByMenteeId(userId, menteeId, type, pageable)
         return ResponseEntity.ok(response)
     }
 }

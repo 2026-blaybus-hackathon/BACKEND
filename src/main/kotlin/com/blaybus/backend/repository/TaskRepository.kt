@@ -181,4 +181,88 @@ interface TaskRepository : JpaRepository<Task, Long> {
     """,
     )
     fun findTasksWithReadFeedbackByMenteeId(menteeId: Long): List<Task>
+
+    @Query(
+        value = """
+        SELECT t FROM Task t
+        JOIN t.dailyPlanner dp
+        JOIN t.feedback f
+        WHERE dp.user.id = :menteeId
+          AND f.mentor.id = :mentorId
+        ORDER BY f.createdDateTime DESC
+        """,
+        countQuery = """
+        SELECT COUNT(t) FROM Task t
+        JOIN t.dailyPlanner dp
+        JOIN t.feedback f
+        WHERE dp.user.id = :menteeId
+          AND f.mentor.id = :mentorId
+        """,
+    )
+    fun findTasksWithFeedbackByMenteeOrderByFeedbackRecent(
+        mentorId: Long,
+        menteeId: Long,
+        pageable: Pageable,
+    ): Page<Task>
+
+    @Query(
+        value = """
+        SELECT t FROM Task t
+        JOIN t.dailyPlanner dp
+        JOIN dp.user u
+        WHERE u.mentor.id = :mentorId
+          AND t.writer.id = :mentorId
+          AND t.isCompleted = true
+          AND (:type IS NULL
+            OR (:type = 'REMIND' AND t.feedback IS NULL)
+            OR (:type = 'HISTORY' AND t.feedback IS NOT NULL))
+        ORDER BY t.createdDateTime DESC
+        """,
+        countQuery = """
+        SELECT COUNT(t) FROM Task t
+        JOIN t.dailyPlanner dp
+        JOIN dp.user u
+        WHERE u.mentor.id = :mentorId
+          AND t.writer.id = :mentorId
+          AND t.isCompleted = true
+          AND (:type IS NULL
+            OR (:type = 'REMIND' AND t.feedback IS NULL)
+            OR (:type = 'HISTORY' AND t.feedback IS NOT NULL))
+        """,
+    )
+    fun findSubmittedAssignmentsByMentor(
+        mentorId: Long,
+        type: String?,
+        pageable: Pageable,
+    ): Page<Task>
+
+    @Query(
+        value = """
+        SELECT t FROM Task t
+        JOIN t.dailyPlanner dp
+        WHERE dp.user.id = :menteeId
+          AND t.writer.id = :mentorId
+          AND t.isCompleted = true
+          AND (:type IS NULL
+            OR (:type = 'REMIND' AND t.feedback IS NULL)
+            OR (:type = 'HISTORY' AND t.feedback IS NOT NULL))
+        ORDER BY t.createdDateTime DESC
+        """,
+        countQuery = """
+        SELECT COUNT(t) FROM Task t
+        JOIN t.dailyPlanner dp
+        WHERE dp.user.id = :menteeId
+          AND t.writer.id = :mentorId
+          AND t.isCompleted = true
+          AND (:type IS NULL
+            OR (:type = 'REMIND' AND t.feedback IS NULL)
+            OR (:type = 'HISTORY' AND t.feedback IS NOT NULL))
+        """,
+    )
+    fun findSubmittedAssignmentsByMentorAndMentee(
+        mentorId: Long,
+        menteeId: Long,
+        type: String?,
+        pageable: Pageable,
+    ): Page<Task>
 }
