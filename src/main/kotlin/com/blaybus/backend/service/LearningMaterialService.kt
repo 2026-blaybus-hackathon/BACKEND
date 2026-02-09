@@ -10,8 +10,8 @@ import com.blaybus.backend.repository.LearningMaterialRepository
 import com.blaybus.backend.repository.ObjectStorageRepository
 import com.blaybus.backend.repository.UserRepository
 import com.blaybus.backend.repository.getByUserId
-import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 
 @Service
