@@ -1,6 +1,8 @@
 package com.blaybus.backend.controller
 
 import com.blaybus.backend.dto.MenteeTaskFeedbackResponse
+import com.blaybus.backend.dto.MentorMyPageStatsDto
+import com.blaybus.backend.service.TaskService
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -12,7 +14,9 @@ import org.springframework.web.bind.annotation.RestController
 
 @RequestMapping("/api/v1/mentor")
 @RestController
-class MentorController {
+class MentorController(
+    val taskService: TaskService
+) {
     @Operation(
         summary = "멘티 과제, 피드백 조회",
         description = "멘토가 특정 멘티의 과제 피드백을 조회합니다.",
@@ -24,4 +28,13 @@ class MentorController {
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int,
     ): ResponseEntity<MenteeTaskFeedbackResponse> = ResponseEntity.ok().build()
+
+    @Operation(summary = "멘토 마이페이지 통계 조회", description = "나의 멘티 현황(멘티 수, 평균 학습 시간, 평균 완료율)을 조회합니다.")
+    @GetMapping("/mypage/stats")
+    fun getMyPageStats(
+        @AuthenticationPrincipal userId: Long
+    ): ResponseEntity<MentorMyPageStatsDto> {
+        val response = taskService.getMentorMyPageStats(userId)
+        return ResponseEntity.ok(response)
+    }
 }
