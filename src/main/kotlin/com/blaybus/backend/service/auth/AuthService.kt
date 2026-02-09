@@ -41,6 +41,9 @@ class AuthService(
         request: EmailSignupRequest,
         profile: MultipartFile?,
     ) {
+        if (request.role == Role.MENTEE && request.targetSchool == null) {
+            throw CustomException(ErrorCode.REQUIRED_TARGET_SCHOOL)
+        }
         val existingUser = userRepository.findByEmail(request.email)
         if (existingUser != null) {
             throw CustomException(ErrorCode.REGISTERED_ALREADY)
