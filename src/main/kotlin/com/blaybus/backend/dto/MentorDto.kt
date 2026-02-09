@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import java.time.LocalDate
 
-data class TasksWithFeedbackResponse(
+data class TaskWithFeedbackResponse(
     @Schema(description = "멘티 ID")
     val menteeId: Long,
     @Schema(description = "과제 및 피드백 목록")
@@ -51,9 +51,13 @@ data class FeedbackDetail(
     @Schema(description = "피드백 ID")
     val feedbackId: Long,
     @Schema(description = "피드백 요약")
-    val summary: String,
+    val keepContent: String?,
+    @Schema(description = "피드백 요약")
+    val problemContent: String?,
+    @Schema(description = "피드백 요약")
+    val tryContent: String?,
     @Schema(description = "피드백 코멘트")
-    val comment: String,
+    val detail: String?,
 )
 
 data class MentorTaskAssignRequest(

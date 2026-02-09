@@ -9,7 +9,7 @@ import com.blaybus.backend.dto.MenteeStudyTimeUpdateRequest
 import com.blaybus.backend.dto.MenteeSummaryDto
 import com.blaybus.backend.dto.MenteeTaskCompletionUpdateRequest
 import com.blaybus.backend.dto.MenteeTaskCreateRequest
-import com.blaybus.backend.dto.TasksWithFeedbackResponse
+import com.blaybus.backend.dto.TaskWithFeedbackResponse
 import com.blaybus.backend.dto.MenteeTaskUpdateRequest
 import com.blaybus.backend.dto.MentorDashboardResponse
 import com.blaybus.backend.dto.MentorTaskAssignRequest
@@ -257,10 +257,11 @@ class TaskService(
     ): SliceResponse<TaskAndAssignmentResponse> {
         val user = userRepository.getByUserId(userId)
         val dailyPlanner =
-            dailyPlannerService.getDailyPlannerOrNullByUserAndDate(user, date) ?: return SliceResponse(
-                emptyList(),
-                false,
-            )
+            dailyPlannerService.getDailyPlannerOrNullByUserAndDate(user, date)
+                ?: return SliceResponse(
+                    emptyList(),
+                    false,
+                )
         val pageable = Pageable.ofSize(size)
         val tasks = taskRepository.sliceByDailyPlannerId(dailyPlanner.id, lastId, pageable)
         return SliceResponse(
@@ -296,7 +297,7 @@ class TaskService(
         userId: Long,
         menteeId: Long,
         pageable: Pageable,
-    ): TasksWithFeedbackResponse {
+    ): List<TaskWithFeedbackResponse> {
         val user = userRepository.getByUserId(userId)
         val mentee = userRepository.getByUserId(menteeId)
 
@@ -306,8 +307,15 @@ class TaskService(
 
         val tasksPage = taskRepository.findByDailyPlannerUser(mentee, pageable)
 
-        val taskDetails =
-            tasksPage.content.map { task ->
+        // dailyPlanner별로 그룹화하고 날짜 내림차순으로 정렬하여 최근 2일치만 선택
+        val tasksByDailyPlanner = tasksPage.content
+            .groupBy { it.dailyPlanner }
+            .toList()
+            .sortedByDescending { (dailyPlanner, _) -> dailyPlanner.date }
+            .take(2)
+
+        return tasksByDailyPlanner.map { (dailyPlanner, tasks) ->
+            val taskDetails = tasks.map { task ->
                 TaskDetail(
                     taskId = task.id,
                     subject = task.subject.name,
@@ -329,24 +337,28 @@ class TaskService(
                         task.feedback?.let { fb ->
                             FeedbackDetail(
                                 feedbackId = fb.id,
-                                summary = "${fb.keepContent} / ${fb.problemContent}",
-                                comment = fb.detail ?: "",
+                                keepContent = fb.keepContent,
+                                problemContent = fb.problemContent,
+                                tryContent = fb.tryContent,
+                                detail = fb.detail,
                             )
-                        } ?: FeedbackDetail(0L, "No Feedback", ""),
+                        } ?: FeedbackDetail(0L, null, null, null, null),
                 )
             }
 
-        return TasksWithFeedbackResponse(
-            menteeId = mentee.id,
-            tasks =
-                PagedResponse(
-                    content = taskDetails,
-                    page = tasksPage.number,
-                    size = tasksPage.size,
-                    totalPages = tasksPage.totalPages,
-                    totalElements = tasksPage.totalElements,
-                ),
-        )
+            TaskWithFeedbackResponse(
+                menteeId = mentee.id,
+                tasks =
+                    PagedResponse(
+                        content = taskDetails,
+                        page = tasksPage.number,
+                        size = taskDetails.size,
+                        totalPages = 1,
+                        totalElements = taskDetails.size.toLong(),
+                    ),
+                totalFeedback = dailyPlanner.totalFeedback,
+            )
+        }
     }
 
     private fun createAndSaveTask(

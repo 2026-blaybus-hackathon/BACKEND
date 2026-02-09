@@ -1,7 +1,7 @@
 package com.blaybus.backend.controller.taskController
 
 import com.blaybus.backend.annotation.ApiErrorCodes
-import com.blaybus.backend.dto.TasksWithFeedbackResponse
+import com.blaybus.backend.dto.TaskWithFeedbackResponse
 import com.blaybus.backend.dto.TaskDetailResponse
 import com.blaybus.backend.exception.ErrorCode
 import com.blaybus.backend.service.TaskService
@@ -33,7 +33,7 @@ class TaskController(
         @PathVariable menteeId: Long,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int,
-    ): ResponseEntity<TasksWithFeedbackResponse> {
+    ): ResponseEntity<List<TaskWithFeedbackResponse>> {
         val pageable = PageRequest.of(page, size)
         val response = taskService.getTasksWithFeedback(userId, menteeId, pageable)
         return ResponseEntity.ok(response)
