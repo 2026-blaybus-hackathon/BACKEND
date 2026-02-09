@@ -6,13 +6,16 @@ import com.blaybus.backend.dto.DailyAchievementRate
 import com.blaybus.backend.dto.MenteeProfileResponse
 import com.blaybus.backend.dto.SimpleUserResponse
 import com.blaybus.backend.dto.UpdateProfileRequest
+import com.blaybus.backend.dto.UserMentorTaskStatisticsResponse
 import com.blaybus.backend.dto.UserProfileResponse
 import com.blaybus.backend.dto.UserTodayStudyTimeResponse
 import com.blaybus.backend.dto.mapper.toMenteeProfileResponse
 import com.blaybus.backend.dto.mapper.toUserProfileResponse
 import com.blaybus.backend.entity.Period
+import com.blaybus.backend.entity.Role
 import com.blaybus.backend.repository.ObjectStorageRepository
 import com.blaybus.backend.repository.ObjectStorageRepository.Companion.PROFILE_IMAGE_PATH
+import com.blaybus.backend.repository.TaskRepository
 import com.blaybus.backend.repository.UserRepository
 import com.blaybus.backend.repository.getByUserId
 import com.blaybus.backend.service.DailyPlannerService
@@ -28,6 +31,7 @@ import java.time.LocalDate
 class UserService(
     private val userRepository: UserRepository,
     private val taskService: TaskService,
+    private val taskRepository: TaskRepository,
     private val objectStorageRepository: ObjectStorageRepository,
     private val dailyPlannerService: DailyPlannerService,
 ) {
@@ -191,5 +195,48 @@ class UserService(
         val completeTaskSize = taskList.filter { it.isCompleted }.size
         val achievementRateResponse = AchievementRateResponse(completeTaskSize, taskList.size)
         return achievementRateResponse
+    }
+
+    @Transactional(readOnly = true)
+    fun getMentorTaskStatistics(userId: Long): UserMentorTaskStatisticsResponse {
+        userRepository.getByUserId(userId)
+        val completedDates = taskRepository.findCompletedMentorTaskDates(userId, Role.MENTOR)
+        val totalStudyTimeMinutes = taskRepository.sumTotalMentorTaskStudyTimeByUserId(userId) ?: 0
+        val totalCompletedMentorTasks = taskRepository.countCompletedMentorTasksByUserId(userId, Role.MENTOR)
+
+        val consecutiveDays = calculateConsecutiveDays(completedDates)
+
+        return UserMentorTaskStatisticsResponse(
+            consecutiveMentorTaskDays = consecutiveDays,
+            totalStudyTimeMinutes = totalStudyTimeMinutes,
+            totalCompletedMentorTasks = totalCompletedMentorTasks,
+        )
+    }
+
+    private fun calculateConsecutiveDays(completedDates: List<LocalDate>): Int {
+        if (completedDates.isEmpty()) return 0
+
+        val today = LocalDate.now()
+        val yesterday = today.minusDays(1)
+
+        var currentStreakDate =
+            when {
+                completedDates[0] == today -> today
+                completedDates[0] == yesterday -> yesterday
+                else -> return 0
+            }
+
+        var count = 1
+        for (i in 1 until completedDates.size) {
+            val expectedDate = currentStreakDate.minusDays(1)
+            if (completedDates[i] == expectedDate) {
+                count++
+                currentStreakDate = expectedDate
+            } else {
+                break
+            }
+        }
+
+        return count
     }
 }
