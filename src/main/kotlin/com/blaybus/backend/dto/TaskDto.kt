@@ -100,7 +100,7 @@ data class TaskResponse(
 }
 
 data class AssignmentResponse(
-    @Schema(description = "과제 ID")
+    @Schema(description = "과제 파일 ID")
     val id: Long,
     @Schema(description = "원본 파일명")
     val originalFileName: String,
