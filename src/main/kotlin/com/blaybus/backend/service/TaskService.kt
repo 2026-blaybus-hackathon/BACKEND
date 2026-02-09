@@ -12,6 +12,7 @@ import com.blaybus.backend.dto.MenteeTaskCreateRequest
 import com.blaybus.backend.dto.MenteeTaskFeedbackResponse
 import com.blaybus.backend.dto.MenteeTaskUpdateRequest
 import com.blaybus.backend.dto.MentorDashboardResponse
+import com.blaybus.backend.dto.MentorMyPageStatsDto
 import com.blaybus.backend.dto.MentorTaskAssignRequest
 import com.blaybus.backend.dto.MentorTaskUpdateRequest
 import com.blaybus.backend.dto.PagedResponse
@@ -440,11 +441,11 @@ class TaskService(
                         taskId = task.id,
                         title = task.title,
                         menteeName = u.name,
+                        completedAt = task.completedTime,
                         schoolAndGrade = "${u.schoolName ?: ""} ${u.grade?.description ?: ""}",
-                        date = task.dailyPlanner.date,
                         isFeedbackCompleted = task.feedback != null,
                         targetSchool = u.targetSchool ?: "",
-                        targetDate = u.targetDate,
+                        targetDate = u.targetDate
                     )
                 }
 
@@ -478,5 +479,30 @@ class TaskService(
         } else {
             ((completedTasks.toDouble() / totalTasks.toDouble()) * 100).toInt()
         }
+    }
+
+    fun getMentorMyPageStats(mentorId: Long): MentorMyPageStatsDto {
+        val menteeCount = userRepository.countByMentorId(mentorId)
+
+        val totalStudyMinutes = taskRepository.getTotalStudyTimeByMentorId(mentorId) ?: 0L
+        val averageStudyTime = if (menteeCount > 0) (totalStudyMinutes / menteeCount).toInt() else 0
+
+        val stats = taskRepository.getCompletionRateStatsByMentorId(mentorId)
+        var completionRate = 0
+        if (stats.isNotEmpty()) {
+            val row = stats[0]
+            val totalTasks = (row[0] as Number).toLong()
+            val completedTasks = (row[1] as? Number)?.toLong() ?: 0L
+
+            if (totalTasks > 0) {
+                completionRate = ((completedTasks.toDouble() / totalTasks.toDouble()) * 100).toInt()
+            }
+        }
+
+        return MentorMyPageStatsDto(
+            totalMenteeCount = menteeCount,
+            averageStudyTime = averageStudyTime,
+            averageCompletionRate = completionRate
+        )
     }
 }
