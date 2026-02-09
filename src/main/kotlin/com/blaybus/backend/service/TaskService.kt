@@ -24,6 +24,7 @@ import com.blaybus.backend.dto.TaskResponse
 import com.blaybus.backend.dto.TaskSummaryResponse
 import com.blaybus.backend.dto.TaskWithFeedbackResponse
 import com.blaybus.backend.entity.Assignment
+import com.blaybus.backend.entity.LearningMaterial
 import com.blaybus.backend.entity.Role
 import com.blaybus.backend.entity.StudyImage
 import com.blaybus.backend.entity.Subject
@@ -108,6 +109,7 @@ class TaskService(
         val mentee = userRepository.getByUserId(request.menteeId)
         mentor.validateMentee(mentee)
 
+        // 1. Task 정보 준비 (자료실 선택 시 덮어쓰기)
         var title = request.title
         var content = request.content
         var subject = request.subject
@@ -116,23 +118,25 @@ class TaskService(
         var materialFileKey: String? = null
         var materialFileName: String? = null
 
+        // 자료실 선택 시 정보 조회
         if (request.materialId != null) {
-            val material =
-                learningMaterialRepository
-                    .findById(request.materialId)
-                    .orElseThrow { CustomException(ErrorCode.RESOURCE_NOT_FOUND) }
+            val material = learningMaterialRepository.findById(request.materialId)
+                .orElseThrow { CustomException(ErrorCode.RESOURCE_NOT_FOUND) }
+
+            if (material.mentor.id != mentorId) throw CustomException(ErrorCode.NOT_YOUR_MATERIAL)
 
             title = material.title
             content = material.content ?: request.content
             subject = material.subject
             taskType = material.taskType
-
-            // 자료실에 파일이 있다면 가져옴 (S3 키만 복사)
             materialFileKey = material.fileKey
             materialFileName = material.originalFileName
         }
 
-        // 3. Task 생성 함수 호출
+        // 2. 통합 메서드 호출
+        // 파일이 있고 + 자료실 ID가 없으면 -> "직접 업로드" 상황이므로 -> 자동 아카이빙(true) 요청
+        val shouldArchive = (!files.isNullOrEmpty() && request.materialId == null)
+
         return createAndSaveTask(
             writer = mentor,
             targetMentee = mentee,
@@ -142,8 +146,10 @@ class TaskService(
             content = content,
             subject = subject,
             files = files,
+            // 추가 파라미터 전달
             materialFileKey = materialFileKey,
             materialFileName = materialFileName,
+            isAutoArchive = shouldArchive
         )
     }
 
@@ -183,7 +189,6 @@ class TaskService(
     ): TaskResponse {
         val task = taskRepository.getByTaskId(taskId)
 
-        // 권한 검증: 작성자(멘토) 본인만 수정 가능
         if (task.writer.id != userId) {
             throw CustomException(ErrorCode.NOT_YOUR_TASK)
         }
@@ -193,7 +198,8 @@ class TaskService(
         task.subject = request.subject ?: task.subject
 
         if (!files.isNullOrEmpty()) {
-            manageAssignmentFiles(task, files)
+            val uploadPath = "tasks/${task.id}/assignments/"
+            manageAssignmentFiles(task, files, uploadPath)
         }
 
         return TaskResponse.from(task)
@@ -285,28 +291,32 @@ class TaskService(
     fun getTasksByDateList(
         userId: Long,
         date: LocalDate,
+        subject: Subject?,
         lastId: Long?,
         size: Int,
     ): SliceResponse<TaskAndAssignmentResponse> {
         val user = userRepository.getByUserId(userId)
-        val dailyPlanner =
-            dailyPlannerService.getDailyPlannerOrNullByUserAndDate(user, date)
-                ?: return SliceResponse(
-                    emptyList(),
-                    false,
-                )
+        val dailyPlanner = dailyPlannerService.getDailyPlannerOrNullByUserAndDate(user, date)
+            ?: return SliceResponse(emptyList(), false)
+
         val pageable = Pageable.ofSize(size)
-        val tasks = taskRepository.sliceByDailyPlannerId(dailyPlanner.id, lastId, pageable)
+
+        // [변경 로직] subject가 있으면 과목별 조회, 없으면 전체 조회
+        val tasks = if (subject != null) {
+            taskRepository.sliceByDailyPlannerIdAndSubject(dailyPlanner.id, subject, lastId, pageable)
+        } else {
+            taskRepository.sliceByDailyPlannerId(dailyPlanner.id, lastId, pageable)
+        }
+
         return SliceResponse(
             tasks.content.map { task ->
-                val assignmentList =
-                    assignmentRepository.findAllByTask(task).map {
-                        AssignmentResponse(
-                            it.id,
-                            it.originalFileName,
-                            objectStorageRepository.getDownloadUrl(it.fileKey),
-                        )
-                    }
+                val assignmentList = assignmentRepository.findAllByTask(task).map {
+                    AssignmentResponse(
+                        it.id,
+                        it.originalFileName,
+                        objectStorageRepository.getDownloadUrl(it.fileKey),
+                    )
+                }
                 TaskAndAssignmentResponse(task, assignmentList, task.writer.id == user.id)
             },
             tasks.hasNext(),
@@ -469,36 +479,58 @@ class TaskService(
         content: String?,
         subject: Subject,
         files: List<MultipartFile>?,
+        // [New] 자료실 연동을 위한 파라미터들
         materialFileKey: String? = null,
         materialFileName: String? = null,
+        isAutoArchive: Boolean = false
     ): TaskResponse {
         val planner = dailyPlannerService.getOrCreateDailyPlannerByDate(targetMentee, date)
 
-        val task =
-            taskRepository.save(
-                Task(
-                    dailyPlanner = planner,
-                    subject = subject,
-                    taskType = taskType,
-                    title = title,
-                    content = content,
-                    writer = writer,
-                    isCompleted = false,
-                ),
-            )
+        val task = taskRepository.save(
+            Task(
+                dailyPlanner = planner,
+                subject = subject,
+                taskType = taskType,
+                title = title,
+                content = content,
+                writer = writer,
+                isCompleted = false,
+            ),
+        )
 
+        // 파일 처리 로직
         if (materialFileKey != null && materialFileName != null) {
-            // Case A: 자료실 파일을 사용하는 경우 (S3 업로드 없이 DB만 연결)
+            // [Case A] 기존 자료실 파일 재사용 (S3 업로드 X, DB만 연결)
             assignmentRepository.save(
                 Assignment(
                     task = task,
                     fileKey = materialFileKey,
-                    originalFileName = materialFileName,
-                ),
+                    originalFileName = materialFileName
+                )
             )
         } else if (!files.isNullOrEmpty()) {
-            // Case B: 직접 파일을 업로드한 경우 (기존 로직: S3 업로드 수행)
-            manageAssignmentFiles(task, files)
+            // [Case B] 신규 파일 업로드 (기존 메서드 재사용)
+            // 멘토가 올리는 파일이면 경로를 'materials/'로 하여 관리 편의성 증대 (선택사항)
+            val uploadPath = if (isAutoArchive) "materials/${writer.id}/" else "tasks/${task.id}/assignments/"
+
+            val newAssignments = manageAssignmentFiles(task, files, uploadPath)
+
+            // [Auto Archive] 멘토가 직접 올린 파일이면 -> 자료실(LearningMaterial)에도 자동 등록
+            if (isAutoArchive) {
+                newAssignments.forEach { assignment ->
+                    learningMaterialRepository.save(
+                        LearningMaterial(
+                            mentor = writer,
+                            title = title,
+                            taskType = taskType,
+                            subject = subject,
+                            content = content,
+                            fileKey = assignment.fileKey,
+                            originalFileName = assignment.originalFileName
+                        )
+                    )
+                }
+            }
         }
 
         return TaskResponse.from(task)
@@ -507,18 +539,16 @@ class TaskService(
     private fun manageAssignmentFiles(
         task: Task,
         files: List<MultipartFile>,
-    ) {
+        pathPrefix: String
+    ): List<Assignment> {
         val existingAssignments = assignmentRepository.findAllByTask(task)
-
         if (existingAssignments.isNotEmpty()) {
             assignmentRepository.deleteAll(existingAssignments)
-            assignmentRepository.flush() // 즉시 반영
+            assignmentRepository.flush()
         }
 
-        // 2. 새 파일들 반복 업로드 및 저장
-        files.forEach { file ->
-            val filePath = "tasks/${task.id}/assignments/"
-            val uploadedKey = objectStorageRepository.upload(filePath, file)
+        return files.map { file ->
+            val uploadedKey = objectStorageRepository.upload(pathPrefix, file)
 
             assignmentRepository.save(
                 Assignment(

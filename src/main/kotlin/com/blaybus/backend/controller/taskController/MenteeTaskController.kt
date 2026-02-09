@@ -9,6 +9,7 @@ import com.blaybus.backend.dto.MenteeTaskUpdateRequest
 import com.blaybus.backend.dto.SliceResponse
 import com.blaybus.backend.dto.TaskAndAssignmentResponse
 import com.blaybus.backend.dto.TaskResponse
+import com.blaybus.backend.entity.Subject
 import com.blaybus.backend.service.TaskService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -142,6 +143,8 @@ class MenteeTaskController(
             required = true,
         )
         @RequestParam date: LocalDate,
+        @Parameter(description = "과목 필터 (KOREAN, MATH, ENGLISH... / 없으면 전체)")
+        @RequestParam(required = false) subject: Subject?,
         @Parameter(
             description = "마지막에 조회한 할 일 ID (페이징용, 선택 사항)",
             required = false,
@@ -154,7 +157,7 @@ class MenteeTaskController(
         @RequestParam(required = false, defaultValue = "20") size: Int,
     ): ResponseEntity<SliceResponse<TaskAndAssignmentResponse>> {
         val normalizedSize = if (size <= 0) 1 else size
-        val tasks = taskService.getTasksByDateList(userId, date, lastTaskId, normalizedSize)
+        val tasks = taskService.getTasksByDateList(userId, date, subject, lastTaskId, normalizedSize)
         return ResponseEntity.ok(tasks)
     }
 }
