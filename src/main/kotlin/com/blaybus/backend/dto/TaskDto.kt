@@ -212,6 +212,8 @@ data class MenteeSummaryDto(
     val grade: String,
     @Schema(description = "프로필 이미지 URL")
     val profileImageUrl: String?,
+    @Schema(description = "디데이")
+    val dday: Int?
 )
 
 data class RecentTaskSummaryDto(
@@ -225,8 +227,8 @@ data class RecentTaskSummaryDto(
     val schoolAndGrade: String,
     @Schema(description = "목표 학교", example = "한국대학교")
     val targetSchool: String,
-    @Schema(description = "디데이", example = "30")
-    val targetDate: LocalDate?,
+    @Schema(description = "제출날짜", example = "2026-02-06T21:30:45")
+    val completedTime: LocalDateTime?,
     @Schema(description = "제출 일시 (완료 시간)", example = "2026-02-06 21:30:45")
     val completedAt: LocalDateTime?,
     @Schema(description = "피드백 완료 여부")

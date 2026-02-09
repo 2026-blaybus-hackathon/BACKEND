@@ -39,6 +39,7 @@ import com.blaybus.backend.repository.UserRepository
 import com.blaybus.backend.repository.getByTaskId
 import com.blaybus.backend.repository.getByUserId
 import com.blaybus.backend.repository.getTaskAndDailyPlannerById
+import com.blaybus.backend.util.getDDay
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -412,6 +413,7 @@ class TaskService(
                         mentee.profileName?.let {
                             objectStorageRepository.getDownloadUrl(it)
                         },
+                    dday = mentee.targetDate?.let { getDDay(it, LocalDate.now()) },
                 )
             }
 
@@ -445,7 +447,7 @@ class TaskService(
                         schoolAndGrade = "${u.schoolName ?: ""} ${u.grade?.description ?: ""}",
                         isFeedbackCompleted = task.feedback != null,
                         targetSchool = u.targetSchool ?: "",
-                        targetDate = u.targetDate
+                        completedTime = task.completedTime,
                     )
                 }
 
