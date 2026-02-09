@@ -142,7 +142,7 @@ class FeedbackDto {
             feedbackId = feedback.id,
             taskId = feedback.task.id,
             taskTitle = feedback.task.title,
-            subject = feedback.task.subject.name,
+            subject = feedback.task.subject.displayName,
             createdDateTime = feedback.createdDateTime,
         )
     }
