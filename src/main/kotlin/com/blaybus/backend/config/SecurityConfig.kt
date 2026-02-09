@@ -55,6 +55,7 @@ class SecurityConfig(
                 it
                     .requestMatchers("/api/v1/tasks/**").hasAnyAuthority(Role.MENTOR.name, Role.MENTEE.name)
                     .requestMatchers("/api/v1/users/**").hasAnyAuthority(Role.MENTOR.name, Role.MENTEE.name)
+                    .requestMatchers("/api/v1/feedbacks/**").hasAnyAuthority(Role.MENTOR.name, Role.MENTEE.name)
                 it
                     .requestMatchers("/api/v1/mentor/**", "/api/v1/users/mentor/**", "/api/v1/reports/mentor")
                     .hasAuthority(Role.MENTOR.name)
