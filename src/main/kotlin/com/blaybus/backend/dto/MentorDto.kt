@@ -83,3 +83,12 @@ data class MentorTaskAssignRequest(
     @field:Schema(description = "할당할 날짜", example = "2026-02-06")
     val date: LocalDate,
 )
+
+data class MentorMyPageStatsDto(
+    @Schema(description = "멘티 수", example = "3")
+    val totalMenteeCount: Int,
+    @Schema(description = "평균 학습 시간 (분 단위)", example = "7680") // 128시간
+    val averageStudyTime: Int,
+    @Schema(description = "평균 과제 완료율 (%)", example = "94")
+    val averageCompletionRate: Int
+)

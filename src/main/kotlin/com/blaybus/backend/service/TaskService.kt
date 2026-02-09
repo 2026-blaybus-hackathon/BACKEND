@@ -12,6 +12,7 @@ import com.blaybus.backend.dto.MenteeTaskCreateRequest
 import com.blaybus.backend.dto.TaskWithFeedbackResponse
 import com.blaybus.backend.dto.MenteeTaskUpdateRequest
 import com.blaybus.backend.dto.MentorDashboardResponse
+import com.blaybus.backend.dto.MentorMyPageStatsDto
 import com.blaybus.backend.dto.MentorTaskAssignRequest
 import com.blaybus.backend.dto.MentorTaskUpdateRequest
 import com.blaybus.backend.dto.PagedResponse
@@ -40,6 +41,7 @@ import com.blaybus.backend.repository.UserRepository
 import com.blaybus.backend.repository.getByTaskId
 import com.blaybus.backend.repository.getByUserId
 import com.blaybus.backend.repository.getTaskAndDailyPlannerById
+import com.blaybus.backend.util.getDDay
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -540,6 +542,7 @@ class TaskService(
                         mentee.profileName?.let {
                             objectStorageRepository.getDownloadUrl(it)
                         },
+                    dday = mentee.targetDate?.let { getDDay(it, LocalDate.now()) },
                 )
             }
 
@@ -570,10 +573,9 @@ class TaskService(
                         title = task.title,
                         menteeName = u.name,
                         schoolAndGrade = "${u.schoolName ?: ""} ${u.grade?.description ?: ""}",
-                        date = task.dailyPlanner.date,
                         isFeedbackCompleted = task.feedback != null,
                         targetSchool = u.targetSchool ?: "",
-                        targetDate = u.targetDate,
+                        completedTime = task.completedTime,
                     )
                 }
 
@@ -607,5 +609,32 @@ class TaskService(
         } else {
             ((completedTasks.toDouble() / totalTasks.toDouble()) * 100).toInt()
         }
+    }
+
+    fun getMentorMyPageStats(mentorId: Long): MentorMyPageStatsDto {
+        userRepository.getByUserId(mentorId)
+
+        val menteeCount = userRepository.countByMentorId(mentorId)
+
+        val totalStudyMinutes = taskRepository.getTotalStudyTimeByMentorId(mentorId) ?: 0L
+        val averageStudyTime = if (menteeCount > 0) (totalStudyMinutes / menteeCount).toInt() else 0
+
+        val stats = taskRepository.getCompletionRateStatsByMentorId(mentorId)
+        var completionRate = 0
+        if (stats.isNotEmpty()) {
+            val row = stats[0]
+            val totalTasks = (row[0] as Number).toLong()
+            val completedTasks = (row[1] as? Number)?.toLong() ?: 0L
+
+            if (totalTasks > 0) {
+                completionRate = ((completedTasks.toDouble() / totalTasks.toDouble()) * 100).toInt()
+            }
+        }
+
+        return MentorMyPageStatsDto(
+            totalMenteeCount = menteeCount,
+            averageStudyTime = averageStudyTime,
+            averageCompletionRate = completionRate
+        )
     }
 }
