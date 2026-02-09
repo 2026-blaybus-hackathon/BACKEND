@@ -30,4 +30,9 @@ interface DailyPlannerRepository : JpaRepository<DailyPlanner, Long> {
         startDate: LocalDate,
         endDate: LocalDate,
     ): List<DailyPlanner>
+
+    fun countByUserIdAndTotalFeedbackNotNullAndIsTotalFeedbackReadFalse(userId: Long): Long
+
+    @EntityGraph(attributePaths = ["tasks"])
+    fun findByUserIdAndTotalFeedbackNotNullAndIsTotalFeedbackReadFalse(userId: Long): List<DailyPlanner>
 }

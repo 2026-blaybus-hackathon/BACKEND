@@ -1,9 +1,11 @@
 package com.blaybus.backend.dto
 
+import com.blaybus.backend.entity.DailyPlanner
 import com.blaybus.backend.entity.Feedback
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 class FeedbackDto {
@@ -127,23 +129,42 @@ class FeedbackDto {
     )
 
     data class GetUnreadFeedbackResponse(
-        @Schema(description = "피드백 id")
-        val feedbackId: Long,
-        @Schema(description = "할 일 id")
-        val taskId: Long,
-        @Schema(description = "할 일 제목")
-        val taskTitle: String,
-        @Schema(description = "과목")
-        val subject: String,
+        @Schema(description = "피드백 id (과제 피드백인 경우 존재)")
+        val feedbackId: Long? = null,
+        @Schema(description = "할 일 id (과제 피드백인 경우 존재)")
+        val taskId: Long? = null,
+        @Schema(description = "할 일 제목 (과제 피드백인 경우 존재)")
+        val taskTitle: String? = null,
+        @Schema(description = "과목 (과제 피드백인 경우 존재)")
+        val subject: String? = null,
+        @Schema(description = "피드백 내용")
+        val content: String?,
+        @Schema(description = "플래너 날짜 (종합 피드백인 경우 존재)")
+        val plannerDate: LocalDate? = null,
         @Schema(description = "피드백 생성 시간")
-        val createdDateTime: LocalDateTime,
+        val createdDateTime: LocalDate?,
+        @Schema(description = "피드백 타입 (TASK: 과제 피드백, TOTAL: 종합 피드백)")
+        val type: String,
+        @Schema(description = "공부 시간 (분 단위, 과제 피드백은 해당 과제, 종합 피드백은 당일 총합)")
+        val studyMinutes: Int?,
     ) {
         constructor(feedback: Feedback) : this(
             feedbackId = feedback.id,
             taskId = feedback.task.id,
             taskTitle = feedback.task.title,
             subject = feedback.task.subject.displayName,
-            createdDateTime = feedback.createdDateTime,
+            content = feedback.detail,
+            createdDateTime = feedback.createdDateTime.toLocalDate(),
+            type = "TASK",
+            studyMinutes = feedback.task.studyDurationInMinutes,
+        )
+
+        constructor(dailyPlanner: DailyPlanner) : this(
+            plannerDate = dailyPlanner.date,
+            content = dailyPlanner.totalFeedback,
+            createdDateTime = dailyPlanner.totalFeedbackCreatedDateTime,
+            type = "TOTAL",
+            studyMinutes = dailyPlanner.tasks.mapNotNull { it.studyDurationInMinutes }.sum(),
         )
     }
 
