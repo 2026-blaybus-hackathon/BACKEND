@@ -198,4 +198,22 @@ interface TaskRepository : JpaRepository<Task, Long> {
         mentorId: Long,
         pageable: Pageable,
     ): Page<Task>
+
+    @Query("""
+        SELECT SUM(t.studyDurationInMinutes)
+        FROM Task t
+        JOIN t.dailyPlanner dp
+        JOIN dp.user u
+        WHERE u.mentor.id = :mentorId
+    """)
+    fun getTotalStudyTimeByMentorId(mentorId: Long): Long?
+
+    @Query("""
+        SELECT count(t), sum(CASE WHEN t.isCompleted = true THEN 1 ELSE 0 END)
+        FROM Task t
+        JOIN t.dailyPlanner dp
+        JOIN dp.user u
+        WHERE u.mentor.id = :mentorId
+    """)
+    fun getCompletionRateStatsByMentorId(mentorId: Long): List<Array<Any>>
 }
