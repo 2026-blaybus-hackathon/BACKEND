@@ -25,6 +25,7 @@ class ReportService(
     private val userRepository: UserRepository,
     private val reportRepository: ReportRepository,
     private val taskReportRepository: TaskRepository,
+    private val authService: AuthService,
 ) {
     @Transactional
     fun createMenteeReport(
@@ -100,27 +101,20 @@ class ReportService(
 
     fun getMenteeReport(
         userId: Long,
-        menteeId: Long,
+        menteeId: Long?,
         period: Period,
         reportDate: LocalDate,
     ): ReportMenteeResponse? {
         val user = userRepository.getByUserId(userId)
-        val mentee = userRepository.getByUserId(menteeId)
-        when (user.role) {
-            Role.MENTOR -> {
-                user.validateMentee(mentee)
-            }
-            Role.MENTEE -> {
-                user.validateSameUser(mentee)
-            }
-        }
+        val targetUser = authService.validateMentorAccessAndGetTargetUser(user, menteeId)
 
         val (startDate, endDate) =
             when (period) {
                 Period.WEEKLY -> getWeekRange(reportDate)
                 Period.MONTHLY -> getMonthRange(reportDate)
             }
-        val report = reportRepository.findByMenteeIdAndStartDateAndEndDate(userId, startDate, endDate) ?: return null
+        val report =
+            reportRepository.findByMenteeIdAndStartDateAndEndDate(targetUser.id, startDate, endDate) ?: return null
         return ReportMenteeResponse(report)
     }
 }
