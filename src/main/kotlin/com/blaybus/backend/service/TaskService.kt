@@ -345,9 +345,12 @@ class TaskService(
         val user = userRepository.getByUserId(userId)
         val mentee = userRepository.getByUserId(menteeId)
 
-        if (user.role == Role.MENTOR) {
-            user.validateMentee(mentee)
+        when (user.role) {
+            Role.MENTOR -> user.validateMentee(mentee)
+            Role.MENTEE -> user.validateSameUser(mentee)
+        }
 
+        if (user.role == Role.MENTOR) {
             val yesterday = LocalDate.now().minusDays(1)
             val tasks = taskRepository.findByDailyPlannerUserAndDailyPlannerDate(mentee, yesterday)
             if (tasks.isEmpty()) return emptyList()
