@@ -5,6 +5,8 @@ import com.blaybus.backend.entity.Notification
 import com.blaybus.backend.entity.NotificationType
 import com.blaybus.backend.entity.Period
 import com.blaybus.backend.entity.User
+import com.blaybus.backend.exception.CustomException
+import com.blaybus.backend.exception.ErrorCode
 import com.blaybus.backend.repository.NotificationRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -40,4 +42,21 @@ class NotificationService(
         notificationRepository
             .findAllByRecipientIdOrderByCreatedDateTimeDesc(userId)
             .map { NotificationDto.NotificationResponse(it) }
+
+    @Transactional
+    fun markAsRead(
+        recipientId: Long,
+        notificationId: Long,
+    ) {
+        val notification =
+            notificationRepository
+                .findById(notificationId)
+                .orElseThrow { CustomException(ErrorCode.NOTIFICATION_NOT_FOUND) }
+
+        if (notification.recipient.id != recipientId) {
+            throw CustomException(ErrorCode.NOT_YOUR_NOTIFICATION)
+        }
+
+        notification.markAsRead()
+    }
 }
