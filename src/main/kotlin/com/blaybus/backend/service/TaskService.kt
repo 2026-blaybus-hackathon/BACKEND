@@ -482,6 +482,8 @@ class TaskService(
     }
 
     fun getMentorMyPageStats(mentorId: Long): MentorMyPageStatsDto {
+        userRepository.getByUserId(mentorId)
+
         val menteeCount = userRepository.countByMentorId(mentorId)
 
         val totalStudyMinutes = taskRepository.getTotalStudyTimeByMentorId(mentorId) ?: 0L
