@@ -6,7 +6,20 @@ plugins {
     kotlin("plugin.jpa") version "2.2.21"
     id("org.jlleitschuh.gradle.ktlint") version "14.0.1"
     id("com.google.cloud.tools.jib") version "3.4.0"
+    id("io.sentry.jvm.gradle") version "5.12.1"
 }
+
+sentry {
+    // Generates a JVM (Java, Kotlin, etc.) source bundle and uploads your source code to Sentry.
+    // This enables source context, allowing you to see your source
+    // code as part of your stack traces in Sentry.
+    includeSourceContext = true
+
+    org = "weit-4u"
+    projectName = "java-spring-boot"
+    authToken = System.getenv("SENTRY_AUTH_TOKEN")
+}
+
 jib {
     from {
         image = "eclipse-temurin:21-jre"

@@ -40,7 +40,5 @@ out/
 ### .env files ###
 **/.env
 
-application-stable.yml
-
 ### kubernetes config files ###
 **/secret.yaml
