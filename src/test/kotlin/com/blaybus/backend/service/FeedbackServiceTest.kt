@@ -588,7 +588,7 @@ class FeedbackServiceTest {
             ).thenReturn(feedbackList)
 
             // when
-            val result = feedbackService.findMyFeedbacks(mentee.id, date)
+            val result = feedbackService.findFeedbacks(mentee.id, date)
 
             // then
             assertThat(result).hasSize(2)
@@ -612,7 +612,7 @@ class FeedbackServiceTest {
             ).thenReturn(emptyList())
 
             // when
-            val result = feedbackService.findMyFeedbacks(mentee.id, date)
+            val result = feedbackService.findFeedbacks(mentee.id, date)
 
             // then
             assertThat(result).isEmpty()
@@ -629,7 +629,7 @@ class FeedbackServiceTest {
 
             // when & then
             assertThatThrownBy {
-                feedbackService.findMyFeedbacks(nonExistentUserId, date)
+                feedbackService.findFeedbacks(nonExistentUserId, date)
             }.isInstanceOf(CustomException::class.java)
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.USER_NOT_FOUND)
         }
