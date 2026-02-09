@@ -45,6 +45,12 @@ interface TaskRepository : JpaRepository<Task, Long> {
         pageable: Pageable,
     ): Page<Task>
 
+    @EntityGraph(attributePaths = ["studyImages", "feedback"])
+    fun findByDailyPlannerUserAndDailyPlannerDate(
+        user: User,
+        date: LocalDate,
+    ): List<Task>
+
     @Query(
         """
         SELECT count(t), sum(CASE WHEN t.isCompleted = true THEN 1 ELSE 0 END)

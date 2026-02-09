@@ -2,7 +2,6 @@ package com.blaybus.backend.controller.taskController
 
 import com.blaybus.backend.annotation.ApiErrorCodes
 import com.blaybus.backend.dto.TaskWithFeedbackResponse
-import com.blaybus.backend.dto.TaskDetailResponse
 import com.blaybus.backend.exception.ErrorCode
 import com.blaybus.backend.service.TaskService
 import io.swagger.v3.oas.annotations.Operation

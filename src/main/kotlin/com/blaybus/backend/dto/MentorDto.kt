@@ -50,14 +50,8 @@ data class TaskImageResponse(
 data class FeedbackDetail(
     @Schema(description = "피드백 ID")
     val feedbackId: Long,
-    @Schema(description = "피드백 요약")
-    val keepContent: String?,
-    @Schema(description = "피드백 요약")
-    val problemContent: String?,
-    @Schema(description = "피드백 요약")
-    val tryContent: String?,
     @Schema(description = "피드백 코멘트")
-    val detail: String?,
+    val content: String?,
 )
 
 data class MentorTaskAssignRequest(

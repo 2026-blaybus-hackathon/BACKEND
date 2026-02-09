@@ -320,6 +320,28 @@ class TaskService(
 
         if (user.role == Role.MENTOR) {
             user.validateMentee(mentee)
+
+            val yesterday = LocalDate.now().minusDays(1)
+            val tasks = taskRepository.findByDailyPlannerUserAndDailyPlannerDate(mentee, yesterday)
+            if (tasks.isEmpty()) return emptyList()
+
+            val dailyPlanner = tasks.first().dailyPlanner
+            val taskDetails = tasks.map { toTaskDetail(it) }
+
+            return listOf(
+                TaskWithFeedbackResponse(
+                    menteeId = mentee.id,
+                    tasks =
+                        PagedResponse(
+                            content = taskDetails,
+                            page = 0,
+                            size = taskDetails.size,
+                            totalPages = 1,
+                            totalElements = taskDetails.size.toLong(),
+                        ),
+                    totalFeedback = dailyPlanner.totalFeedback,
+                ),
+            )
         }
 
         val tasksPage = taskRepository.findByDailyPlannerUser(mentee, pageable)
@@ -371,12 +393,9 @@ class TaskService(
                 task.feedback?.let { fb ->
                     FeedbackDetail(
                         feedbackId = fb.id,
-                        keepContent = fb.keepContent,
-                        problemContent = fb.problemContent,
-                        tryContent = fb.tryContent,
-                        detail = fb.detail,
+                        content = fb.detail,
                     )
-                } ?: FeedbackDetail(0L, null, null, null, null),
+                } ?: FeedbackDetail(0L, null),
         )
 
     private fun createAndSaveTask(
