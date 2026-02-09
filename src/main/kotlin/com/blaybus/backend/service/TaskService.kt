@@ -21,6 +21,7 @@ import com.blaybus.backend.dto.TaskAndAssignmentResponse
 import com.blaybus.backend.dto.TaskDetail
 import com.blaybus.backend.dto.TaskImageResponse
 import com.blaybus.backend.dto.TaskResponse
+import com.blaybus.backend.dto.TaskSummaryResponse
 import com.blaybus.backend.entity.Assignment
 import com.blaybus.backend.entity.Role
 import com.blaybus.backend.entity.StudyImage
@@ -400,6 +401,34 @@ class TaskService(
             )
         }
     }
+
+    fun getTaskSummaries(
+        userId: Long,
+        menteeId: Long,
+        pageable: Pageable,
+    ): PagedResponse<TaskSummaryResponse> {
+        val mentor = userRepository.getByUserId(userId)
+        val mentee = userRepository.getByUserId(menteeId)
+        mentor.validateMentee(mentee)
+
+        val tasksPage = taskRepository.findTasksWithFeedbackByMenteeAndMentor(mentee.id, mentor.id, pageable)
+
+        return PagedResponse(
+            content = tasksPage.content.map { task ->
+                TaskSummaryResponse(
+                    taskId = task.id,
+                    subject = task.subject.name,
+                    title = task.title,
+                    date = task.createdDateTime.toLocalDate(),
+                )
+            },
+            page = tasksPage.number,
+            size = tasksPage.size,
+            totalPages = tasksPage.totalPages,
+            totalElements = tasksPage.totalElements,
+        )
+    }
+
 
     private fun toTaskDetail(task: Task): TaskDetail =
         TaskDetail(

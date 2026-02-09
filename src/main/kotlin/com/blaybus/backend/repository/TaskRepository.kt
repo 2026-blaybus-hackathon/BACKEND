@@ -181,4 +181,21 @@ interface TaskRepository : JpaRepository<Task, Long> {
     """,
     )
     fun findTasksWithReadFeedbackByMenteeId(menteeId: Long): List<Task>
+
+    @Query(
+        """
+        SELECT t
+        FROM Task t
+        JOIN t.feedback f
+        JOIN t.dailyPlanner dp
+        WHERE dp.user.id = :menteeId
+          AND f.mentor.id = :mentorId
+        ORDER BY f.createdDateTime DESC
+    """,
+    )
+    fun findTasksWithFeedbackByMenteeAndMentor(
+        menteeId: Long,
+        mentorId: Long,
+        pageable: Pageable,
+    ): Page<Task>
 }
