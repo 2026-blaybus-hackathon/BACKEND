@@ -19,7 +19,6 @@ import com.blaybus.backend.dto.RecentTaskSummaryDto
 import com.blaybus.backend.dto.SliceResponse
 import com.blaybus.backend.dto.TaskAndAssignmentResponse
 import com.blaybus.backend.dto.TaskDetail
-import com.blaybus.backend.dto.TaskDetailResponse
 import com.blaybus.backend.dto.TaskImageResponse
 import com.blaybus.backend.dto.TaskResponse
 import com.blaybus.backend.entity.Assignment
@@ -281,16 +280,34 @@ class TaskService(
     }
 
     @Transactional(readOnly = true)
-    fun getTaskByTaskId(
+    fun getByTaskId(
         userId: Long,
         taskId: Long,
-    ): TaskDetailResponse {
+    ): TaskWithFeedbackResponse {
+        val user = userRepository.getByUserId(userId)
         val task = taskRepository.getTaskAndDailyPlannerById(taskId)
-        if (task.dailyPlanner.user.id != userId) {
-            throw CustomException(ErrorCode.NOT_YOUR_TASK)
+
+        when (user.role) {
+            Role.MENTOR -> {
+                user.validateMentee(task.dailyPlanner.user)
+            }
+            Role.MENTEE -> {
+                user.validateSameUser(task.dailyPlanner.user)
+            }
         }
 
-        return TaskDetailResponse(task)
+        return TaskWithFeedbackResponse(
+            menteeId = task.dailyPlanner.user.id,
+            tasks =
+                PagedResponse(
+                    content = listOf(toTaskDetail(task)),
+                    page = 0,
+                    size = 1,
+                    totalPages = 1,
+                    totalElements = 1,
+                ),
+            totalFeedback = task.dailyPlanner.totalFeedback,
+        )
     }
 
     fun getTasksWithFeedback(
@@ -315,36 +332,7 @@ class TaskService(
             .take(2)
 
         return tasksByDailyPlanner.map { (dailyPlanner, tasks) ->
-            val taskDetails = tasks.map { task ->
-                TaskDetail(
-                    taskId = task.id,
-                    subject = task.subject.name,
-                    title = task.title,
-                    time = task.studyDurationInMinutes,
-                    date = task.createdDateTime.toLocalDate(),
-                    status = task.isCompleted,
-                    menteeComment = task.comment,
-                    feedbackStatus = task.feedbackStatus().name,
-                    images =
-                        task.studyImages.map { img ->
-                            TaskImageResponse(
-                                url = objectStorageRepository.getDownloadUrl(img.imageFileName),
-                                name = img.originalFileName,
-                                sequence = img.sequence,
-                            )
-                        },
-                    feedback =
-                        task.feedback?.let { fb ->
-                            FeedbackDetail(
-                                feedbackId = fb.id,
-                                keepContent = fb.keepContent,
-                                problemContent = fb.problemContent,
-                                tryContent = fb.tryContent,
-                                detail = fb.detail,
-                            )
-                        } ?: FeedbackDetail(0L, null, null, null, null),
-                )
-            }
+            val taskDetails = tasks.map { toTaskDetail(it) }
 
             TaskWithFeedbackResponse(
                 menteeId = mentee.id,
@@ -360,6 +348,36 @@ class TaskService(
             )
         }
     }
+
+    private fun toTaskDetail(task: Task): TaskDetail =
+        TaskDetail(
+            taskId = task.id,
+            subject = task.subject.name,
+            title = task.title,
+            time = task.studyDurationInMinutes,
+            date = task.createdDateTime.toLocalDate(),
+            status = task.isCompleted,
+            menteeComment = task.comment,
+            feedbackStatus = task.feedbackStatus().name,
+            images =
+                task.studyImages.map { img ->
+                    TaskImageResponse(
+                        url = objectStorageRepository.getDownloadUrl(img.imageFileName),
+                        name = img.originalFileName,
+                        sequence = img.sequence,
+                    )
+                },
+            feedback =
+                task.feedback?.let { fb ->
+                    FeedbackDetail(
+                        feedbackId = fb.id,
+                        keepContent = fb.keepContent,
+                        problemContent = fb.problemContent,
+                        tryContent = fb.tryContent,
+                        detail = fb.detail,
+                    )
+                } ?: FeedbackDetail(0L, null, null, null, null),
+        )
 
     private fun createAndSaveTask(
         writer: User,
