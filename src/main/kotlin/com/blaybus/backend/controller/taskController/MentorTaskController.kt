@@ -1,11 +1,13 @@
 package com.blaybus.backend.controller.taskController
 
+import com.blaybus.backend.dto.DayOfTaskWithFeedbackResponse
 import com.blaybus.backend.dto.MentorTaskAssignRequest
 import com.blaybus.backend.dto.MentorTaskUpdateRequest
 import com.blaybus.backend.dto.PagedResponse
 import com.blaybus.backend.dto.TaskInfoResponse
 import com.blaybus.backend.dto.TaskSummaryResponse
 import com.blaybus.backend.dto.TaskResponse
+import com.blaybus.backend.dto.TaskWithFeedbackResponse
 import com.blaybus.backend.service.TaskService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -78,10 +80,24 @@ class MentorTaskController(
     }
 
     @Operation(
+        summary = "멘티별 task 조회",
+        description = "멘티별로 task 목록을 조회한다.",
+    )
+    @GetMapping("/tasks/{menteeId}")
+    fun getTasksOrderByFeedbackRecently(
+        @AuthenticationPrincipal userId: Long,
+        @PathVariable menteeId: Long
+    ): ResponseEntity<DayOfTaskWithFeedbackResponse> {
+        val response =
+            taskService.getYesterdaysTaskDetailByMenteeId(userId, menteeId)
+        return ResponseEntity.ok(response)
+    }
+
+    @Operation(
         summary = "최근 피드백을 작성한 task 조회",
         description = "task 목록 최근 피드백을 작성한 순서대로 응답한다.",
     )
-    @GetMapping("/feedbacks/{menteeId}")
+    @GetMapping("/recent-feedbacks/{menteeId}")
     fun getTasksOrderByFeedbackRecently(
         @AuthenticationPrincipal userId: Long,
         @PathVariable menteeId: Long,

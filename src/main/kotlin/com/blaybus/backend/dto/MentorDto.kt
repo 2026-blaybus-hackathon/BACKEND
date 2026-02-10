@@ -67,6 +67,14 @@ data class TaskWithFeedbackResponse(
     val totalFeedback: String? = null,
 )
 
+data class DayOfTaskWithFeedbackResponse(
+    @Schema(description = "멘티 ID")
+    val menteeId: Long,
+    val tasks: List<TaskDetail>,
+    @Schema(description = "종합 피드백")
+    val totalFeedback: String?,
+)
+
 data class TaskDetail(
     @Schema(description = "과제 ID")
     val taskId: Long,

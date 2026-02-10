@@ -55,7 +55,7 @@ class TaskController(
         )
         @PathVariable taskId: Long,
     ): ResponseEntity<TaskWithFeedbackResponse> {
-        val task = taskService.getByTaskId(userId, taskId)
+        val task = taskService.getTaskDetailByTaskId(userId, taskId)
         return ResponseEntity.ok(task)
     }
 }

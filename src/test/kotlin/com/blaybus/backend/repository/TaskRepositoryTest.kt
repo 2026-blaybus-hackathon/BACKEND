@@ -119,7 +119,7 @@ class TaskRepositoryTest {
             val end = today.plusDays(1).atStartOfDay()
 
             // when
-            val result = taskRepository.findByUserIdAndTaskCreatedBetween(mentee.id, start, end)
+            val result = taskRepository.findFeedbacksByUserIdAndTaskCreatedBetween(mentee.id, start, end)
 
             // then
             assertThat(result).hasSize(2)
@@ -150,7 +150,7 @@ class TaskRepositoryTest {
             val end = today.plusDays(1).atStartOfDay()
 
             // when
-            val result = taskRepository.findByUserIdAndTaskCreatedBetween(mentee.id, start, end)
+            val result = taskRepository.findFeedbacksByUserIdAndTaskCreatedBetween(mentee.id, start, end)
 
             // then
             assertThat(result).isEmpty()
@@ -192,7 +192,7 @@ class TaskRepositoryTest {
             val end = yesterday.plusDays(1).atStartOfDay().minusNanos(1)
 
             // when
-            val result = taskRepository.findByUserIdAndTaskCreatedBetween(mentee.id, start, end)
+            val result = taskRepository.findFeedbacksByUserIdAndTaskCreatedBetween(mentee.id, start, end)
 
             // then
             assertThat(result).isEmpty()
@@ -271,7 +271,7 @@ class TaskRepositoryTest {
             val end = today.plusDays(1).atStartOfDay()
 
             // when
-            val result = taskRepository.findByUserIdAndTaskCreatedBetween(mentee.id, start, end)
+            val result = taskRepository.findFeedbacksByUserIdAndTaskCreatedBetween(mentee.id, start, end)
 
             // then
             assertThat(result).hasSize(1)

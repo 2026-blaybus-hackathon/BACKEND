@@ -109,7 +109,7 @@ class FeedbackService(
         val end = date.plusDays(1).atStartOfDay()
 
         return taskRepository
-            .findByUserIdAndTaskCreatedBetween(
+            .findFeedbacksByUserIdAndTaskCreatedBetween(
                 menteeId,
                 start,
                 end,
@@ -128,7 +128,7 @@ class FeedbackService(
         val end = date.plusDays(1).atStartOfDay()
 
         return taskRepository
-            .findByUserIdAndTaskCreatedBetween(
+            .findFeedbacksByUserIdAndTaskCreatedBetween(
                 targetUser.id,
                 start,
                 end,

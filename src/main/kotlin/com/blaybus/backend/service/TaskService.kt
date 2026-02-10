@@ -3,6 +3,7 @@ package com.blaybus.backend.service
 import com.blaybus.backend.dto.AssignmentResponse
 import com.blaybus.backend.dto.CommentOnTaskRequest
 import com.blaybus.backend.dto.DashboardStatsDto
+import com.blaybus.backend.dto.DayOfTaskWithFeedbackResponse
 import com.blaybus.backend.dto.FeedbackDetail
 import com.blaybus.backend.dto.FileUploadResponse
 import com.blaybus.backend.dto.MenteeStudyTimeUpdateRequest
@@ -24,6 +25,7 @@ import com.blaybus.backend.dto.TaskInfoResponse
 import com.blaybus.backend.dto.TaskResponse
 import com.blaybus.backend.dto.TaskSummaryResponse
 import com.blaybus.backend.dto.TaskWithFeedbackResponse
+import com.blaybus.backend.dto.mapper.toTaskDetail
 import com.blaybus.backend.entity.Assignment
 import com.blaybus.backend.entity.LearningMaterial
 import com.blaybus.backend.entity.Role
@@ -330,7 +332,7 @@ class TaskService(
     }
 
     @Transactional(readOnly = true)
-    fun getByTaskId(
+    fun getTaskDetailByTaskId(
         userId: Long,
         taskId: Long,
     ): TaskWithFeedbackResponse {
@@ -421,7 +423,7 @@ class TaskService(
             )
         }
     }
-    
+
     private fun toTaskDetail(task: Task): TaskDetail =
         TaskDetail(
             taskId = task.id,
@@ -778,6 +780,37 @@ class TaskService(
             totalMenteeCount = menteeCount,
             averageStudyTime = averageStudyTime,
             averageCompletionRate = completionRate,
+        )
+    }
+
+    @Transactional(readOnly = true)
+    fun getYesterdaysTaskDetailByMenteeId(
+        userId: Long,
+        menteeId: Long,
+    ): DayOfTaskWithFeedbackResponse {
+        val mentor = userRepository.getByUserId(userId)
+        val mentee = userRepository.getByUserId(menteeId)
+        mentor.validateMentee(mentee)
+
+        val yesterday = LocalDate.now().minusDays(1)
+        val start = yesterday.atStartOfDay()
+        val end = yesterday.plusDays(1).atStartOfDay()
+
+        val yesterdayTasks =
+            taskRepository.findByUserIdAndTaskCreatedBetween(menteeId, start, end)
+
+        val taskDetails: List<TaskDetail> =
+            yesterdayTasks.map { it.toTaskDetail(objectStorageRepository) }
+
+        val totalFeedback =
+            yesterdayTasks.firstOrNull()
+                ?.dailyPlanner
+                ?.totalFeedback
+
+        return DayOfTaskWithFeedbackResponse(
+            menteeId = mentee.id,
+            tasks = taskDetails,
+            totalFeedback = totalFeedback
         )
     }
 }

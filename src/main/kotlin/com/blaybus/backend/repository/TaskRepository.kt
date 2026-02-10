@@ -36,11 +36,28 @@ interface TaskRepository : JpaRepository<Task, Long> {
       and t.createdDateTime < :end
     """,
     )
-    fun findByUserIdAndTaskCreatedBetween(
+    fun findFeedbacksByUserIdAndTaskCreatedBetween(
         userId: Long,
         start: LocalDateTime,
         end: LocalDateTime,
     ): List<Feedback>
+
+    @Query(
+        """
+    select t
+    from Task t
+    join fetch t.dailyPlanner dp
+    where dp.user.id = :userId
+      and t.createdDateTime >= :start
+      and t.createdDateTime < :end
+    order by t.createdDateTime desc
+    """
+    )
+    fun findByUserIdAndTaskCreatedBetween(
+        userId: Long,
+        start: LocalDateTime,
+        end: LocalDateTime,
+    ): List<Task>
 
     @EntityGraph(attributePaths = ["studyImages", "feedback"])
     fun findByDailyPlannerUser(
