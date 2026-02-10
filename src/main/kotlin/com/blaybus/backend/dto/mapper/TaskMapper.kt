@@ -1,15 +1,14 @@
 package com.blaybus.backend.dto.mapper
 
-import com.blaybus.backend.dto.FeedbackDetail
-import com.blaybus.backend.dto.TaskDetail
+import com.blaybus.backend.dto.TaskDetailsResponse
 import com.blaybus.backend.dto.TaskImageResponse
 import com.blaybus.backend.entity.Task
 import com.blaybus.backend.repository.ObjectStorageRepository
 
-fun Task.toTaskDetail(
+fun Task.toTaskDetailsResponse(
     objectStorageRepository: ObjectStorageRepository
-): TaskDetail {
-    return TaskDetail(
+): TaskDetailsResponse {
+    return TaskDetailsResponse(
         taskId = id,
         subject = subject.name,
         title = title,
@@ -27,10 +26,7 @@ fun Task.toTaskDetail(
                     sequence = it.sequence
                 )
             },
-        feedback = feedback?.toFeedbackDetail()
-            ?: FeedbackDetail(
-                feedbackId = 0,
-                content = null
-            )
+        feedbackId = feedback?.id,
+        feedbackContent = feedback?.detail
     )
 }

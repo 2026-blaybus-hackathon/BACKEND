@@ -70,7 +70,7 @@ data class TaskWithFeedbackResponse(
 data class DayOfTaskWithFeedbackResponse(
     @Schema(description = "멘티 ID")
     val menteeId: Long,
-    val tasks: List<TaskDetail>,
+    val tasks: List<TaskDetailsResponse>,
     @Schema(description = "종합 피드백")
     val totalFeedback: String?,
 )
@@ -95,6 +95,31 @@ data class TaskDetail(
     @Schema(description = "과제 이미지 리스트")
     val images: List<TaskImageResponse>,
     val feedback: FeedbackDetail,
+)
+
+data class TaskDetailsResponse(
+    @Schema(description = "과제 ID")
+    val taskId: Long,
+    @Schema(description = "과제 과목")
+    val subject: String,
+    @Schema(description = "과제 제목")
+    val title: String,
+    @Schema(description = "투입 시간")
+    val time: Int? = null,
+    @Schema(description = "생성 날짜", example = "2026-02-06")
+    val date: LocalDate,
+    @Schema(description = "완료 여부")
+    val status: Boolean,
+    @Schema(description = "멘티 코멘트")
+    val menteeComment: String? = null,
+    @Schema(description = "피드백 여부")
+    val feedbackStatus: String,
+    @Schema(description = "과제 이미지 리스트")
+    val images: List<TaskImageResponse>,
+    @Schema(description = "피드백 ID")
+    val feedbackId: Long?,
+    @Schema(description = "피드백 내용")
+    val feedbackContent: String?,
 )
 
 data class TaskImageResponse(

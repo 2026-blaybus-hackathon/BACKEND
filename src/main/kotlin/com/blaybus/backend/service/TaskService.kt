@@ -20,12 +20,13 @@ import com.blaybus.backend.dto.RecentTaskSummaryDto
 import com.blaybus.backend.dto.SliceResponse
 import com.blaybus.backend.dto.TaskAndAssignmentResponse
 import com.blaybus.backend.dto.TaskDetail
+import com.blaybus.backend.dto.TaskDetailsResponse
 import com.blaybus.backend.dto.TaskImageResponse
 import com.blaybus.backend.dto.TaskInfoResponse
 import com.blaybus.backend.dto.TaskResponse
 import com.blaybus.backend.dto.TaskSummaryResponse
 import com.blaybus.backend.dto.TaskWithFeedbackResponse
-import com.blaybus.backend.dto.mapper.toTaskDetail
+import com.blaybus.backend.dto.mapper.toTaskDetailsResponse
 import com.blaybus.backend.entity.Assignment
 import com.blaybus.backend.entity.LearningMaterial
 import com.blaybus.backend.entity.Role
@@ -799,8 +800,8 @@ class TaskService(
         val yesterdayTasks =
             taskRepository.findByUserIdAndTaskCreatedBetween(menteeId, start, end)
 
-        val taskDetails: List<TaskDetail> =
-            yesterdayTasks.map { it.toTaskDetail(objectStorageRepository) }
+        val taskDetails: List<TaskDetailsResponse> =
+            yesterdayTasks.map { it.toTaskDetailsResponse(objectStorageRepository) }
 
         val totalFeedback =
             yesterdayTasks.firstOrNull()
