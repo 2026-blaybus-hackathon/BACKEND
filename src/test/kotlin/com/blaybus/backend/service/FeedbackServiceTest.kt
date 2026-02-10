@@ -451,7 +451,7 @@ class FeedbackServiceTest {
             whenever(userRepository.findById(mentor.id)).thenReturn(Optional.of(mentor))
             whenever(userRepository.findById(mentee.id)).thenReturn(Optional.of(mentee))
             whenever(
-                taskRepository.findByUserIdAndTaskCreatedBetween(
+                taskRepository.findFeedbacksByUserIdAndTaskCreatedBetween(
                     mentee.id,
                     date.atStartOfDay(),
                     date.plusDays(1).atStartOfDay(),
@@ -492,7 +492,7 @@ class FeedbackServiceTest {
             whenever(userRepository.findById(mentor.id)).thenReturn(Optional.of(mentor))
             whenever(userRepository.findById(mentee.id)).thenReturn(Optional.of(mentee))
             whenever(
-                taskRepository.findByUserIdAndTaskCreatedBetween(
+                taskRepository.findFeedbacksByUserIdAndTaskCreatedBetween(
                     mentee.id,
                     date.atStartOfDay(),
                     date.plusDays(1).atStartOfDay(),
@@ -580,7 +580,7 @@ class FeedbackServiceTest {
 
             whenever(userRepository.findById(mentee.id)).thenReturn(Optional.of(mentee))
             whenever(
-                taskRepository.findByUserIdAndTaskCreatedBetween(
+                taskRepository.findFeedbacksByUserIdAndTaskCreatedBetween(
                     mentee.id,
                     date.atStartOfDay(),
                     date.plusDays(1).atStartOfDay(),
@@ -604,7 +604,7 @@ class FeedbackServiceTest {
 
             whenever(userRepository.findById(mentee.id)).thenReturn(Optional.of(mentee))
             whenever(
-                taskRepository.findByUserIdAndTaskCreatedBetween(
+                taskRepository.findFeedbacksByUserIdAndTaskCreatedBetween(
                     mentee.id,
                     date.atStartOfDay(),
                     date.plusDays(1).atStartOfDay(),

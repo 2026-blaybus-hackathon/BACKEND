@@ -3,6 +3,7 @@ package com.blaybus.backend.service
 import com.blaybus.backend.dto.AssignmentResponse
 import com.blaybus.backend.dto.CommentOnTaskRequest
 import com.blaybus.backend.dto.DashboardStatsDto
+import com.blaybus.backend.dto.DayOfTaskWithFeedbackResponse
 import com.blaybus.backend.dto.FeedbackDetail
 import com.blaybus.backend.dto.FileUploadResponse
 import com.blaybus.backend.dto.MenteeStudyTimeUpdateRequest
@@ -20,9 +21,11 @@ import com.blaybus.backend.dto.SliceResponse
 import com.blaybus.backend.dto.TaskAndAssignmentResponse
 import com.blaybus.backend.dto.TaskDetail
 import com.blaybus.backend.dto.TaskImageResponse
+import com.blaybus.backend.dto.TaskInfoResponse
 import com.blaybus.backend.dto.TaskResponse
 import com.blaybus.backend.dto.TaskSummaryResponse
 import com.blaybus.backend.dto.TaskWithFeedbackResponse
+import com.blaybus.backend.dto.mapper.toTaskDetail
 import com.blaybus.backend.entity.Assignment
 import com.blaybus.backend.entity.LearningMaterial
 import com.blaybus.backend.entity.Role
@@ -303,7 +306,12 @@ class TaskService(
 
         // [변경 로직] subject가 있으면 과목별 조회, 없으면 전체 조회
         val tasks = if (subject != null) {
-            taskRepository.sliceByDailyPlannerIdAndSubject(dailyPlanner.id, subject, lastId, pageable)
+            taskRepository.sliceByDailyPlannerIdAndSubject(
+                dailyPlanner.id,
+                subject,
+                lastId,
+                pageable
+            )
         } else {
             taskRepository.sliceByDailyPlannerId(dailyPlanner.id, lastId, pageable)
         }
@@ -324,7 +332,7 @@ class TaskService(
     }
 
     @Transactional(readOnly = true)
-    fun getByTaskId(
+    fun getTaskDetailByTaskId(
         userId: Long,
         taskId: Long,
     ): TaskWithFeedbackResponse {
@@ -365,7 +373,8 @@ class TaskService(
 
         if (user.role == Role.MENTOR) {
             val yesterday = LocalDate.now().minusDays(1)
-            val tasks = taskRepository.findByDailyPlannerUserAndDailyPlannerDate(tagetMentee, yesterday)
+            val tasks =
+                taskRepository.findByDailyPlannerUserAndDailyPlannerDate(tagetMentee, yesterday)
             if (tasks.isEmpty()) return emptyList()
 
             val dailyPlanner = tasks.first().dailyPlanner
@@ -413,34 +422,6 @@ class TaskService(
                 totalFeedback = dailyPlanner.totalFeedback,
             )
         }
-    }
-
-    fun getTaskSummaries(
-        userId: Long,
-        menteeId: Long,
-        pageable: Pageable,
-    ): PagedResponse<TaskSummaryResponse> {
-        val mentor = userRepository.getByUserId(userId)
-        val mentee = userRepository.getByUserId(menteeId)
-        mentor.validateMentee(mentee)
-
-        val tasksPage = taskRepository.findTasksWithFeedbackByMenteeAndMentor(mentee.id, mentor.id, pageable)
-
-        return PagedResponse(
-            content =
-                tasksPage.content.map { task ->
-                    TaskSummaryResponse(
-                        taskId = task.id,
-                        subject = task.subject.name,
-                        title = task.title,
-                        date = task.createdDateTime.toLocalDate(),
-                    )
-                },
-            page = tasksPage.number,
-            size = tasksPage.size,
-            totalPages = tasksPage.totalPages,
-            totalElements = tasksPage.totalElements,
-        )
     }
 
     private fun toTaskDetail(task: Task): TaskDetail =
@@ -511,7 +492,8 @@ class TaskService(
         } else if (!files.isNullOrEmpty()) {
             // [Case B] 신규 파일 업로드 (기존 메서드 재사용)
             // 멘토가 올리는 파일이면 경로를 'materials/'로 하여 관리 편의성 증대 (선택사항)
-            val uploadPath = if (isAutoArchive) "materials/${writer.id}/" else "tasks/${task.id}/assignments/"
+            val uploadPath =
+                if (isAutoArchive) "materials/${writer.id}/" else "tasks/${task.id}/assignments/"
 
             val newAssignments = manageAssignmentFiles(task, files, uploadPath)
 
@@ -643,13 +625,143 @@ class TaskService(
         }
     }
 
+    fun getAssignmentSummaryOfFeedbacksRecently(
+        userId: Long,
+        menteeId: Long,
+        pageable: PageRequest
+    ): PagedResponse<TaskSummaryResponse> {
+        val mentor = userRepository.getByUserId(userId)
+        val mentee = userRepository.getByUserId(menteeId)
+        mentor.validateMentee(mentee)
+
+        val page = taskRepository.findTasksWithFeedbackByMenteeOrderByFeedbackRecent(
+            mentorId = userId,
+            menteeId = menteeId,
+            pageable = pageable,
+        )
+
+        return PagedResponse(
+            content = page.content.map { task ->
+                TaskSummaryResponse(
+                    taskId = task.id,
+                    subject = task.subject.name,
+                    title = task.title,
+                    date = task.createdDateTime.toLocalDate(),
+                    studyMinute = task.studyDurationInMinutes ?: 0,
+                )
+            },
+            page = page.number,
+            size = page.size,
+            totalPages = page.totalPages,
+            totalElements = page.totalElements,
+        )
+    }
+
+    fun getAllAssignmentsInfo(
+        userId: Long,
+        type: String?,
+        pageable: PageRequest
+    ): PagedResponse<TaskInfoResponse> {
+        val page = taskRepository.findSubmittedAssignmentsByMentor(
+            mentorId = userId,
+            type = type,
+            pageable = pageable,
+        )
+
+        return PagedResponse(
+            content = page.content.map { task ->
+                val mentee = task.dailyPlanner.user
+                TaskInfoResponse(
+                    taskId = task.id,
+                    subject = task.subject.name,
+                    title = task.title,
+                    date = task.createdDateTime.toLocalDate(),
+                    menteeName = mentee.name,
+                    schoolName = mentee.schoolName,
+                    grade = mentee.grade,
+                )
+            },
+            page = page.number,
+            size = page.size,
+            totalPages = page.totalPages,
+            totalElements = page.totalElements,
+        )
+    }
+
+    fun getAllAssignmentsInfoByMenteeId(
+        userId: Long,
+        menteeId: Long,
+        type: String?,
+        pageable: PageRequest
+    ): PagedResponse<TaskInfoResponse> {
+        val mentor = userRepository.getByUserId(userId)
+        val mentee = userRepository.getByUserId(menteeId)
+        mentor.validateMentee(mentee)
+
+        val page = taskRepository.findSubmittedAssignmentsByMentorAndMentee(
+            mentorId = userId,
+            menteeId = menteeId,
+            type = type,
+            pageable = pageable,
+        )
+
+        return PagedResponse(
+            content = page.content.map { task ->
+                TaskInfoResponse(
+                    taskId = task.id,
+                    subject = task.subject.name,
+                    title = task.title,
+                    date = task.createdDateTime.toLocalDate(),
+                    menteeName = mentee.name,
+                    schoolName = mentee.schoolName,
+                    grade = mentee.grade,
+                )
+            },
+            page = page.number,
+            size = page.size,
+            totalPages = page.totalPages,
+            totalElements = page.totalElements,
+        )
+    }
+
+    fun getMyAllAssignments(
+        userId: Long,
+        pageable: PageRequest
+    ): PagedResponse<TaskInfoResponse> {
+        val user = userRepository.getByUserId(userId)
+
+        val page = taskRepository.findMyCompletedTasksWithFeedback(
+            menteeId = userId,
+            pageable = pageable,
+        )
+
+        return PagedResponse(
+            content = page.content.map { task ->
+                TaskInfoResponse(
+                    taskId = task.id,
+                    subject = task.subject.name,
+                    title = task.title,
+                    date = task.createdDateTime.toLocalDate(),
+                    menteeName = user.name,
+                    schoolName = user.schoolName,
+                    grade = user.grade,
+                )
+            },
+            page = page.number,
+            size = page.size,
+            totalPages = page.totalPages,
+            totalElements = page.totalElements,
+        )
+    }
+
     fun getMentorMyPageStats(mentorId: Long): MentorMyPageStatsDto {
         userRepository.getByUserId(mentorId)
 
         val menteeCount = userRepository.countByMentorId(mentorId)
 
         val totalStudyMinutes = taskRepository.getTotalStudyTimeByMentorId(mentorId) ?: 0L
-        val averageStudyTime = if (menteeCount > 0) (totalStudyMinutes / menteeCount).toInt() else 0
+        val averageStudyTime =
+            if (menteeCount > 0) (totalStudyMinutes / menteeCount).toInt() else 0
 
         val stats = taskRepository.getCompletionRateStatsByMentorId(mentorId)
         var completionRate = 0
@@ -659,7 +771,8 @@ class TaskService(
             val completedTasks = (row[1] as? Number)?.toLong() ?: 0L
 
             if (totalTasks > 0) {
-                completionRate = ((completedTasks.toDouble() / totalTasks.toDouble()) * 100).toInt()
+                completionRate =
+                    ((completedTasks.toDouble() / totalTasks.toDouble()) * 100).toInt()
             }
         }
 
@@ -667,6 +780,37 @@ class TaskService(
             totalMenteeCount = menteeCount,
             averageStudyTime = averageStudyTime,
             averageCompletionRate = completionRate,
+        )
+    }
+
+    @Transactional(readOnly = true)
+    fun getYesterdaysTaskDetailByMenteeId(
+        userId: Long,
+        menteeId: Long,
+    ): DayOfTaskWithFeedbackResponse {
+        val mentor = userRepository.getByUserId(userId)
+        val mentee = userRepository.getByUserId(menteeId)
+        mentor.validateMentee(mentee)
+
+        val yesterday = LocalDate.now().minusDays(1)
+        val start = yesterday.atStartOfDay()
+        val end = yesterday.plusDays(1).atStartOfDay()
+
+        val yesterdayTasks =
+            taskRepository.findByUserIdAndTaskCreatedBetween(menteeId, start, end)
+
+        val taskDetails: List<TaskDetail> =
+            yesterdayTasks.map { it.toTaskDetail(objectStorageRepository) }
+
+        val totalFeedback =
+            yesterdayTasks.firstOrNull()
+                ?.dailyPlanner
+                ?.totalFeedback
+
+        return DayOfTaskWithFeedbackResponse(
+            menteeId = mentee.id,
+            tasks = taskDetails,
+            totalFeedback = totalFeedback
         )
     }
 }

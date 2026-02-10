@@ -1,11 +1,13 @@
 package com.blaybus.backend.controller.taskController
 
+import com.blaybus.backend.dto.TaskInfoResponse
 import com.blaybus.backend.dto.CommentOnTaskRequest
 import com.blaybus.backend.dto.FileUploadResponse
 import com.blaybus.backend.dto.MenteeStudyTimeUpdateRequest
 import com.blaybus.backend.dto.MenteeTaskCompletionUpdateRequest
 import com.blaybus.backend.dto.MenteeTaskCreateRequest
 import com.blaybus.backend.dto.MenteeTaskUpdateRequest
+import com.blaybus.backend.dto.PagedResponse
 import com.blaybus.backend.dto.SliceResponse
 import com.blaybus.backend.dto.TaskAndAssignmentResponse
 import com.blaybus.backend.dto.TaskResponse
@@ -15,6 +17,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
+import org.springframework.data.domain.PageRequest
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -159,5 +162,20 @@ class MenteeTaskController(
         val normalizedSize = if (size <= 0) 1 else size
         val tasks = taskService.getTasksByDateList(userId, date, subject, lastTaskId, normalizedSize)
         return ResponseEntity.ok(tasks)
+    }
+
+    @Operation(
+        summary = "학습 히스토리",
+        description = "멘티는 자신의 학습 히스토리를 조회할 수 있다. 제출 완료 및 피드백이 완료된 모든 과제를 조회한다.",
+    )
+    @GetMapping("/history")
+    fun getAllTasks(
+        @AuthenticationPrincipal userId: Long,
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "20") size: Int,
+    ): ResponseEntity<PagedResponse<TaskInfoResponse>> {
+        val pageable = PageRequest.of(page, size)
+        val response = taskService.getMyAllAssignments(userId, pageable)
+        return ResponseEntity.ok(response)
     }
 }

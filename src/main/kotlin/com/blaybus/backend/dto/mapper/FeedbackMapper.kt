@@ -1,5 +1,6 @@
 package com.blaybus.backend.dto.mapper
 
+import com.blaybus.backend.dto.FeedbackDetail
 import com.blaybus.backend.dto.FeedbackDto
 import com.blaybus.backend.entity.Feedback
 import com.blaybus.backend.entity.Task
@@ -21,3 +22,11 @@ fun Task.toEmptyFeedbackResponse() =
         tryContent = null,
         detail = null,
     )
+
+fun Feedback.toFeedbackDetail(): FeedbackDetail {
+    return FeedbackDetail(
+        feedbackId = id,
+        content = detail
+    )
+}
+

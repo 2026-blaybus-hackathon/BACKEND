@@ -6,6 +6,7 @@ import com.blaybus.backend.dto.mapper.toEmptyFeedbackResponse
 import com.blaybus.backend.dto.mapper.toGetFeedbackOfTaskResponse
 import com.blaybus.backend.entity.Feedback
 import com.blaybus.backend.entity.NotificationType
+import com.blaybus.backend.entity.Role
 import com.blaybus.backend.exception.CustomException
 import com.blaybus.backend.exception.ErrorCode
 import com.blaybus.backend.repository.FeedbackRepository
@@ -108,7 +109,7 @@ class FeedbackService(
         val end = date.plusDays(1).atStartOfDay()
 
         return taskRepository
-            .findByUserIdAndTaskCreatedBetween(
+            .findFeedbacksByUserIdAndTaskCreatedBetween(
                 menteeId,
                 start,
                 end,
@@ -127,11 +128,32 @@ class FeedbackService(
         val end = date.plusDays(1).atStartOfDay()
 
         return taskRepository
-            .findByUserIdAndTaskCreatedBetween(
+            .findFeedbacksByUserIdAndTaskCreatedBetween(
                 targetUser.id,
                 start,
                 end,
             ).map(Feedback::toGetFeedbackOfTaskResponse)
+    }
+
+    @Transactional(readOnly = true)
+    fun findFeedbackByTaskId(
+        userId: Long,
+        taskId: Long,
+    ): FeedbackDto.GetFeedbackOfTaskResponse {
+        val user = userRepository.getByUserId(userId)
+        val task = taskRepository.getByTaskId(taskId)
+        when (user.role) {
+            Role.MENTOR -> {
+                user.validateMentee(task.dailyPlanner.user)
+            }
+            Role.MENTEE -> {
+                user.validateSameUser(task.dailyPlanner.user)
+            }
+        }
+
+        val feedback = task.feedback
+        return feedback?.toGetFeedbackOfTaskResponse()
+            ?: task.toEmptyFeedbackResponse()
     }
 
     @Transactional
