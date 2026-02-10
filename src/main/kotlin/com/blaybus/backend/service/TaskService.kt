@@ -346,6 +346,7 @@ class TaskService(
 
             Role.MENTEE -> {
                 user.validateSameUser(task.dailyPlanner.user)
+                task.feedback?.readFeedback()
             }
         }
 
@@ -371,40 +372,14 @@ class TaskService(
         val user = userRepository.getByUserId(userId)
         val tagetMentee = authService.validateMentorAccessAndGetTargetUser(user, menteeId)
 
-        if (user.role == Role.MENTOR) {
-            val yesterday = LocalDate.now().minusDays(1)
-            val tasks =
-                taskRepository.findByDailyPlannerUserAndDailyPlannerDate(tagetMentee, yesterday)
-            if (tasks.isEmpty()) return emptyList()
-
-            val dailyPlanner = tasks.first().dailyPlanner
-            val taskDetails = tasks.map { toTaskDetail(it) }
-
-            return listOf(
-                TaskWithFeedbackResponse(
-                    menteeId = tagetMentee.id,
-                    tasks =
-                        PagedResponse(
-                            content = taskDetails,
-                            page = 0,
-                            size = taskDetails.size,
-                            totalPages = 1,
-                            totalElements = taskDetails.size.toLong(),
-                        ),
-                    totalFeedback = dailyPlanner.totalFeedback,
-                ),
-            )
-        }
-
         val tasksPage = taskRepository.findByDailyPlannerUser(tagetMentee, pageable)
 
-        // dailyPlanner별로 그룹화하고 날짜 내림차순으로 정렬하여 최근 2일치만 선택
+        // dailyPlanner별로 그룹화하고 날짜 내림차순으로 정렬
         val tasksByDailyPlanner =
             tasksPage.content
                 .groupBy { it.dailyPlanner }
                 .toList()
                 .sortedByDescending { (dailyPlanner, _) -> dailyPlanner.date }
-                .take(2)
 
         return tasksByDailyPlanner.map { (dailyPlanner, tasks) ->
             val taskDetails = tasks.map { toTaskDetail(it) }
@@ -416,8 +391,8 @@ class TaskService(
                         content = taskDetails,
                         page = tasksPage.number,
                         size = taskDetails.size,
-                        totalPages = 1,
-                        totalElements = taskDetails.size.toLong(),
+                        totalPages = tasksPage.totalPages,
+                        totalElements = tasksPage.totalElements,
                     ),
                 totalFeedback = dailyPlanner.totalFeedback,
             )

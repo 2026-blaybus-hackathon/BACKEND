@@ -46,9 +46,6 @@ class FeedbackService(
                 Feedback(
                     task,
                     mentor,
-                    request.summary.keepContent,
-                    request.summary.problemContent,
-                    request.summary.tryContent,
                     request.content,
                 ),
             )
@@ -153,6 +150,7 @@ class FeedbackService(
         }
 
         val feedback = task.feedback
+        feedback?.readFeedback()
         return feedback?.toGetFeedbackOfTaskResponse()
             ?: task.toEmptyFeedbackResponse()
     }
