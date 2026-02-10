@@ -47,17 +47,14 @@ class Feedback(
     constructor(
         task: Task,
         mentor: User,
-        keepContent: String,
-        problemContent: String,
-        tryContent: String,
         detail: String? = null,
     ) : this(
         id = 0L,
         task = task,
         mentor = mentor,
-        keepContent = keepContent,
-        problemContent = problemContent,
-        tryContent = tryContent,
+        keepContent = null,
+        problemContent = null,
+        tryContent = null,
         detail = detail,
     )
 

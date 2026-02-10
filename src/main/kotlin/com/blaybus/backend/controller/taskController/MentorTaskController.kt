@@ -7,7 +7,6 @@ import com.blaybus.backend.dto.PagedResponse
 import com.blaybus.backend.dto.TaskInfoResponse
 import com.blaybus.backend.dto.TaskSummaryResponse
 import com.blaybus.backend.dto.TaskResponse
-import com.blaybus.backend.dto.TaskWithFeedbackResponse
 import com.blaybus.backend.service.TaskService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -84,7 +83,7 @@ class MentorTaskController(
         description = "멘티별로 어제의 task 목록을 조회한다.",
     )
     @GetMapping("/{menteeId}")
-    fun getYesterDayTasks(
+    fun getYesterdayTasks(
         @AuthenticationPrincipal userId: Long,
         @PathVariable menteeId: Long
     ): ResponseEntity<DayOfTaskWithFeedbackResponse> {
