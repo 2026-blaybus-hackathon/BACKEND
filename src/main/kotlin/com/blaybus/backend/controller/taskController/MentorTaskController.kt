@@ -83,7 +83,7 @@ class MentorTaskController(
         summary = "멘티별 task 조회",
         description = "멘티별로 task 목록을 조회한다.",
     )
-    @GetMapping("/tasks/{menteeId}")
+    @GetMapping("/{menteeId}")
     fun getTasksOrderByFeedbackRecently(
         @AuthenticationPrincipal userId: Long,
         @PathVariable menteeId: Long
