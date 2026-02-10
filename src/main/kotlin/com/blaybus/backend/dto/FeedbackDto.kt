@@ -35,12 +35,6 @@ class FeedbackDto {
 
     data class CreateFeedbackRequest(
         @field:Schema(
-            description = "KPT 형식의 피드백 요약",
-            requiredMode = Schema.RequiredMode.REQUIRED,
-        )
-        @field:Valid
-        val summary: Summary,
-        @field:Schema(
             description = "피드백 상세 내용",
             example = "이번 주 학습 내용에 대한 전반적인 피드백입니다...",
             requiredMode = Schema.RequiredMode.REQUIRED,

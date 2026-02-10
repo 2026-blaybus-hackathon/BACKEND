@@ -46,9 +46,6 @@ class FeedbackService(
                 Feedback(
                     task,
                     mentor,
-                    request.summary.keepContent,
-                    request.summary.problemContent,
-                    request.summary.tryContent,
                     request.content,
                 ),
             )
