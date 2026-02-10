@@ -130,16 +130,12 @@ class FeedbackDto {
     )
 
     data class TaskFeedbackInfo(
-        @Schema(description = "피드백 id")
-        val feedbackId: Long,
         @Schema(description = "할 일 id")
         val taskId: Long,
         @Schema(description = "할 일 제목")
         val taskTitle: String,
         @Schema(description = "과목")
         val subject: String,
-        @Schema(description = "인증 사진들 정보(없는 경우 빈 리스트)")
-        val studyImages: List<StudyImageDto.StudyImageResponse> = emptyList(),
     )
 
     data class TotalFeedbackInfo(
@@ -148,8 +144,6 @@ class FeedbackDto {
     )
 
     data class GetUnreadFeedbackResponse(
-        @Schema(description = "피드백 내용")
-        val feedBackContent: String?,
         @Schema(description = "피드백 생성 시간")
         val createdDateTime: LocalDate?,
         @Schema(description = "피드백 타입 (TASK: 과제 피드백, TOTAL: 종합 피드백)")
@@ -161,31 +155,27 @@ class FeedbackDto {
         @Schema(description = "종합 피드백 정보 (종합 피드백인 경우 존재)")
         val totalFeedbackInfo: TotalFeedbackInfo? = null,
     ) {
-        constructor(feedback: Feedback, studyImages: List<StudyImageDto.StudyImageResponse>) : this(
-            feedBackContent = feedback.detail,
+        constructor(feedback: Feedback) : this(
             createdDateTime = feedback.createdDateTime.toLocalDate(),
             type = "TASK",
             studyMinutes = feedback.task.studyDurationInMinutes,
             taskFeedbackInfo =
                 TaskFeedbackInfo(
-                    feedbackId = feedback.id,
                     taskId = feedback.task.id,
                     taskTitle = feedback.task.title,
                     subject = feedback.task.subject.displayName,
-                    studyImages = studyImages,
-            ),
-                )
+                ),
+        )
 
         constructor(dailyPlanner: DailyPlanner) : this(
-            feedBackContent = dailyPlanner.totalFeedback,
             createdDateTime = dailyPlanner.totalFeedbackCreatedDateTime,
             type = "TOTAL",
             studyMinutes = dailyPlanner.tasks.mapNotNull { it.studyDurationInMinutes }.sum(),
             totalFeedbackInfo =
                 TotalFeedbackInfo(
                     plannerDate = dailyPlanner.date,
-            ),
-                )
+                ),
+        )
     }
 
     data class GetFeedbackByIdResponse(
