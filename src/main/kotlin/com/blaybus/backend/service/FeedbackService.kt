@@ -195,22 +195,13 @@ class FeedbackService(
             feedbackRepository
                 .findByTaskDailyPlannerUserIdAndIsReadFalse(userId)
                 .map {
-                    it.readFeedback()
-                    val studyImageList =
-                        it.task.studyImages.map { studyImage ->
-                            StudyImageDto.StudyImageResponse(
-                                studyImage,
-                                objectStorageRepository.getDownloadUrl(studyImage.imageFileName),
-                            )
-                        }
-                    FeedbackDto.GetUnreadFeedbackResponse(it, studyImageList)
+                    FeedbackDto.GetUnreadFeedbackResponse(it)
                 }
 
         val totalUnreadList =
             dailyPlannerService
                 .getUnreadTotalFeedbacks(userId)
                 .map {
-                    it.readTotalFeedback()
                     FeedbackDto.GetUnreadFeedbackResponse(it)
                 }
 
