@@ -81,10 +81,10 @@ class MentorTaskController(
 
     @Operation(
         summary = "멘티별 task 조회",
-        description = "멘티별로 task 목록을 조회한다.",
+        description = "멘티별로 어제의 task 목록을 조회한다.",
     )
     @GetMapping("/{menteeId}")
-    fun getTasksOrderByFeedbackRecently(
+    fun getYesterDayTasks(
         @AuthenticationPrincipal userId: Long,
         @PathVariable menteeId: Long
     ): ResponseEntity<DayOfTaskWithFeedbackResponse> {

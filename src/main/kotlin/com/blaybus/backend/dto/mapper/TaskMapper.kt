@@ -17,7 +17,7 @@ fun Task.toTaskDetail(
         date = createdDateTime.toLocalDate(),
         status = isCompleted,
         menteeComment = comment,
-        feedbackStatus = if (feedback != null) "COMPLETED" else "NONE",
+        feedbackStatus = feedbackStatus().name,
         images = studyImages
             .sortedBy { it.sequence }
             .map {
