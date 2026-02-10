@@ -19,22 +19,23 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/api/v1/materials")
 @RestController
 class LearningMaterialController(
-    private val learningMaterialService: LearningMaterialService
+    private val learningMaterialService: LearningMaterialService,
 ) {
-
     @Operation(
         summary = "학습 자료 등록",
-        description = "멘토가 칼럼(텍스트) 또는 솔루션(파일)을 자료실에 등록합니다. \n" +
+        description =
+            "멘토가 칼럼(텍스트) 또는 솔루션(파일)을 자료실에 등록합니다. \n" +
                 "- 파일 자료: `file`에 PDF 등 첨부 \n" +
-                "- 텍스트 칼럼: `request.content`에 내용 입력"
+                "- 텍스트 칼럼: `request.content`에 내용 입력",
     )
     @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun createMaterial(
         @AuthenticationPrincipal userId: Long,
         @Parameter(description = "자료 정보 (JSON)", content = [Content(mediaType = MediaType.APPLICATION_JSON_VALUE)])
-        @Valid @RequestPart("request") request: LearningMaterialRequest,
+        @Valid
+        @RequestPart("request") request: LearningMaterialRequest,
         @Parameter(description = "첨부 파일 (선택 사항)")
-        @RequestPart("file", required = false) file: MultipartFile?
+        @RequestPart("file", required = false) file: MultipartFile?,
     ): ResponseEntity<Void> {
         learningMaterialService.createMaterial(userId, request, file)
         return ResponseEntity.ok().build()
@@ -45,7 +46,7 @@ class LearningMaterialController(
     fun getMaterials(
         @AuthenticationPrincipal userId: Long,
         @Parameter(description = "필터링할 자료 유형 (없으면 전체 조회)")
-        @RequestParam(required = false) taskType: TaskType?
+        @RequestParam(required = false) taskType: TaskType?,
     ): ResponseEntity<List<LearningMaterialResponse>> {
         val response = learningMaterialService.getMaterials(userId, taskType)
         return ResponseEntity.ok(response)
@@ -55,7 +56,7 @@ class LearningMaterialController(
     @DeleteMapping("/{materialId}")
     fun deleteMaterial(
         @AuthenticationPrincipal userId: Long,
-        @PathVariable materialId: Long
+        @PathVariable materialId: Long,
     ): ResponseEntity<Void> {
         learningMaterialService.deleteMaterial(userId, materialId)
         return ResponseEntity.noContent().build()

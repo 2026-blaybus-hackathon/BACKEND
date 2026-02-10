@@ -21,11 +21,10 @@ data class UpdateProfileRequest(
         allowableValues = ["FIRST", "SECOND", "THIRD", "DROPOUT", "GRADUATED"],
     )
     val grade: Grade?,
-    @NotBlank(message = "목표 학교는 필수 입력값입니다.")
     @field:Schema(description = "목표 학교", example = "서울대학교")
-    val targetSchool: String,
+    val targetSchool: String?,
     @field:Schema(description = "목표일(null일 경우 기존 값 없어짐)")
-    val targetDate: LocalDate,
+    val targetDate: LocalDate?,
 )
 
 data class SimpleUserResponse(

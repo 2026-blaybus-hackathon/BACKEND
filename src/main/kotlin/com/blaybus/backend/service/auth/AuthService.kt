@@ -2,6 +2,7 @@ package com.blaybus.backend.service.auth
 import com.blaybus.backend.dto.EmailLoginRequest
 import com.blaybus.backend.dto.EmailSignupRequest
 import com.blaybus.backend.dto.TokenResponse
+import com.blaybus.backend.entity.Role
 import com.blaybus.backend.entity.User
 import com.blaybus.backend.entity.auth.BlackListAccessToken
 import com.blaybus.backend.exception.CustomException
@@ -40,6 +41,9 @@ class AuthService(
         request: EmailSignupRequest,
         profile: MultipartFile?,
     ) {
+        if (request.role == Role.MENTEE && request.targetSchool == null) {
+            throw CustomException(ErrorCode.REQUIRED_TARGET_SCHOOL)
+        }
         val existingUser = userRepository.findByEmail(request.email)
         if (existingUser != null) {
             throw CustomException(ErrorCode.REGISTERED_ALREADY)
@@ -118,5 +122,20 @@ class AuthService(
         val user = userRepository.getByUserId(userId)
 
         return jwtTokenProvider.getTokenResponse(jwtTokenProvider.getAuthorities(user.role), user)
+    }
+
+    fun validateMentorAccessAndGetTargetUser(
+        user: User,
+        menteeId: Long?,
+    ): User {
+        val targetUser = menteeId?.let { userRepository.getByUserId(it) } ?: user
+
+        if (user.role == Role.MENTOR) {
+            if (menteeId == null) {
+                throw CustomException(ErrorCode.MENTEE_ID_REQUIRED)
+            }
+            user.validateMentee(targetUser)
+        }
+        return targetUser
     }
 }

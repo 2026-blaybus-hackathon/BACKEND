@@ -1,6 +1,7 @@
 package com.blaybus.backend.exception
 
 import com.blaybus.backend.dto.ErrorResponse
+import io.sentry.Sentry
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
@@ -20,6 +21,7 @@ class GlobalExceptionHandler {
     fun handleBusinessException(e: CustomException): ResponseEntity<ErrorResponse> {
         val errorCode = e.errorCode
         val errorResponse = ErrorResponse(errorCode.code, errorCode.errorMessage)
+        Sentry.captureException(e)
         return ResponseEntity.status(errorCode.httpStatus).body(errorResponse)
     }
 
@@ -28,7 +30,7 @@ class GlobalExceptionHandler {
         log.error("HttpMessageNotReadableException : {}", e.message)
         val errorCode = ErrorCode.BAD_REQUEST_JSON
         val errorResponse = ErrorResponse(errorCode.code, errorCode.errorMessage)
-        // Sentry.captureException(e)
+        Sentry.captureException(e)
         return ResponseEntity.status(errorCode.httpStatus).body(errorResponse)
     }
 
@@ -37,6 +39,7 @@ class GlobalExceptionHandler {
         log.error("NoHandlerFoundException : {}", e.message)
         val errorCode = ErrorCode.NOT_FOUND_END_POINT
         val errorResponse = ErrorResponse(errorCode.code, errorCode.errorMessage)
+        Sentry.captureException(e)
         return ResponseEntity.status(errorCode.httpStatus).body(errorResponse)
     }
 
@@ -49,7 +52,7 @@ class GlobalExceptionHandler {
         log.error("MethodArgumentNotValidException : {}", errorMessage)
         val errorCode = ErrorCode.INVALID_INPUT_VALUE
         val errorResponse = ErrorResponse(errorCode.code, errorMessage)
-
+        Sentry.captureException(e)
         return ResponseEntity.status(errorCode.httpStatus).body(errorResponse)
     }
 
@@ -58,7 +61,7 @@ class GlobalExceptionHandler {
         log.error("MethodArgumentTypeMismatchException : {}", e.message)
         val errorCode = ErrorCode.INVALID_TYPE_VALUE
         val errorResponse = ErrorResponse(errorCode.code, errorCode.errorMessage)
-
+        Sentry.captureException(e)
         return ResponseEntity.status(errorCode.httpStatus).body(errorResponse)
     }
 
@@ -67,7 +70,7 @@ class GlobalExceptionHandler {
         log.error("MissingServletRequestParameterException : {}", e.message)
         val errorCode = ErrorCode.MISSING_REQUEST_PARAMETER
         val errorResponse = ErrorResponse(errorCode.code, e.message)
-
+        Sentry.captureException(e)
         return ResponseEntity.status(errorCode.httpStatus).body(errorResponse)
     }
 
@@ -76,6 +79,7 @@ class GlobalExceptionHandler {
         log.error("Exception : ", e)
         val errorCode = ErrorCode.INTERNAL_SERVER_ERROR
         val errorResponse = ErrorResponse(errorCode.code, errorCode.errorMessage)
+        Sentry.captureException(e)
         return ResponseEntity.status(errorCode.httpStatus).body(errorResponse)
     }
 }

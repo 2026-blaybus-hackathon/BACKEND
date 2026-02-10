@@ -4,7 +4,7 @@ import com.blaybus.backend.dto.MentorTaskAssignRequest
 import com.blaybus.backend.dto.MentorTaskUpdateRequest
 import com.blaybus.backend.dto.PagedResponse
 import com.blaybus.backend.dto.TaskInfoResponse
-import com.blaybus.backend.dto.AssignmentSummaryResponse
+import com.blaybus.backend.dto.TaskSummaryResponse
 import com.blaybus.backend.dto.TaskResponse
 import com.blaybus.backend.service.TaskService
 import io.swagger.v3.oas.annotations.Operation
@@ -40,9 +40,12 @@ class MentorTaskController(
     @PostMapping(value = ["/assignment"], consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun assignTask(
         @AuthenticationPrincipal userId: Long,
-        @Parameter(description = "과제 할당 요청 정보 (JSON)")
-        @Valid @RequestPart("request") request: MentorTaskAssignRequest,
-
+        @Parameter(
+            description = "과제 할당 요청 정보 (JSON)",
+            content = [Content(mediaType = MediaType.APPLICATION_JSON_VALUE)]
+        )
+        @Valid
+        @RequestPart("request") request: MentorTaskAssignRequest,
         @Parameter(description = "직접 파일 업로드 (materialId가 없을 때 사용)")
         @RequestPart("file", required = false) files: List<MultipartFile>?,
     ): ResponseEntity<TaskResponse> {
@@ -61,7 +64,10 @@ class MentorTaskController(
     fun updateAssignedTask(
         @AuthenticationPrincipal userId: Long,
         @PathVariable taskId: Long,
-        @Parameter(description = "수정할 과제 정보 (JSON)", content = [Content(mediaType = MediaType.APPLICATION_JSON_VALUE)])
+        @Parameter(
+            description = "수정할 과제 정보 (JSON)",
+            content = [Content(mediaType = MediaType.APPLICATION_JSON_VALUE)]
+        )
         @Valid
         @RequestPart("request") request: MentorTaskUpdateRequest,
         @Parameter(description = "수정할 학습 자료 PDF (선택 사항 - 보내면 교체됨)")
@@ -81,9 +87,10 @@ class MentorTaskController(
         @PathVariable menteeId: Long,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int,
-    ): ResponseEntity<PagedResponse<AssignmentSummaryResponse>> {
+    ): ResponseEntity<PagedResponse<TaskSummaryResponse>> {
         val pageable = PageRequest.of(page, size)
-        val response = taskService.getAssignmentSummaryOfFeedbacksRecently(userId, menteeId, pageable)
+        val response =
+            taskService.getAssignmentSummaryOfFeedbacksRecently(userId, menteeId, pageable)
         return ResponseEntity.ok(response)
     }
 
@@ -94,7 +101,10 @@ class MentorTaskController(
     @GetMapping("/assignments")
     fun getAssignments(
         @AuthenticationPrincipal userId: Long,
-        @Parameter(description = "조회 타입 (REMIND: 제출되었으나 피드백 미완료, HISTORY: 제출 및 피드백 완료)", schema = Schema(allowableValues = ["REMIND", "HISTORY"]))
+        @Parameter(
+            description = "조회 타입 (REMIND: 제출되었으나 피드백 미완료, HISTORY: 제출 및 피드백 완료)",
+            schema = Schema(allowableValues = ["REMIND", "HISTORY"])
+        )
         @RequestParam type: String,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int,
@@ -112,7 +122,10 @@ class MentorTaskController(
     fun getAssignmentsByMenteeId(
         @AuthenticationPrincipal userId: Long,
         @PathVariable menteeId: Long,
-        @Parameter(description = "조회 타입 (REMIND: 제출되었으나 피드백 미완료, HISTORY: 제출 및 피드백 완료)", schema = Schema(allowableValues = ["REMIND", "HISTORY"]))
+        @Parameter(
+            description = "조회 타입 (REMIND: 제출되었으나 피드백 미완료, HISTORY: 제출 및 피드백 완료)",
+            schema = Schema(allowableValues = ["REMIND", "HISTORY"])
+        )
         @RequestParam type: String,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int,

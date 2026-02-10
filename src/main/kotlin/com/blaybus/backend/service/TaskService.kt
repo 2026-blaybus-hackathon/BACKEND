@@ -9,9 +9,9 @@ import com.blaybus.backend.dto.MenteeStudyTimeUpdateRequest
 import com.blaybus.backend.dto.MenteeSummaryDto
 import com.blaybus.backend.dto.MenteeTaskCompletionUpdateRequest
 import com.blaybus.backend.dto.MenteeTaskCreateRequest
-import com.blaybus.backend.dto.TaskWithFeedbackResponse
 import com.blaybus.backend.dto.MenteeTaskUpdateRequest
 import com.blaybus.backend.dto.MentorDashboardResponse
+import com.blaybus.backend.dto.MentorMyPageStatsDto
 import com.blaybus.backend.dto.MentorTaskAssignRequest
 import com.blaybus.backend.dto.MentorTaskUpdateRequest
 import com.blaybus.backend.dto.PagedResponse
@@ -21,9 +21,11 @@ import com.blaybus.backend.dto.TaskAndAssignmentResponse
 import com.blaybus.backend.dto.TaskDetail
 import com.blaybus.backend.dto.TaskImageResponse
 import com.blaybus.backend.dto.TaskInfoResponse
-import com.blaybus.backend.dto.AssignmentSummaryResponse
 import com.blaybus.backend.dto.TaskResponse
+import com.blaybus.backend.dto.TaskSummaryResponse
+import com.blaybus.backend.dto.TaskWithFeedbackResponse
 import com.blaybus.backend.entity.Assignment
+import com.blaybus.backend.entity.LearningMaterial
 import com.blaybus.backend.entity.Role
 import com.blaybus.backend.entity.StudyImage
 import com.blaybus.backend.entity.Subject
@@ -41,6 +43,8 @@ import com.blaybus.backend.repository.UserRepository
 import com.blaybus.backend.repository.getByTaskId
 import com.blaybus.backend.repository.getByUserId
 import com.blaybus.backend.repository.getTaskAndDailyPlannerById
+import com.blaybus.backend.service.auth.AuthService
+import com.blaybus.backend.util.getDDay
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -60,6 +64,7 @@ class TaskService(
     private val studyImageRepository: StudyImageRepository,
     private val objectStorageRepository: ObjectStorageRepository,
     private val learningMaterialRepository: LearningMaterialRepository,
+    private val authService: AuthService,
 ) {
     @Transactional
     fun updateComment(
@@ -105,6 +110,7 @@ class TaskService(
         val mentee = userRepository.getByUserId(request.menteeId)
         mentor.validateMentee(mentee)
 
+        // 1. Task 정보 준비 (자료실 선택 시 덮어쓰기)
         var title = request.title
         var content = request.content
         var subject = request.subject
@@ -113,21 +119,25 @@ class TaskService(
         var materialFileKey: String? = null
         var materialFileName: String? = null
 
+        // 자료실 선택 시 정보 조회
         if (request.materialId != null) {
             val material = learningMaterialRepository.findById(request.materialId)
                 .orElseThrow { CustomException(ErrorCode.RESOURCE_NOT_FOUND) }
+
+            if (material.mentor.id != mentorId) throw CustomException(ErrorCode.NOT_YOUR_MATERIAL)
 
             title = material.title
             content = material.content ?: request.content
             subject = material.subject
             taskType = material.taskType
-
-            // 자료실에 파일이 있다면 가져옴 (S3 키만 복사)
             materialFileKey = material.fileKey
             materialFileName = material.originalFileName
         }
 
-        // 3. Task 생성 함수 호출
+        // 2. 통합 메서드 호출
+        // 파일이 있고 + 자료실 ID가 없으면 -> "직접 업로드" 상황이므로 -> 자동 아카이빙(true) 요청
+        val shouldArchive = (!files.isNullOrEmpty() && request.materialId == null)
+
         return createAndSaveTask(
             writer = mentor,
             targetMentee = mentee,
@@ -137,8 +147,10 @@ class TaskService(
             content = content,
             subject = subject,
             files = files,
+            // 추가 파라미터 전달
             materialFileKey = materialFileKey,
-            materialFileName = materialFileName
+            materialFileName = materialFileName,
+            isAutoArchive = shouldArchive
         )
     }
 
@@ -178,7 +190,6 @@ class TaskService(
     ): TaskResponse {
         val task = taskRepository.getByTaskId(taskId)
 
-        // 권한 검증: 작성자(멘토) 본인만 수정 가능
         if (task.writer.id != userId) {
             throw CustomException(ErrorCode.NOT_YOUR_TASK)
         }
@@ -188,7 +199,8 @@ class TaskService(
         task.subject = request.subject ?: task.subject
 
         if (!files.isNullOrEmpty()) {
-            manageAssignmentFiles(task, files)
+            val uploadPath = "tasks/${task.id}/assignments/"
+            manageAssignmentFiles(task, files, uploadPath)
         }
 
         return TaskResponse.from(task)
@@ -280,28 +292,37 @@ class TaskService(
     fun getTasksByDateList(
         userId: Long,
         date: LocalDate,
+        subject: Subject?,
         lastId: Long?,
         size: Int,
     ): SliceResponse<TaskAndAssignmentResponse> {
         val user = userRepository.getByUserId(userId)
-        val dailyPlanner =
-            dailyPlannerService.getDailyPlannerOrNullByUserAndDate(user, date)
-                ?: return SliceResponse(
-                    emptyList(),
-                    false,
-                )
+        val dailyPlanner = dailyPlannerService.getDailyPlannerOrNullByUserAndDate(user, date)
+            ?: return SliceResponse(emptyList(), false)
+
         val pageable = Pageable.ofSize(size)
-        val tasks = taskRepository.sliceByDailyPlannerId(dailyPlanner.id, lastId, pageable)
+
+        // [변경 로직] subject가 있으면 과목별 조회, 없으면 전체 조회
+        val tasks = if (subject != null) {
+            taskRepository.sliceByDailyPlannerIdAndSubject(
+                dailyPlanner.id,
+                subject,
+                lastId,
+                pageable
+            )
+        } else {
+            taskRepository.sliceByDailyPlannerId(dailyPlanner.id, lastId, pageable)
+        }
+
         return SliceResponse(
             tasks.content.map { task ->
-                val assignmentList =
-                    assignmentRepository.findAllByTask(task).map {
-                        AssignmentResponse(
-                            it.id,
-                            it.originalFileName,
-                            objectStorageRepository.getDownloadUrl(it.fileKey),
-                        )
-                    }
+                val assignmentList = assignmentRepository.findAllByTask(task).map {
+                    AssignmentResponse(
+                        it.id,
+                        it.originalFileName,
+                        objectStorageRepository.getDownloadUrl(it.fileKey),
+                    )
+                }
                 TaskAndAssignmentResponse(task, assignmentList, task.writer.id == user.id)
             },
             tasks.hasNext(),
@@ -320,6 +341,7 @@ class TaskService(
             Role.MENTOR -> {
                 user.validateMentee(task.dailyPlanner.user)
             }
+
             Role.MENTEE -> {
                 user.validateSameUser(task.dailyPlanner.user)
             }
@@ -341,20 +363,16 @@ class TaskService(
 
     fun getTasksWithFeedback(
         userId: Long,
-        menteeId: Long,
+        menteeId: Long?,
         pageable: Pageable,
     ): List<TaskWithFeedbackResponse> {
         val user = userRepository.getByUserId(userId)
-        val mentee = userRepository.getByUserId(menteeId)
-
-        when (user.role) {
-            Role.MENTOR -> user.validateMentee(mentee)
-            Role.MENTEE -> user.validateSameUser(mentee)
-        }
+        val tagetMentee = authService.validateMentorAccessAndGetTargetUser(user, menteeId)
 
         if (user.role == Role.MENTOR) {
             val yesterday = LocalDate.now().minusDays(1)
-            val tasks = taskRepository.findByDailyPlannerUserAndDailyPlannerDate(mentee, yesterday)
+            val tasks =
+                taskRepository.findByDailyPlannerUserAndDailyPlannerDate(tagetMentee, yesterday)
             if (tasks.isEmpty()) return emptyList()
 
             val dailyPlanner = tasks.first().dailyPlanner
@@ -362,7 +380,7 @@ class TaskService(
 
             return listOf(
                 TaskWithFeedbackResponse(
-                    menteeId = mentee.id,
+                    menteeId = tagetMentee.id,
                     tasks =
                         PagedResponse(
                             content = taskDetails,
@@ -376,20 +394,21 @@ class TaskService(
             )
         }
 
-        val tasksPage = taskRepository.findByDailyPlannerUser(mentee, pageable)
+        val tasksPage = taskRepository.findByDailyPlannerUser(tagetMentee, pageable)
 
         // dailyPlanner별로 그룹화하고 날짜 내림차순으로 정렬하여 최근 2일치만 선택
-        val tasksByDailyPlanner = tasksPage.content
-            .groupBy { it.dailyPlanner }
-            .toList()
-            .sortedByDescending { (dailyPlanner, _) -> dailyPlanner.date }
-            .take(2)
+        val tasksByDailyPlanner =
+            tasksPage.content
+                .groupBy { it.dailyPlanner }
+                .toList()
+                .sortedByDescending { (dailyPlanner, _) -> dailyPlanner.date }
+                .take(2)
 
         return tasksByDailyPlanner.map { (dailyPlanner, tasks) ->
             val taskDetails = tasks.map { toTaskDetail(it) }
 
             TaskWithFeedbackResponse(
-                menteeId = mentee.id,
+                menteeId = tagetMentee.id,
                 tasks =
                     PagedResponse(
                         content = taskDetails,
@@ -402,7 +421,7 @@ class TaskService(
             )
         }
     }
-
+    
     private fun toTaskDetail(task: Task): TaskDetail =
         TaskDetail(
             taskId = task.id,
@@ -439,8 +458,10 @@ class TaskService(
         content: String?,
         subject: Subject,
         files: List<MultipartFile>?,
+        // [New] 자료실 연동을 위한 파라미터들
         materialFileKey: String? = null,
-        materialFileName: String? = null
+        materialFileName: String? = null,
+        isAutoArchive: Boolean = false
     ): TaskResponse {
         val planner = dailyPlannerService.getOrCreateDailyPlannerByDate(targetMentee, date)
 
@@ -456,8 +477,9 @@ class TaskService(
             ),
         )
 
+        // 파일 처리 로직
         if (materialFileKey != null && materialFileName != null) {
-            // Case A: 자료실 파일을 사용하는 경우 (S3 업로드 없이 DB만 연결)
+            // [Case A] 기존 자료실 파일 재사용 (S3 업로드 X, DB만 연결)
             assignmentRepository.save(
                 Assignment(
                     task = task,
@@ -466,8 +488,29 @@ class TaskService(
                 )
             )
         } else if (!files.isNullOrEmpty()) {
-            // Case B: 직접 파일을 업로드한 경우 (기존 로직: S3 업로드 수행)
-            manageAssignmentFiles(task, files)
+            // [Case B] 신규 파일 업로드 (기존 메서드 재사용)
+            // 멘토가 올리는 파일이면 경로를 'materials/'로 하여 관리 편의성 증대 (선택사항)
+            val uploadPath =
+                if (isAutoArchive) "materials/${writer.id}/" else "tasks/${task.id}/assignments/"
+
+            val newAssignments = manageAssignmentFiles(task, files, uploadPath)
+
+            // [Auto Archive] 멘토가 직접 올린 파일이면 -> 자료실(LearningMaterial)에도 자동 등록
+            if (isAutoArchive) {
+                newAssignments.forEach { assignment ->
+                    learningMaterialRepository.save(
+                        LearningMaterial(
+                            mentor = writer,
+                            title = title,
+                            taskType = taskType,
+                            subject = subject,
+                            content = content,
+                            fileKey = assignment.fileKey,
+                            originalFileName = assignment.originalFileName
+                        )
+                    )
+                }
+            }
         }
 
         return TaskResponse.from(task)
@@ -476,18 +519,16 @@ class TaskService(
     private fun manageAssignmentFiles(
         task: Task,
         files: List<MultipartFile>,
-    ) {
+        pathPrefix: String
+    ): List<Assignment> {
         val existingAssignments = assignmentRepository.findAllByTask(task)
-
         if (existingAssignments.isNotEmpty()) {
             assignmentRepository.deleteAll(existingAssignments)
-            assignmentRepository.flush() // 즉시 반영
+            assignmentRepository.flush()
         }
 
-        // 2. 새 파일들 반복 업로드 및 저장
-        files.forEach { file ->
-            val filePath = "tasks/${task.id}/assignments/"
-            val uploadedKey = objectStorageRepository.upload(filePath, file)
+        return files.map { file ->
+            val uploadedKey = objectStorageRepository.upload(pathPrefix, file)
 
             assignmentRepository.save(
                 Assignment(
@@ -513,6 +554,7 @@ class TaskService(
                         mentee.profileName?.let {
                             objectStorageRepository.getDownloadUrl(it)
                         },
+                    dday = mentee.targetDate?.let { getDDay(it, LocalDate.now()) },
                 )
             }
 
@@ -543,10 +585,9 @@ class TaskService(
                         title = task.title,
                         menteeName = u.name,
                         schoolAndGrade = "${u.schoolName ?: ""} ${u.grade?.description ?: ""}",
-                        date = task.dailyPlanner.date,
                         isFeedbackCompleted = task.feedback != null,
                         targetSchool = u.targetSchool ?: "",
-                        targetDate = u.targetDate,
+                        completedTime = task.completedTime,
                     )
                 }
 
@@ -586,7 +627,7 @@ class TaskService(
         userId: Long,
         menteeId: Long,
         pageable: PageRequest
-    ): PagedResponse<AssignmentSummaryResponse> {
+    ): PagedResponse<TaskSummaryResponse> {
         val mentor = userRepository.getByUserId(userId)
         val mentee = userRepository.getByUserId(menteeId)
         mentor.validateMentee(mentee)
@@ -599,7 +640,7 @@ class TaskService(
 
         return PagedResponse(
             content = page.content.map { task ->
-                AssignmentSummaryResponse(
+                TaskSummaryResponse(
                     taskId = task.id,
                     subject = task.subject.name,
                     title = task.title,
@@ -708,6 +749,35 @@ class TaskService(
             size = page.size,
             totalPages = page.totalPages,
             totalElements = page.totalElements,
+        )
+    }
+
+    fun getMentorMyPageStats(mentorId: Long): MentorMyPageStatsDto {
+        userRepository.getByUserId(mentorId)
+
+        val menteeCount = userRepository.countByMentorId(mentorId)
+
+        val totalStudyMinutes = taskRepository.getTotalStudyTimeByMentorId(mentorId) ?: 0L
+        val averageStudyTime =
+            if (menteeCount > 0) (totalStudyMinutes / menteeCount).toInt() else 0
+
+        val stats = taskRepository.getCompletionRateStatsByMentorId(mentorId)
+        var completionRate = 0
+        if (stats.isNotEmpty()) {
+            val row = stats[0]
+            val totalTasks = (row[0] as Number).toLong()
+            val completedTasks = (row[1] as? Number)?.toLong() ?: 0L
+
+            if (totalTasks > 0) {
+                completionRate =
+                    ((completedTasks.toDouble() / totalTasks.toDouble()) * 100).toInt()
+            }
+        }
+
+        return MentorMyPageStatsDto(
+            totalMenteeCount = menteeCount,
+            averageStudyTime = averageStudyTime,
+            averageCompletionRate = completionRate,
         )
     }
 }

@@ -5,6 +5,7 @@ import com.blaybus.backend.dto.StudyImageDto
 import com.blaybus.backend.dto.mapper.toEmptyFeedbackResponse
 import com.blaybus.backend.dto.mapper.toGetFeedbackOfTaskResponse
 import com.blaybus.backend.entity.Feedback
+import com.blaybus.backend.entity.NotificationType
 import com.blaybus.backend.exception.CustomException
 import com.blaybus.backend.exception.ErrorCode
 import com.blaybus.backend.repository.FeedbackRepository
@@ -14,6 +15,7 @@ import com.blaybus.backend.repository.UserRepository
 import com.blaybus.backend.repository.getByTaskId
 import com.blaybus.backend.repository.getByUserId
 import com.blaybus.backend.repository.getFeedbackWithTaskAndMentorById
+import com.blaybus.backend.service.auth.AuthService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
@@ -25,6 +27,8 @@ class FeedbackService(
     private val taskRepository: TaskRepository,
     private val dailyPlannerService: DailyPlannerService,
     private val objectStorageRepository: ObjectStorageRepository,
+    private val authService: AuthService,
+    private val notificationService: NotificationService,
 ) {
     @Transactional
     fun provideFeedbackForMenteesTask(
@@ -48,6 +52,12 @@ class FeedbackService(
                 ),
             )
 
+        notificationService.createNotification(
+            recipient = task.dailyPlanner.user,
+            type = NotificationType.TASK_FEEDBACK,
+            taskId = task.id,
+        )
+
         return createdFeedback.id
     }
 
@@ -62,6 +72,12 @@ class FeedbackService(
         val dailyPlanner = dailyPlannerService.getOrCreateDailyPlannerByDate(mentee, date)
         mentor.validateMentee(dailyPlanner.user)
         dailyPlanner.updateTotalFeedback(request.content)
+
+        notificationService.createNotification(
+            recipient = mentee,
+            type = NotificationType.PLANNER_FEEDBACK,
+            plannerDate = dailyPlanner.date,
+        )
     }
 
     @Transactional(readOnly = true)
@@ -100,29 +116,38 @@ class FeedbackService(
     }
 
     @Transactional(readOnly = true)
-    fun findMyFeedbacks(
+    fun findFeedbacks(
         userId: Long,
+        menteeId: Long?,
         date: LocalDate,
     ): List<FeedbackDto.GetFeedbackOfTaskResponse> {
-        userRepository.getByUserId(userId)
+        val user = userRepository.getByUserId(userId)
+        val targetUser = authService.validateMentorAccessAndGetTargetUser(user, menteeId)
         val start = date.atStartOfDay()
         val end = date.plusDays(1).atStartOfDay()
 
         return taskRepository
             .findByUserIdAndTaskCreatedBetween(
-                userId,
+                targetUser.id,
                 start,
                 end,
             ).map(Feedback::toGetFeedbackOfTaskResponse)
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     fun findTotalFeedbackOfDailyPlanner(
-        menteeId: Long,
+        userId: Long,
+        menteeId: Long?,
         date: LocalDate,
     ): FeedbackDto.GetTotalFeedbackResponse {
-        val mentee = userRepository.getByUserId(menteeId)
-        val dailyPlanner = dailyPlannerService.getDailyPlannerByDate(mentee, date)
+        val user = userRepository.getByUserId(userId)
+        val targetUser = authService.validateMentorAccessAndGetTargetUser(user, menteeId)
+
+        val dailyPlanner = dailyPlannerService.getDailyPlannerByDate(targetUser, date)
+
+        if (user.id == targetUser.id && dailyPlanner.totalFeedback != null) {
+            dailyPlanner.readTotalFeedback()
+        }
 
         return FeedbackDto.GetTotalFeedbackResponse(
             dailyPlanner.totalFeedback,
@@ -132,19 +157,34 @@ class FeedbackService(
     @Transactional(readOnly = true)
     fun unreadFeedbackCount(userId: Long): FeedbackDto.GetUnreadFeedbackCountResponse {
         userRepository.getByUserId(userId)
+        val taskFeedbackCount = feedbackRepository.countByTaskDailyPlannerUserIdAndIsReadFalse(userId)
+        val totalFeedbackCount = dailyPlannerService.countUnreadTotalFeedbacks(userId)
+
         return FeedbackDto.GetUnreadFeedbackCountResponse(
-            feedbackRepository.countByTaskDailyPlannerUserIdAndIsReadFalse(
-                userId,
-            ),
+            taskFeedbackCount + totalFeedbackCount,
         )
     }
 
     @Transactional(readOnly = true)
     fun getUnreadFeedbacks(userId: Long): List<FeedbackDto.GetUnreadFeedbackResponse> {
         userRepository.getByUserId(userId)
-        return feedbackRepository
-            .findByTaskDailyPlannerUserIdAndIsReadFalse(userId)
-            .map { FeedbackDto.GetUnreadFeedbackResponse(it) }
+        val taskUnreadList =
+            feedbackRepository
+                .findByTaskDailyPlannerUserIdAndIsReadFalse(userId)
+                .map {
+                    it.readFeedback()
+                    FeedbackDto.GetUnreadFeedbackResponse(it)
+                }
+
+        val totalUnreadList =
+            dailyPlannerService
+                .getUnreadTotalFeedbacks(userId)
+                .map {
+                    it.readTotalFeedback()
+                    FeedbackDto.GetUnreadFeedbackResponse(it)
+                }
+
+        return (taskUnreadList + totalUnreadList).sortedByDescending { it.createdDateTime }
     }
 
     @Transactional

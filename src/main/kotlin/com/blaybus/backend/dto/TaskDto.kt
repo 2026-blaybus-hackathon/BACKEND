@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 data class MenteeTaskCreateRequest(
     @field:Schema(description = "할 일 제목", example = "매3비 3일차 풀기")
@@ -211,6 +212,8 @@ data class MenteeSummaryDto(
     val grade: String,
     @Schema(description = "프로필 이미지 URL")
     val profileImageUrl: String?,
+    @Schema(description = "디데이")
+    val dday: Int?,
 )
 
 data class RecentTaskSummaryDto(
@@ -224,10 +227,8 @@ data class RecentTaskSummaryDto(
     val schoolAndGrade: String,
     @Schema(description = "목표 학교", example = "한국대학교")
     val targetSchool: String,
-    @Schema(description = "디데이", example = "30")
-    val targetDate: LocalDate?,
-    @Schema(description = "제출 날짜", example = "2026-02-05")
-    val date: LocalDate,
+    @Schema(description = "제출날짜", example = "2026-02-06T21:30:45")
+    val completedTime: LocalDateTime?,
     @Schema(description = "피드백 완료 여부")
     val isFeedbackCompleted: Boolean,
 )

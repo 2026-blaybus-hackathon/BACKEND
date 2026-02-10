@@ -1,7 +1,6 @@
 package com.blaybus.backend.controller.user
 
 import com.blaybus.backend.annotation.ApiErrorCodes
-import com.blaybus.backend.dto.DailyAchievementRate
 import com.blaybus.backend.dto.UpdateProfileRequest
 import com.blaybus.backend.dto.UserMentorTaskStatisticsResponse
 import com.blaybus.backend.dto.UserProfileResponse
@@ -9,7 +8,6 @@ import com.blaybus.backend.dto.UserTodayStudyTimeResponse
 import com.blaybus.backend.exception.ErrorCode
 import com.blaybus.backend.service.user.UserService
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -34,20 +32,6 @@ class MenteeUserController(
     private val userService: UserService,
 ) {
     @Operation(
-        summary = "내 프로필 조회",
-        description = "멘티는 자신의 프로필을 조회할 수 있습니다.",
-    )
-    @GetMapping("/profile")
-    fun getMyProfile(
-        @AuthenticationPrincipal userId: Long,
-    ): ResponseEntity<UserProfileResponse> =
-        ResponseEntity
-            .status(HttpStatus.OK)
-            .body(
-                userService.findMyProfile(userId),
-            )
-
-    @Operation(
         summary = "하루 공부량 조회",
         description = "멘티는 자신의 하루 공부량을 조회할 수 있습니다.",
     )
@@ -64,34 +48,6 @@ class MenteeUserController(
         ErrorCode.REQUIRED_NAME,
         ErrorCode.REQUIRED_TARGET_SCHOOL,
     )
-    @Operation(
-        summary = "프로필 수정",
-        description = "멘티는 자신의 프로필을 수정할 수 있습니다.",
-    )
-    @PutMapping("/profile")
-    fun updateMyProfile(
-        @Valid @RequestBody
-        request: UpdateProfileRequest,
-        @AuthenticationPrincipal userId: Long,
-    ): ResponseEntity<Unit> {
-        userService.updateProfile(userId, request)
-        return ResponseEntity.ok().build()
-    }
-
-    @Operation(
-        summary = "프로필 이미지 수정",
-        description = "멘티는 자신의 프로필 이미지를 수정할 수 있습니다.",
-    )
-    @PatchMapping("/profile-image", consumes = [MULTIPART_FORM_DATA_VALUE])
-    fun updateMyProfileImage(
-        @AuthenticationPrincipal userId: Long,
-        @RequestPart(required = false)
-        profile: MultipartFile?,
-    ): ResponseEntity<Unit> {
-        userService.updateProfileImage(userId, profile)
-        return ResponseEntity.ok().build()
-    }
-
     @Operation(
         summary = "멘토 과제 통계 조회",
         description = "멘티의 멘토 과제 수행 관련 통계(연속 수행 일수, 누적 공부 시간, 누적 완료 과제 수)를 조회합니다.",

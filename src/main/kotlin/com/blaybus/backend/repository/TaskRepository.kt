@@ -2,6 +2,7 @@ package com.blaybus.backend.repository
 
 import com.blaybus.backend.entity.Feedback
 import com.blaybus.backend.entity.Role
+import com.blaybus.backend.entity.Subject
 import com.blaybus.backend.entity.Task
 import com.blaybus.backend.entity.User
 import com.blaybus.backend.exception.CustomException
@@ -16,9 +17,11 @@ import org.springframework.stereotype.Repository
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-fun TaskRepository.getByTaskId(taskId: Long): Task = findById(taskId).orElseThrow { CustomException(ErrorCode.TASK_NOT_FOUND) }
+fun TaskRepository.getByTaskId(taskId: Long): Task =
+    findById(taskId).orElseThrow { CustomException(ErrorCode.TASK_NOT_FOUND) }
 
-fun TaskRepository.getTaskAndDailyPlannerById(taskId: Long): Task = findTaskById(taskId) ?: throw CustomException(ErrorCode.TASK_NOT_FOUND)
+fun TaskRepository.getTaskAndDailyPlannerById(taskId: Long): Task =
+    findTaskById(taskId) ?: throw CustomException(ErrorCode.TASK_NOT_FOUND)
 
 @Repository
 interface TaskRepository : JpaRepository<Task, Long> {
@@ -206,6 +209,23 @@ interface TaskRepository : JpaRepository<Task, Long> {
     ): Page<Task>
 
     @Query(
+        """
+        SELECT t
+        FROM Task t
+        JOIN t.feedback f
+        JOIN t.dailyPlanner dp
+        WHERE dp.user.id = :menteeId
+          AND f.mentor.id = :mentorId
+        ORDER BY f.createdDateTime DESC
+        """,
+    )
+    fun findTasksWithFeedbackByMenteeAndMentor(
+        menteeId: Long,
+        mentorId: Long,
+        pageable: Pageable,
+    ): Page<Task>
+
+    @Query(
         value = """
         SELECT t FROM Task t
         JOIN FETCH t.dailyPlanner dp
@@ -287,4 +307,34 @@ interface TaskRepository : JpaRepository<Task, Long> {
         menteeId: Long,
         pageable: Pageable,
     ): Page<Task>
+
+    @Query(
+        """
+        SELECT SUM(t.studyDurationInMinutes)
+        FROM Task t
+        JOIN t.dailyPlanner dp
+        JOIN dp.user u
+        WHERE u.mentor.id = :mentorId
+    """,
+    )
+    fun getTotalStudyTimeByMentorId(mentorId: Long): Long?
+
+    @Query(
+        """
+        SELECT count(t), sum(CASE WHEN t.isCompleted = true THEN 1 ELSE 0 END)
+        FROM Task t
+        JOIN t.dailyPlanner dp
+        JOIN dp.user u
+        WHERE u.mentor.id = :mentorId
+    """,
+    )
+    fun getCompletionRateStatsByMentorId(mentorId: Long): List<Array<Any>>
+
+    @Query("SELECT t FROM Task t WHERE t.dailyPlanner.id = :plannerId AND t.subject = :subject AND (:lastId IS NULL OR t.id < :lastId) ORDER BY t.id DESC")
+    fun sliceByDailyPlannerIdAndSubject(
+        plannerId: Long,
+        subject: Subject,
+        lastId: Long?,
+        pageable: Pageable
+    ): Slice<Task>
 }

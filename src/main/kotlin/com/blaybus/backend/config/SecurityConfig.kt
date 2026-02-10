@@ -53,24 +53,31 @@ class SecurityConfig(
                         "/api/v1/test/**",
                     ).permitAll()
                 it
-                    .requestMatchers("/api/v1/tasks/**").hasAnyAuthority(Role.MENTOR.name, Role.MENTEE.name)
-                    .requestMatchers("/api/v1/users/**").hasAnyAuthority(Role.MENTOR.name, Role.MENTEE.name)
-                    .requestMatchers("/api/v1/feedbacks/**").hasAnyAuthority(Role.MENTOR.name, Role.MENTEE.name)
-                it
-                    .requestMatchers("/api/v1/mentor/**", "/api/v1/users/mentor/**", "/api/v1/reports/mentor")
-                    .hasAuthority(Role.MENTOR.name)
-                it.requestMatchers("/api/v1/mentees/**").hasAuthority(Role.MENTOR.name)
-                it.requestMatchers("/api/v1/tasks/mentor/**").hasAuthority(Role.MENTOR.name)
+                    .requestMatchers(
+                        "/api/v1/mentor/**",
+                        "/api/v1/users/mentor/**",
+                        "/api/v1/reports/mentor",
+                        "/api/v1/tasks/mentor/**",
+                        "/api/v1/dashboard/mentor/**",
+                        "/api/v1/feedback/mentor/**",
+                        "/api/v1/materials/**",
+                        "/api/v1/mentees/**",
+                    ).hasAuthority(Role.MENTOR.name)
                 it
                     .requestMatchers(
                         "/api/v1/tasks/mentee/**",
                         "/api/v1/users/mentee/**",
-                        "/api/v1/reports/mentee",
+                        "/api/v1/reports/mentee/**",
+                        "/api/v1/feedback/mentee/**",
                     ).hasAuthority(Role.MENTEE.name)
-                it.requestMatchers("/api/v1/feedback/mentor/**").hasAuthority(Role.MENTOR.name)
-                it.requestMatchers("/api/v1/feedback/mentee/**").hasAuthority(Role.MENTEE.name)
-                it.requestMatchers("/api/v1/dashboard/mentor/**").hasAuthority(Role.MENTOR.name)
-                it.requestMatchers("/api/v1/materials/**").hasAuthority(Role.MENTOR.name)
+                it
+                    .requestMatchers(
+                        "/api/v1/feedbacks/**",
+                        "/api/v1/reports/**",
+                        "/api/v1/tasks/**",
+                        "/api/v1/users/**",
+                        "/api/v1/notifications/**",
+                    ).hasAnyAuthority(Role.MENTOR.name, Role.MENTEE.name)
             }.addFilterBefore(
                 jwtFilter,
                 UsernamePasswordAuthenticationFilter::class.java,
@@ -86,7 +93,7 @@ class SecurityConfig(
     fun corsConfigurationSource(): CorsConfigurationSource {
         val configuration = CorsConfiguration()
         configuration.allowedOrigins = ALLOWED_ORIGINS
-        configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
+        configuration.allowedMethods = listOf("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS")
         configuration.allowedHeaders = ALLOWED_HEADERS
         configuration.allowCredentials = true
         configuration.maxAge = 3600L

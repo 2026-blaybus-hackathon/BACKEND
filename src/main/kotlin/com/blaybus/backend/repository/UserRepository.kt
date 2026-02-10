@@ -18,4 +18,6 @@ interface UserRepository : JpaRepository<User, Long> {
         mentorId: Long,
         name: String,
     ): List<User>
+
+    fun countByMentorId(mentorId: Long): Int
 }
