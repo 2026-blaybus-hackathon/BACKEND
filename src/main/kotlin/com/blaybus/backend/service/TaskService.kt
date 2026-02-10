@@ -346,6 +346,7 @@ class TaskService(
 
             Role.MENTEE -> {
                 user.validateSameUser(task.dailyPlanner.user)
+                task.feedback?.readFeedback()
             }
         }
 
