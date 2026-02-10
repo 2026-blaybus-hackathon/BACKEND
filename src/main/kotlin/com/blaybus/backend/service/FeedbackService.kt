@@ -149,6 +149,7 @@ class FeedbackService(
         }
 
         val feedback = task.feedback
+        feedback?.readFeedback()
         return feedback?.toGetFeedbackOfTaskResponse()
             ?: task.toEmptyFeedbackResponse()
     }
@@ -191,7 +192,6 @@ class FeedbackService(
             feedbackRepository
                 .findByTaskDailyPlannerUserIdAndIsReadFalse(userId)
                 .map {
-                    it.readFeedback()
                     FeedbackDto.GetUnreadFeedbackResponse(it)
                 }
 
@@ -199,7 +199,6 @@ class FeedbackService(
             dailyPlannerService
                 .getUnreadTotalFeedbacks(userId)
                 .map {
-                    it.readTotalFeedback()
                     FeedbackDto.GetUnreadFeedbackResponse(it)
                 }
 
