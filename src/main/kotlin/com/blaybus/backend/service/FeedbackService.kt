@@ -146,6 +146,7 @@ class FeedbackService(
             Role.MENTOR -> {
                 user.validateMentee(task.dailyPlanner.user)
             }
+
             Role.MENTEE -> {
                 user.validateSameUser(task.dailyPlanner.user)
             }
@@ -195,7 +196,14 @@ class FeedbackService(
                 .findByTaskDailyPlannerUserIdAndIsReadFalse(userId)
                 .map {
                     it.readFeedback()
-                    FeedbackDto.GetUnreadFeedbackResponse(it)
+                    val studyImageList =
+                        it.task.studyImages.map { studyImage ->
+                            StudyImageDto.StudyImageResponse(
+                                studyImage,
+                                objectStorageRepository.getDownloadUrl(studyImage.imageFileName),
+                            )
+                        }
+                    FeedbackDto.GetUnreadFeedbackResponse(it, studyImageList)
                 }
 
         val totalUnreadList =
