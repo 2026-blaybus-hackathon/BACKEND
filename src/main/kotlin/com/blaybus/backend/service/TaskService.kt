@@ -123,8 +123,10 @@ class TaskService(
 
         // 자료실 선택 시 정보 조회
         if (request.materialId != null) {
-            val material = learningMaterialRepository.findById(request.materialId)
-                .orElseThrow { CustomException(ErrorCode.RESOURCE_NOT_FOUND) }
+            val material =
+                learningMaterialRepository
+                    .findById(request.materialId)
+                    .orElseThrow { CustomException(ErrorCode.RESOURCE_NOT_FOUND) }
 
             if (material.mentor.id != mentorId) throw CustomException(ErrorCode.NOT_YOUR_MATERIAL)
 
@@ -152,7 +154,7 @@ class TaskService(
             // 추가 파라미터 전달
             materialFileKey = materialFileKey,
             materialFileName = materialFileName,
-            isAutoArchive = shouldArchive
+            isAutoArchive = shouldArchive,
         )
     }
 
@@ -299,32 +301,35 @@ class TaskService(
         size: Int,
     ): SliceResponse<TaskAndAssignmentResponse> {
         val user = userRepository.getByUserId(userId)
-        val dailyPlanner = dailyPlannerService.getDailyPlannerOrNullByUserAndDate(user, date)
-            ?: return SliceResponse(emptyList(), false)
+        val dailyPlanner =
+            dailyPlannerService.getDailyPlannerOrNullByUserAndDate(user, date)
+                ?: return SliceResponse(emptyList(), false)
 
         val pageable = Pageable.ofSize(size)
 
         // [변경 로직] subject가 있으면 과목별 조회, 없으면 전체 조회
-        val tasks = if (subject != null) {
-            taskRepository.sliceByDailyPlannerIdAndSubject(
-                dailyPlanner.id,
-                subject,
-                lastId,
-                pageable
-            )
-        } else {
-            taskRepository.sliceByDailyPlannerId(dailyPlanner.id, lastId, pageable)
-        }
+        val tasks =
+            if (subject != null) {
+                taskRepository.sliceByDailyPlannerIdAndSubject(
+                    dailyPlanner.id,
+                    subject,
+                    lastId,
+                    pageable,
+                )
+            } else {
+                taskRepository.sliceByDailyPlannerId(dailyPlanner.id, lastId, pageable)
+            }
 
         return SliceResponse(
             tasks.content.map { task ->
-                val assignmentList = assignmentRepository.findAllByTask(task).map {
-                    AssignmentResponse(
-                        it.id,
-                        it.originalFileName,
-                        objectStorageRepository.getDownloadUrl(it.fileKey),
-                    )
-                }
+                val assignmentList =
+                    assignmentRepository.findAllByTask(task).map {
+                        AssignmentResponse(
+                            it.id,
+                            it.originalFileName,
+                            objectStorageRepository.getDownloadUrl(it.fileKey),
+                        )
+                    }
                 TaskAndAssignmentResponse(task, assignmentList, task.writer.id == user.id)
             },
             tasks.hasNext(),
@@ -438,21 +443,22 @@ class TaskService(
         // [New] 자료실 연동을 위한 파라미터들
         materialFileKey: String? = null,
         materialFileName: String? = null,
-        isAutoArchive: Boolean = false
+        isAutoArchive: Boolean = false,
     ): TaskResponse {
         val planner = dailyPlannerService.getOrCreateDailyPlannerByDate(targetMentee, date)
 
-        val task = taskRepository.save(
-            Task(
-                dailyPlanner = planner,
-                subject = subject,
-                taskType = taskType,
-                title = title,
-                content = content,
-                writer = writer,
-                isCompleted = false,
-            ),
-        )
+        val task =
+            taskRepository.save(
+                Task(
+                    dailyPlanner = planner,
+                    subject = subject,
+                    taskType = taskType,
+                    title = title,
+                    content = content,
+                    writer = writer,
+                    isCompleted = false,
+                ),
+            )
 
         // 파일 처리 로직
         if (materialFileKey != null && materialFileName != null) {
@@ -461,8 +467,8 @@ class TaskService(
                 Assignment(
                     task = task,
                     fileKey = materialFileKey,
-                    originalFileName = materialFileName
-                )
+                    originalFileName = materialFileName,
+                ),
             )
         } else if (!files.isNullOrEmpty()) {
             // [Case B] 신규 파일 업로드 (기존 메서드 재사용)
@@ -483,8 +489,8 @@ class TaskService(
                             subject = subject,
                             content = content,
                             fileKey = assignment.fileKey,
-                            originalFileName = assignment.originalFileName
-                        )
+                            originalFileName = assignment.originalFileName,
+                        ),
                     )
                 }
             }
@@ -496,7 +502,7 @@ class TaskService(
     private fun manageAssignmentFiles(
         task: Task,
         files: List<MultipartFile>,
-        pathPrefix: String
+        pathPrefix: String,
     ): List<Assignment> {
         val existingAssignments = assignmentRepository.findAllByTask(task)
         if (existingAssignments.isNotEmpty()) {
@@ -603,28 +609,30 @@ class TaskService(
     fun getAssignmentSummaryOfFeedbacksRecently(
         userId: Long,
         menteeId: Long,
-        pageable: PageRequest
+        pageable: PageRequest,
     ): PagedResponse<TaskSummaryResponse> {
         val mentor = userRepository.getByUserId(userId)
         val mentee = userRepository.getByUserId(menteeId)
         mentor.validateMentee(mentee)
 
-        val page = taskRepository.findTasksWithFeedbackByMenteeOrderByFeedbackRecent(
-            mentorId = userId,
-            menteeId = menteeId,
-            pageable = pageable,
-        )
+        val page =
+            taskRepository.findTasksWithFeedbackByMenteeOrderByFeedbackRecent(
+                mentorId = userId,
+                menteeId = menteeId,
+                pageable = pageable,
+            )
 
         return PagedResponse(
-            content = page.content.map { task ->
-                TaskSummaryResponse(
-                    taskId = task.id,
-                    subject = task.subject.name,
-                    title = task.title,
-                    date = task.createdDateTime.toLocalDate(),
-                    studyMinute = task.studyDurationInMinutes ?: 0,
-                )
-            },
+            content =
+                page.content.map { task ->
+                    TaskSummaryResponse(
+                        taskId = task.id,
+                        subject = task.subject.name,
+                        title = task.title,
+                        date = task.createdDateTime.toLocalDate(),
+                        studyMinute = task.studyDurationInMinutes ?: 0,
+                    )
+                },
             page = page.number,
             size = page.size,
             totalPages = page.totalPages,
@@ -635,27 +643,29 @@ class TaskService(
     fun getAllAssignmentsInfo(
         userId: Long,
         type: String?,
-        pageable: PageRequest
+        pageable: PageRequest,
     ): PagedResponse<TaskInfoResponse> {
-        val page = taskRepository.findSubmittedAssignmentsByMentor(
-            mentorId = userId,
-            type = type,
-            pageable = pageable,
-        )
+        val page =
+            taskRepository.findSubmittedAssignmentsByMentor(
+                mentorId = userId,
+                type = type,
+                pageable = pageable,
+            )
 
         return PagedResponse(
-            content = page.content.map { task ->
-                val mentee = task.dailyPlanner.user
-                TaskInfoResponse(
-                    taskId = task.id,
-                    subject = task.subject.name,
-                    title = task.title,
-                    date = task.createdDateTime.toLocalDate(),
-                    menteeName = mentee.name,
-                    schoolName = mentee.schoolName,
-                    grade = mentee.grade,
-                )
-            },
+            content =
+                page.content.map { task ->
+                    val mentee = task.dailyPlanner.user
+                    TaskInfoResponse(
+                        taskId = task.id,
+                        subject = task.subject.name,
+                        title = task.title,
+                        date = task.createdDateTime.toLocalDate(),
+                        menteeName = mentee.name,
+                        schoolName = mentee.schoolName,
+                        grade = mentee.grade,
+                    )
+                },
             page = page.number,
             size = page.size,
             totalPages = page.totalPages,
@@ -667,31 +677,33 @@ class TaskService(
         userId: Long,
         menteeId: Long,
         type: String?,
-        pageable: PageRequest
+        pageable: PageRequest,
     ): PagedResponse<TaskInfoResponse> {
         val mentor = userRepository.getByUserId(userId)
         val mentee = userRepository.getByUserId(menteeId)
         mentor.validateMentee(mentee)
 
-        val page = taskRepository.findSubmittedAssignmentsByMentorAndMentee(
-            mentorId = userId,
-            menteeId = menteeId,
-            type = type,
-            pageable = pageable,
-        )
+        val page =
+            taskRepository.findSubmittedAssignmentsByMentorAndMentee(
+                mentorId = userId,
+                menteeId = menteeId,
+                type = type,
+                pageable = pageable,
+            )
 
         return PagedResponse(
-            content = page.content.map { task ->
-                TaskInfoResponse(
-                    taskId = task.id,
-                    subject = task.subject.name,
-                    title = task.title,
-                    date = task.createdDateTime.toLocalDate(),
-                    menteeName = mentee.name,
-                    schoolName = mentee.schoolName,
-                    grade = mentee.grade,
-                )
-            },
+            content =
+                page.content.map { task ->
+                    TaskInfoResponse(
+                        taskId = task.id,
+                        subject = task.subject.name,
+                        title = task.title,
+                        date = task.createdDateTime.toLocalDate(),
+                        menteeName = mentee.name,
+                        schoolName = mentee.schoolName,
+                        grade = mentee.grade,
+                    )
+                },
             page = page.number,
             size = page.size,
             totalPages = page.totalPages,
@@ -701,27 +713,29 @@ class TaskService(
 
     fun getMyAllAssignments(
         userId: Long,
-        pageable: PageRequest
+        pageable: PageRequest,
     ): PagedResponse<TaskInfoResponse> {
         val user = userRepository.getByUserId(userId)
 
-        val page = taskRepository.findMyCompletedTasksWithFeedback(
-            menteeId = userId,
-            pageable = pageable,
-        )
+        val page =
+            taskRepository.findMyCompletedTasksWithFeedback(
+                menteeId = userId,
+                pageable = pageable,
+            )
 
         return PagedResponse(
-            content = page.content.map { task ->
-                TaskInfoResponse(
-                    taskId = task.id,
-                    subject = task.subject.name,
-                    title = task.title,
-                    date = task.createdDateTime.toLocalDate(),
-                    menteeName = user.name,
-                    schoolName = user.schoolName,
-                    grade = user.grade,
-                )
-            },
+            content =
+                page.content.map { task ->
+                    TaskInfoResponse(
+                        taskId = task.id,
+                        subject = task.subject.name,
+                        title = task.title,
+                        date = task.createdDateTime.toLocalDate(),
+                        menteeName = user.name,
+                        schoolName = user.schoolName,
+                        grade = user.grade,
+                    )
+                },
             page = page.number,
             size = page.size,
             totalPages = page.totalPages,
@@ -768,8 +782,8 @@ class TaskService(
         mentor.validateMentee(mentee)
 
         val yesterday = LocalDate.now().minusDays(1)
-        val start = yesterday.atStartOfDay()
-        val end = yesterday.plusDays(1).atStartOfDay()
+        val start = yesterday
+        val end = yesterday.plusDays(1)
 
         val yesterdayTasks =
             taskRepository.findByUserIdAndTaskCreatedBetween(menteeId, start, end)
@@ -778,14 +792,15 @@ class TaskService(
             yesterdayTasks.map { it.toTaskDetail(objectStorageRepository) }
 
         val totalFeedback =
-            yesterdayTasks.firstOrNull()
+            yesterdayTasks
+                .firstOrNull()
                 ?.dailyPlanner
                 ?.totalFeedback
 
         return DayOfTaskWithFeedbackResponse(
             menteeId = mentee.id,
             tasks = taskDetails,
-            totalFeedback = totalFeedback
+            totalFeedback = totalFeedback,
         )
     }
 }

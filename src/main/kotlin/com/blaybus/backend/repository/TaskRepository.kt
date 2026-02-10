@@ -17,11 +17,9 @@ import org.springframework.stereotype.Repository
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-fun TaskRepository.getByTaskId(taskId: Long): Task =
-    findById(taskId).orElseThrow { CustomException(ErrorCode.TASK_NOT_FOUND) }
+fun TaskRepository.getByTaskId(taskId: Long): Task = findById(taskId).orElseThrow { CustomException(ErrorCode.TASK_NOT_FOUND) }
 
-fun TaskRepository.getTaskAndDailyPlannerById(taskId: Long): Task =
-    findTaskById(taskId) ?: throw CustomException(ErrorCode.TASK_NOT_FOUND)
+fun TaskRepository.getTaskAndDailyPlannerById(taskId: Long): Task = findTaskById(taskId) ?: throw CustomException(ErrorCode.TASK_NOT_FOUND)
 
 @Repository
 interface TaskRepository : JpaRepository<Task, Long> {
@@ -48,15 +46,15 @@ interface TaskRepository : JpaRepository<Task, Long> {
     from Task t
     join fetch t.dailyPlanner dp
     where dp.user.id = :userId
-      and t.createdDateTime >= :start
-      and t.createdDateTime < :end
+      and t.dailyPlanner.date >= :start
+      and t.dailyPlanner.date < :end
     order by t.createdDateTime desc
-    """
+    """,
     )
     fun findByUserIdAndTaskCreatedBetween(
         userId: Long,
-        start: LocalDateTime,
-        end: LocalDateTime,
+        start: LocalDate,
+        end: LocalDate,
     ): List<Task>
 
     @EntityGraph(attributePaths = ["studyImages", "feedback"])
@@ -128,7 +126,7 @@ interface TaskRepository : JpaRepository<Task, Long> {
     FROM Task t 
     WHERE t.dailyPlanner.user.id = :menteeId 
       AND t.writer.id = :mentorId 
-      AND t.isCompleted = true 
+      AND t.isCompleted = true
       AND t.feedback IS NULL
 """,
     )
@@ -347,11 +345,13 @@ interface TaskRepository : JpaRepository<Task, Long> {
     )
     fun getCompletionRateStatsByMentorId(mentorId: Long): List<Array<Any>>
 
-    @Query("SELECT t FROM Task t WHERE t.dailyPlanner.id = :plannerId AND t.subject = :subject AND (:lastId IS NULL OR t.id < :lastId) ORDER BY t.id DESC")
+    @Query(
+        "SELECT t FROM Task t WHERE t.dailyPlanner.id = :plannerId AND t.subject = :subject AND (:lastId IS NULL OR t.id < :lastId) ORDER BY t.id DESC",
+    )
     fun sliceByDailyPlannerIdAndSubject(
         plannerId: Long,
         subject: Subject,
         lastId: Long?,
-        pageable: Pageable
+        pageable: Pageable,
     ): Slice<Task>
 }

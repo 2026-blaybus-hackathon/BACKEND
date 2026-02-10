@@ -77,7 +77,7 @@ class FeedbackController(
     @GetMapping("/{taskId}")
     fun getFeedbackDetail(
         @AuthenticationPrincipal userId: Long,
-        @PathVariable taskId: Long
+        @PathVariable taskId: Long,
     ): ResponseEntity<FeedbackDto.GetFeedbackOfTaskResponse> =
         ResponseEntity
             .status(HttpStatus.OK)

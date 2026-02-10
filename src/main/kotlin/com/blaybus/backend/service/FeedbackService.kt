@@ -164,8 +164,11 @@ class FeedbackService(
         val user = userRepository.getByUserId(userId)
         val targetUser = authService.validateMentorAccessAndGetTargetUser(user, menteeId)
 
-        val dailyPlanner = dailyPlannerService.getDailyPlannerByDate(targetUser, date)
-
+        val dailyPlanner =
+            dailyPlannerService.getDailyPlannerOrNullByUserAndDate(targetUser, date)
+                ?: return FeedbackDto.GetTotalFeedbackResponse(
+                    totalFeedback = null,
+                )
         if (user.id == targetUser.id && dailyPlanner.totalFeedback != null) {
             dailyPlanner.readTotalFeedback()
         }

@@ -3,11 +3,9 @@ package com.blaybus.backend.dto
 import com.blaybus.backend.entity.DailyPlanner
 import com.blaybus.backend.entity.Feedback
 import io.swagger.v3.oas.annotations.media.Schema
-import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.Collections.emptyList
 
 class FeedbackDto {
     data class Summary(

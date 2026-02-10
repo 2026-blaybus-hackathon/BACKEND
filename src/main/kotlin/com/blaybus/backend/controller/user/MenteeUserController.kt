@@ -1,28 +1,19 @@
 package com.blaybus.backend.controller.user
 
 import com.blaybus.backend.annotation.ApiErrorCodes
-import com.blaybus.backend.dto.UpdateProfileRequest
 import com.blaybus.backend.dto.UserMentorTaskStatisticsResponse
-import com.blaybus.backend.dto.UserProfileResponse
 import com.blaybus.backend.dto.UserTodayStudyTimeResponse
 import com.blaybus.backend.exception.ErrorCode
 import com.blaybus.backend.service.user.UserService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
-import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PatchMapping
-import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.multipart.MultipartFile
 import java.time.LocalDate
 
 @Tag(name = "mentee-user-controller API", description = "멘티 관련 조회")

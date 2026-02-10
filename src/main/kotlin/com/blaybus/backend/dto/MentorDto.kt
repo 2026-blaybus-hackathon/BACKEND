@@ -32,7 +32,6 @@ data class TaskInfoResponse(
     val title: String,
     @Schema(description = "생성 날짜", example = "2026-02-06")
     val date: LocalDate,
-
     @Schema(description = "이름", example = "홍길동")
     val menteeName: String,
     @Schema(description = "출신 학교 (null일 경우 기존 값 없어짐)")

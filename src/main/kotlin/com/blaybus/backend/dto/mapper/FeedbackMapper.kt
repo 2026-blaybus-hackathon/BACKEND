@@ -23,10 +23,8 @@ fun Task.toEmptyFeedbackResponse() =
         detail = null,
     )
 
-fun Feedback.toFeedbackDetail(): FeedbackDetail {
-    return FeedbackDetail(
+fun Feedback.toFeedbackDetail(): FeedbackDetail =
+    FeedbackDetail(
         feedbackId = id,
-        content = detail
+        content = detail,
     )
-}
-

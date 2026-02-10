@@ -6,10 +6,8 @@ import com.blaybus.backend.dto.TaskImageResponse
 import com.blaybus.backend.entity.Task
 import com.blaybus.backend.repository.ObjectStorageRepository
 
-fun Task.toTaskDetail(
-    objectStorageRepository: ObjectStorageRepository
-): TaskDetail {
-    return TaskDetail(
+fun Task.toTaskDetail(objectStorageRepository: ObjectStorageRepository): TaskDetail =
+    TaskDetail(
         taskId = id,
         subject = subject.name,
         title = title,
@@ -18,19 +16,20 @@ fun Task.toTaskDetail(
         status = isCompleted,
         menteeComment = comment,
         feedbackStatus = feedbackStatus().name,
-        images = studyImages
-            .sortedBy { it.sequence }
-            .map {
-                TaskImageResponse(
-                    url = objectStorageRepository.getDownloadUrl(it.imageFileName),
-                    name = it.imageFileName,
-                    sequence = it.sequence
-                )
-            },
-        feedback = feedback?.toFeedbackDetail()
-            ?: FeedbackDetail(
-                feedbackId = 0,
-                content = null
-            )
+        images =
+            studyImages
+                .sortedBy { it.sequence }
+                .map {
+                    TaskImageResponse(
+                        url = objectStorageRepository.getDownloadUrl(it.imageFileName),
+                        name = it.imageFileName,
+                        sequence = it.sequence,
+                    )
+                },
+        feedback =
+            feedback?.toFeedbackDetail()
+                ?: FeedbackDetail(
+                    feedbackId = 0,
+                    content = null,
+                ),
     )
-}

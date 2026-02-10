@@ -6,6 +6,7 @@ val ALLOWED_ORIGINS: List<String> =
         "http://localhost:5173",
         "http://localhost:3000",
         "https://blaybus.jayden-bin.cc",
+        "https://seolstudy-99.vercel.app",
         "https://frontend-self-theta-86.vercel.app",
     )
 val ALLOWED_HEADERS: List<String> =

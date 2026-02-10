@@ -5,9 +5,8 @@ import com.blaybus.backend.dto.MentorTaskAssignRequest
 import com.blaybus.backend.dto.MentorTaskUpdateRequest
 import com.blaybus.backend.dto.PagedResponse
 import com.blaybus.backend.dto.TaskInfoResponse
-import com.blaybus.backend.dto.TaskSummaryResponse
 import com.blaybus.backend.dto.TaskResponse
-import com.blaybus.backend.dto.TaskWithFeedbackResponse
+import com.blaybus.backend.dto.TaskSummaryResponse
 import com.blaybus.backend.service.TaskService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -44,7 +43,7 @@ class MentorTaskController(
         @AuthenticationPrincipal userId: Long,
         @Parameter(
             description = "과제 할당 요청 정보 (JSON)",
-            content = [Content(mediaType = MediaType.APPLICATION_JSON_VALUE)]
+            content = [Content(mediaType = MediaType.APPLICATION_JSON_VALUE)],
         )
         @Valid
         @RequestPart("request") request: MentorTaskAssignRequest,
@@ -68,7 +67,7 @@ class MentorTaskController(
         @PathVariable taskId: Long,
         @Parameter(
             description = "수정할 과제 정보 (JSON)",
-            content = [Content(mediaType = MediaType.APPLICATION_JSON_VALUE)]
+            content = [Content(mediaType = MediaType.APPLICATION_JSON_VALUE)],
         )
         @Valid
         @RequestPart("request") request: MentorTaskUpdateRequest,
@@ -86,7 +85,7 @@ class MentorTaskController(
     @GetMapping("/{menteeId}")
     fun getYesterDayTasks(
         @AuthenticationPrincipal userId: Long,
-        @PathVariable menteeId: Long
+        @PathVariable menteeId: Long,
     ): ResponseEntity<DayOfTaskWithFeedbackResponse> {
         val response =
             taskService.getYesterdaysTaskDetailByMenteeId(userId, menteeId)
@@ -119,7 +118,7 @@ class MentorTaskController(
         @AuthenticationPrincipal userId: Long,
         @Parameter(
             description = "조회 타입 (REMIND: 제출되었으나 피드백 미완료, HISTORY: 제출 및 피드백 완료)",
-            schema = Schema(allowableValues = ["REMIND", "HISTORY"])
+            schema = Schema(allowableValues = ["REMIND", "HISTORY"]),
         )
         @RequestParam type: String,
         @RequestParam(defaultValue = "0") page: Int,
@@ -140,7 +139,7 @@ class MentorTaskController(
         @PathVariable menteeId: Long,
         @Parameter(
             description = "조회 타입 (REMIND: 제출되었으나 피드백 미완료, HISTORY: 제출 및 피드백 완료)",
-            schema = Schema(allowableValues = ["REMIND", "HISTORY"])
+            schema = Schema(allowableValues = ["REMIND", "HISTORY"]),
         )
         @RequestParam type: String,
         @RequestParam(defaultValue = "0") page: Int,
